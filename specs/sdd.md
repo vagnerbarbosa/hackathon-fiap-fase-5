@@ -22,7 +22,15 @@ A FIAP Software Security deseja validar a viabilidade de uma nova funcionalidade
 
 ### 1.3 Pipeline da Solução
 
+> 🏗️ **Fundamento**: Antes de executar qualquer passo do pipeline, a [Spec 000](features/000-domain-contracts.md) deve estar implementada. Ela define os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) que são a "lingua franca" entre todos os módulos.
+
 ```
+┌─────────────────────────────────────────────────────────────────┐
+│  SPEC 000: Contratos de Domínio (Pydantic Models)              │
+│  └── Fundação para todas as specs — implementar PRIMEIRO       │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              v
 Imagem de Arquitetura
         |
         v
@@ -52,7 +60,7 @@ Todas as specs estão em `specs/features/`:
 
 | # | Arquivo | Título | Responsabilidade |
 |---|---------|--------|------------------|
-| 000 | `000-domain-contracts.md` | Contratos de Domínio | Models Pydantic v2 compartilhados (pré-requisito para todas) |
+| **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** |
 | 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP |
 | 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial |
@@ -106,6 +114,8 @@ Todas as specs estão em `specs/features/`:
 ```
 
 ### 3.2 Fluxo de Dados (End-to-End)
+
+> Todos os tipos de dados (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) são definidos na [Spec 000](features/000-domain-contracts.md).
 
 1. **Upload** (`POST /api/v1/threat-model/analyze`)
    - Cliente envia imagem PNG/JPG.
