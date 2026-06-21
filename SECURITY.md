@@ -70,13 +70,13 @@ This project implements the following security measures:
 
 1. **Environment Variables**: Never commit `.env` files or expose API credentials
 2. **File Uploads**: The API validates file types (PNG, JPG, JPEG) and sizes (max 50MB)
-3. **Model Files**: YOLOv8 model files (`best.pt`) should be stored securely; verify checksums
+3. **Model Files**: YOLOv11n model files (`best.pt`) should be stored securely; verify checksums
 4. **Cache Management**: Redis cache contains processed results; configure TTL appropriately
 5. **Report Data**: Generated threat model reports may contain sensitive architecture details; handle with care
 
 ## Known Security Considerations
 
-### ML Models (YOLOv8)
+### ML Models (YOLOv11n)
 - Model files are trained locally using trusted sources (Ultralytics)
 - Local inference prevents data exposure to external APIs
 - Model artifacts should be scanned for supply chain risks
