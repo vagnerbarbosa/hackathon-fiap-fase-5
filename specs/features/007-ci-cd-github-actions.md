@@ -11,7 +11,7 @@ O hackathon exige entregar um projeto funcional no GitHub. Um pipeline de CI/CD 
 Configurar um pipeline GitHub Actions que:
 1. Execute lint e formatação em todo PR/push.
 2. Rode testes unitários e de integração.
-3. Verifique coverage mínimo.
+3. Verifique coverage mínimo: 70%.
 4. Build e push de imagem Docker (opcional, mas recomendado).
 5. Valide a estrutura do dataset e modelo.
 
@@ -33,7 +33,7 @@ Arquivo `.github/workflows/ci.yml`:
 
 2. **test**:
    - Rodar PostgreSQL e Redis via `services` do GitHub Actions
-   - `pytest tests/ --cov=src --cov-report=xml --cov-fail-under=80`
+   - `pytest tests/ --cov=src --cov-report=xml --cov-fail-under=70`
    - Upload de coverage para Codecov (opcional)
 
 3. **dataset-validation**:
@@ -106,6 +106,24 @@ Então o GitHub rejeita
 - **Decisão**: GitHub Actions (nativo do GitHub).
 - **Justificativa**: Repositório já está no GitHub. Integração perfeita. Runners gratuitos. O hackathon pede link do GitHub.
 - **Consequências**: Nenhuma — melhor escolha para o contexto.
+
+### ADR-002: Lint como Gate de Segurança (Ruff + mypy)
+- **Contexto**: Em projetos de segurança de software, código mal formatado ou sem tipagem pode esconder vulnerabilidades.
+- **Decisão**: Ruff + mypy são **gates obrigatórios** no CI. Falha = merge bloqueado.
+- **Justificativa**:
+  - Ruff detecta padrões inseguros (ex: ,  com shell=True, imports circulares).
+  - mypy previne erros de tipo que podem causar comportamento inesperado (DoS, Info Disclosure).
+  - Ambos são rápidos (< 10s no CI) e têm zero custo de manutenção.
+- **Consequências**: Desenvolvedores precisam configurar pre-commit hooks locais para evitar surpresas no CI.
+
+### ADR-003: Cobertura Mínima de Testes — 70%
+- **Contexto**: Cobertura 100% é idealista para um MVP de hackathon; 0% é inaceitável para segurança.
+- **Decisão**: 70% de cobertura mínima como gate de CI.
+- **Justificativa**:
+  - 70% cobre os caminhos críticos (upload, detecção, STRIDE, relatório) sem exigir testes triviais.
+  - Foco em testes de integração para os serviços de segurança (STRIDE, vulnerabilidades).
+  - Permite evolução rápida sem sacrificar confiança.
+- **Consequências**: Módulos de UI/templates podem ter cobertura menor; lógica de segurança deve ter > 90%.
 
 ## Módulos Planejados
 

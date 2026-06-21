@@ -57,6 +57,17 @@ Every change goes through:
 - File uploads: validate by magic bytes (PNG, JPG, JPEG); max 50MB.
 - Model artifacts (`best.pt`, `best.onnx`): store in `models/`; do not version large binaries in git.
 
+## Security Guardrails (CI Gates)
+
+- **Ruff + mypy are security gates, not style preferences.**
+  - Ruff detects unsafe patterns (`eval`, `subprocess` with `shell=True`, unused imports that expand attack surface).
+  - mypy prevents type confusion and null dereferences that can lead to exploitable runtime behavior.
+  - **No PR may be merged if lint fails.** This is a security rule.
+- **Minimum test coverage: 70%** as CI gate.
+  - Security logic (STRIDE engine, vulnerability lookup) must have > 90% coverage.
+  - UI/template modules may have lower coverage.
+- **Pre-commit hooks recommended**: `ruff check`, `ruff format --check`, `mypy src/` before every commit to avoid CI surprises.
+
 ## Architecture Decisions
 
 - YOLOv8n as detection backbone (speed over accuracy for MVP; upgrade to s/m if needed).
