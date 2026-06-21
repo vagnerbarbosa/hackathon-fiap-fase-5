@@ -53,7 +53,7 @@ Todas as specs estão em `specs/features/`:
 | # | Arquivo | Título | Responsabilidade |
 |---|---------|--------|------------------|
 | 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP |
-| 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLOv8 | Geração/ anotação de dataset, treino de modelo |
+| 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial |
 | 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE |
 | 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP |
@@ -111,7 +111,7 @@ Todas as specs estão em `specs/features/`:
    - API valida magic bytes, salva em storage, cria `Job` no PostgreSQL (status: `pending`).
 
 2. **Processamento** (background ou sync)
-   - `ComponentDetectionService` carrega imagem, pré-processa, executa YOLOv8.
+   - `ComponentDetectionService` carrega imagem, pré-processa, executa YOLOv11n.
    - Retorna `ArchitectureGraph` (componentes + fluxos + trust boundaries).
 
 3. **Análise STRIDE**

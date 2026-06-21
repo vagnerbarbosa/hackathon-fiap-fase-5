@@ -2,7 +2,7 @@
 
 ---
 
-## Contexto / Motuação
+## Contexto / Motivação
 
 O hackathon exige um **vídeo de até 15 minutos** explicando a solução proposta. Um roteiro bem estruturado garante que todas as partes importantes sejam cobertas e que o vídeo seja persuasivo para os avaliadores.
 
@@ -44,7 +44,7 @@ Criar um roteiro detalhado (script) para gravação do vídeo, cobrindo:
 
 ### Parte 3: Explicação Técnica (4 min)
 **Conteúdo**:
-1. **Dataset e Treinamento**: como geramos/ coletamos imagens, anotamos, e treinamos YOLOv8.
+1. **Dataset e Treinamento**: como geramos/ coletamos imagens, anotamos, e treinamos YOLOv11n.
 2. **Detecção**: como o modelo identifica componentes e infere relacionamentos.
 3. **STRIDE**: como o motor aplica as 6 categorias de ameaças.
 4. **Vulnerabilidades**: como enriquecemos com CWEs e contramedidas.

@@ -11,7 +11,7 @@ O hackathon exige que construamos ou busquemos um dataset de imagens de arquitet
 Criar um pipeline completo de:
 1. **Aquisição/geração de dados**: Dataset de imagens de diagramas de arquitetura de software.
 2. **Anotação**: Bounding boxes e labels no formato YOLO para detecção supervisionada.
-3. **Treinamento**: Fine-tuning de YOLOv8 (ou similar) para detectar componentes de arquitetura.
+3. **Treinamento**: Fine-tuning de YOLOv11n para detectar componentes de arquitetura.
 4. **Validação**: Métricas de qualidade (mAP, precision, recall) nas arquiteturas de teste.
 
 ## Requisitos Funcionais (RF)
@@ -49,7 +49,7 @@ O dataset deve anotar as seguintes classes (ajustável conforme validação):
 - `train/`: 70% das imagens
 - `val/`: 20% das imagens
 - `test/`: 10% das imagens (incluir as 2 arquiteturas de teste do hackathon)
-- `data.yaml`: Configuração do dataset para Ultralytics YOLOv8.
+- `data.yaml`: Configuração do dataset para Ultralytics YOLOv11n.
 
 ### RF-05: Treinamento do Modelo
 - Base: YOLOv11n (nano) — priorizar velocidade para MVP.
@@ -143,7 +143,7 @@ E classifica corretamente os tipos (user, api, database, etc.)
   - Pode ser complementado com imagens reais para robustez.
 - **Consequências**: Necessário validar que modelo generaliza para imagens reais. Risco de overfitting em padrões sintéticos.
 
-### ADR-002: YOLOv8n como Backbone
+### ADR-002: YOLOv11n como Backbone
 - **Contexto**: MVP precisa ser rápido e funcional.
 - **Decisão**: Usar YOLOv11n (nano) para treinamento e inferência rápidos.
 - **Justificativa**:

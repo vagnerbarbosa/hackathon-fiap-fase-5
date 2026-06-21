@@ -49,7 +49,7 @@ class ComponentDetectionService:
 - Binarização opcional para diagramas com fundo escuro (threshold adaptativo via OpenCV).
 - Suporte a PNG, JPG, JPEG (validação por magic bytes já feita na Spec 001).
 
-### RF-03: Inferência com YOLOv8
+### RF-03: Inferência com YOLOv11n
 - Carregar modelo `best.pt` (ou `best.onnx` para performance) exportado na Spec 002.
 - Executar `model.predict()` com:
   - `conf=0.25` (threshold mínimo de confiança)
