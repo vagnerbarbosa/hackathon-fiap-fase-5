@@ -1,0 +1,5 @@
+{
+  "integration": "claude",
+  "preset": "scaffold",
+  "feature_numbering": "sequential"
+}

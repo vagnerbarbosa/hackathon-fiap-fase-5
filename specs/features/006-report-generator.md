@@ -242,6 +242,13 @@ fake_job = Job(
 
 ## Dependências
 
+### Pré-requisito
+- **Spec 000** — consome os contratos de domínio (\`ArchitectureGraph\`, \`Threat\`, \`EnrichedThreat\`, \`Job\`) definidos em \`src/domain/models.py\`.
+
+### Pré-requisito
+- **Spec 000** — esta spec consome os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) definidos em `src/domain/models.py`.
+
+
 ### Internas
 - **Spec 001** — depende de models (Job), storage, templates
 - **Spec 003** — depende de ArchitectureGraph para seção 2

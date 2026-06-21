@@ -170,6 +170,13 @@ fake_graph = ArchitectureGraph(
 
 ## Dependências
 
+### Pré-requisito
+- **Spec 000** — consome os contratos de domínio (\`ArchitectureGraph\`, \`Threat\`, \`EnrichedThreat\`, \`Job\`) definidos em \`src/domain/models.py\`.
+
+### Pré-requisito
+- **Spec 000** — esta spec consome os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) definidos em `src/domain/models.py`.
+
+
 ### Internas
 - **Spec 001** — depende da estrutura de `src/services/`, `src/infrastructure/`, config, logging
 - **Spec 002** — depende do modelo treinado (`best.pt` / `best.onnx`)

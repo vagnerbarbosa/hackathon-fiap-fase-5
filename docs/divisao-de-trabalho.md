@@ -6,11 +6,28 @@ Este documento define como os 4 membros da equipe trabalham em paralelo nas 8 sp
 
 ---
 
+## 🎯 Spec 000 — O Ponto de Partida
+
+**Antes de tudo**: a [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) deve ser mergeada em `main`. Ela define os **models Pydantic** (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) que são a "lingua franca" entre todas as specs.
+
+Sem a Spec 000, ninguém consegue trabalhar em paralelo. É o alicerce.
+
+| Modelo | Onde está definido | Usado por |
+|--------|-------------------|-----------|
+| `ArchitectureGraph` | `src/domain/models.py` | Spec 003 (produz) → Spec 004 (consome) |
+| `Threat` | `src/domain/models.py` | Spec 004 (produz) → Spec 005/006 (consome) |
+| `EnrichedThreat` | `src/domain/models.py` | Spec 005 (produz) → Spec 006 (consome) |
+| `Job` | `src/domain/models.py` | Spec 001 (produz) → Spec 006 (consome) |
+
+> ⚠️ **Regra de ouro**: ninguém altera esses models sem avisar no grupo. Mudanças exigem PR exclusiva.
+
+---
+
 ## 👥 Membros e Atribuições
 
 | Membro | GitHub | Spec(s) | Responsabilidade |
 |--------|--------|---------|------------------|
-| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **001** (API Core) + **003** (Detecção) | Scaffolding, contratos de domínio, integração CV→API |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **000** (Contratos) + **001** (API Core) + **003** (Detecção) | Contratos de domínio, scaffolding, integração CV→API |
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
 | **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **008** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
@@ -19,7 +36,7 @@ Este documento define como os 4 membros da equipe trabalham em paralelo nas 8 sp
 
 ## 🔄 Ordem de Prioridade
 
-1. **Primeiro**: Vagner mergeia os **contratos de domínio** em `main` (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`). Sem isso, os demais não conseguem trabalhar em paralelo.
+1. **Primeiro (dia 0)**: Vagner mergeia a **[Spec 000](../features/000-domain-contracts.md)** em `main`. Sem os contratos de domínio, ninguém consegue trabalhar em paralelo.
 2. **Segundo**: Todos criam branches `feature/00X-nome-da-spec` a partir da `main` atualizada.
 3. **Terceiro**: Cada um implementa sua spec usando **mocks/stubs** para as dependências ainda não prontas.
 4. **Quarto**: Pull Requests para `main`, review cruzado, CI passando, merge.
@@ -115,6 +132,15 @@ git push origin feature/004-stride-engine
 ## 📊 Matriz de Dependências Visual
 
 ```
+                    ┌─────────┐
+                    │ Spec 000│
+                    │(Contratos
+                    │de Domínio)
+                    └────┬────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+         v               v               v
 ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
 │  Vagner │────→│  Lucas  │     │ Adriel  │────→│ Leticia │
 │  (001)  │     │  (002)  │     │ (004)   │     │ (006)   │
@@ -122,7 +148,7 @@ git push origin feature/004-stride-engine
 └────┬────┘     └────┬────┘     └────┬────┘     └────┬────┘
      │               │               │               │
      └───────────────┴───────────────┴───────────────┘
-                    main (contratos)
+                    main (merge)
 ```
 
 - Seta `────→` = produz dados que o outro consome
