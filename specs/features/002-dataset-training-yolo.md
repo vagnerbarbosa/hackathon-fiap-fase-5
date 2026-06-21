@@ -144,6 +144,13 @@ class StubResult:
 
 ## Dependências
 
+### Pré-requisito
+- **Spec 000** — consome os contratos de domínio (\`ArchitectureGraph\`, \`Threat\`, \`EnrichedThreat\`, \`Job\`) definidos em \`src/domain/models.py\`.
+
+### Pré-requisito
+- **Spec 000** — esta spec consome os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) definidos em `src/domain/models.py`.
+
+
 ### Bibliotecas
 - `ultralytics>=8.3.0` (suporta YOLOv11)
 - `opencv-python==4.13.x`

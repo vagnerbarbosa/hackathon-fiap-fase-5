@@ -186,6 +186,13 @@ fake_threats = [
 
 ## Dependências
 
+### Pré-requisito
+- **Spec 000** — consome os contratos de domínio (\`ArchitectureGraph\`, \`Threat\`, \`EnrichedThreat\`, \`Job\`) definidos em \`src/domain/models.py\`.
+
+### Pré-requisito
+- **Spec 000** — esta spec consome os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) definidos em `src/domain/models.py`.
+
+
 ### Internas
 - **Spec 001** — depende da estrutura `src/services/`, logging
 - **Spec 003** — consome `ArchitectureGraph` como input

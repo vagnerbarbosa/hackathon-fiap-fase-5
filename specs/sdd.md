@@ -52,6 +52,7 @@ Todas as specs estão em `specs/features/`:
 
 | # | Arquivo | Título | Responsabilidade |
 |---|---------|--------|------------------|
+| 000 | `000-domain-contracts.md` | Contratos de Domínio | Models Pydantic v2 compartilhados (pré-requisito para todas) |
 | 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP |
 | 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial |
@@ -155,20 +156,24 @@ Todas as specs estão em `specs/features/`:
 ## 5. Dependências entre Specs
 
 ```
-001 (API Core)
+000 (Domain Contracts) ← pré-requisito de TODAS
   |
-  +---> 003 (Component Detection)  --depends-on--> 002 (Dataset/Model)
-  |         |
-  |         v
-  +---> 004 (STRIDE Engine)
-  |         |
-  |         v
-  +---> 005 (Vulnerability Lookup)
-  |         |
-  |         v
-  +---> 006 (Report Generator)
+  +---> 001 (API Core)
+  |       |
+  |       +---> 003 (Component Detection)  --depends-on--> 002 (Dataset/Model)
+  |       |         |
+  |       |         v
+  |       +---> 004 (STRIDE Engine)
+  |       |         |
+  |       |         v
+  |       +---> 005 (Vulnerability Lookup)
+  |       |         |
+  |       |         v
+  |       +---> 006 (Report Generator)
+  |       |
+  |       +---> 007 (CI/CD) --depends-on--> 001, 002
   |
-  +---> 007 (CI/CD) --depends-on--> 001, 002
+  +---> 002 (Dataset) --produz--> modelos para 003
 
 008 (Video) --depends-on--> 001-006 (sistema funcional)
 ```
@@ -183,14 +188,14 @@ Todas as specs estão em `specs/features/`:
 | Web Framework | FastAPI | 0.115.x |
 | Validação | Pydantic v2 | 2.x |
 | ORM | SQLAlchemy | 2.0.x |
-| DB Driver | asyncpg | 0.29.x |
-| Migrations | Alembic | 1.13.x |
+| DB Driver | asyncpg | 0.30.x |
+| Migrations | Alembic | 1.14.x |
 | Cache / Queue | Redis | 8.x |
 | Computer Vision | OpenCV + YOLOv11 (Ultralytics) | 4.13.x / 8.3.x |
 | Deep Learning | PyTorch + torchvision | 2.11.x |
 | Templating | Jinja2 | 3.1.x |
-| Testing | pytest + httpx | 8.x / 0.27.x |
-| Lint | ruff + black + mypy | 0.4.x / 1.10.x |
+| Testing | pytest + httpx | 8.x / 0.28.x |
+| Lint | ruff + black + mypy | 0.9.x / 1.15.x |
 | Container | Docker + Docker Compose | — |
 | CI/CD | GitHub Actions | — |
 

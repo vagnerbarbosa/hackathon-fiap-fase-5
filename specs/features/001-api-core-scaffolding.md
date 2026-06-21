@@ -189,6 +189,13 @@ E o coverage report mostra ≥ 80% para src/api/ e src/core/
 
 ## Dependências
 
+### Pré-requisito
+- **Spec 000** — consome os contratos de domínio (\`ArchitectureGraph\`, \`Threat\`, \`EnrichedThreat\`, \`Job\`) definidos em \`src/domain/models.py\`.
+
+### Pré-requisito
+- **Spec 000** — esta spec consome os contratos de domínio (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) definidos em `src/domain/models.py`.
+
+
 ### Internas (Specs que dependem desta)
 - `003-component-detection-service` — precisa da API para receber uploads
 - `004-stride-engine` — precisa da estrutura de models/services
