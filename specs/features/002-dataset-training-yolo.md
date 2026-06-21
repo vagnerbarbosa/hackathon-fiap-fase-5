@@ -52,7 +52,7 @@ O dataset deve anotar as seguintes classes (ajustável conforme validação):
 - `data.yaml`: Configuração do dataset para Ultralytics YOLOv8.
 
 ### RF-05: Treinamento do Modelo
-- Base: YOLOv11n (nano) — priorizar velocidade para MVP; fallback para YOLOv8n se necessário.
+- Base: YOLOv11n (nano) — priorizar velocidade para MVP.
 - Fine-tuning com dataset customizado.
 - Hiperparâmetros sugeridos (ajustáveis):
   - `epochs: 100`
@@ -145,12 +145,12 @@ E classifica corretamente os tipos (user, api, database, etc.)
 
 ### ADR-002: YOLOv8n como Backbone
 - **Contexto**: MVP precisa ser rápido e funcional.
-- **Decisão**: Usar YOLOv11n (nano) para treinamento e inferência rápidos; fallback para YOLOv8n.
+- **Decisão**: Usar YOLOv11n (nano) para treinamento e inferência rápidos.
 - **Justificativa**:
   - ~2.6M parâmetros — mais leve que v8n, com melhor mAP.
   - Inferência >150 FPS em GPU — ideal para API.
   - Familiaridade com Ultralytics (usado na Fase 4).
-- **Consequências**: YOLOv11 é recente (2024+); se houver instabilidade, fallback imediato para YOLOv8n.
+- **Consequências**: YOLOv11 é recente (2024+); em caso de instabilidade, levantar erro padrão para diagnóstico.
 
 ## Arquivos Planejados
 

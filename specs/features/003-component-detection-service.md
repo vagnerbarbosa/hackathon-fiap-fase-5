@@ -11,7 +11,7 @@ O core do MVP é interpretar automaticamente um diagrama de arquitetura de softw
 Implementar um serviço `ComponentDetectionService` que:
 1. Recebe um path de imagem (local ou remoto).
 2. Pré-processa a imagem para otimizar a detecção.
-3. Executa inferência com o modelo YOLOv11n (ou YOLOv8n fallback) treinado (Spec 002).
+3. Executa inferência com o modelo YOLOv11n treinado (Spec 002).
 4. Retorna uma lista estruturada de componentes detectados: tipo, bounding box, confiança.
 5. Infere fluxos de dados (Data Flows) e trust boundaries com base na posição espacial dos componentes.
 
