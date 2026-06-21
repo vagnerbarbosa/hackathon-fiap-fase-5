@@ -3,8 +3,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.4+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
-[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-111F68?style=flat-square)](https://ultralytics.com/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.11+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![YOLOv11](https://img.shields.io/badge/YOLOv11-Ultralytics-111F68?style=flat-square)](https://ultralytics.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-SDD-2ea44f?style=flat-square)](https://github.com/github/spec-kit)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-ff6b35?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/code)
@@ -20,7 +20,7 @@
 
 Sistema para **identificação automática de componentes de arquitetura de software em imagens** e **modelagem de ameaças baseada na metodologia STRIDE** (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege).
 
-O sistema recebe um diagrama de arquitetura, detecta componentes (usuários, APIs, bancos de dados, filas, etc.) via YOLOv8, aplica STRIDE programaticamente, busca vulnerabilidades conhecidas (CVE/CWE) e gera um relatório estruturado com contramedidas.
+O sistema recebe um diagrama de arquitetura, detecta componentes (usuários, APIs, bancos de dados, filas, etc.) via YOLOv11n, aplica STRIDE programaticamente, busca vulnerabilidades conhecidas (CVE/CWE) e gera um relatório estruturado com contramedidas.
 
 ### Pipeline da Solução
 
@@ -31,7 +31,7 @@ Imagem de Arquitetura
 [Upload + Pré-processamento]
         |
         v
-[Detecção de Componentes] → YOLOv8
+[Detecção de Componentes] → YOLOv11n
         |
         v
 [Análise STRIDE] → S, T, R, I, D, E
@@ -64,7 +64,7 @@ Imagem de Arquitetura
 | Camada | Tecnologia | Propósito |
 |--------|-----------|-----------|
 | 🌐 **API** | FastAPI + Pydantic v2 | Endpoints REST para upload e relatórios |
-| 🧠 **Detecção** | YOLOv8 (Ultralytics) | Detecção de componentes em diagramas |
+| 🧠 **Detecção** | YOLOv11n (Ultralytics) | Detecção de componentes em diagramas |
 | 🔥 **Framework IA** | PyTorch + torchvision | Treinamento supervisionado do modelo |
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
@@ -150,7 +150,7 @@ docker-compose up --build
 - [x] SDD consolidado
 - [ ] Scaffolding FastAPI + Docker
 - [ ] Dataset de diagramas sintéticos
-- [ ] Treinamento YOLOv8n
+- [ ] Treinamento YOLOv11n
 - [ ] Módulo de detecção de componentes
 - [ ] Motor STRIDE
 - [ ] Busca de vulnerabilidades e contramedidas
