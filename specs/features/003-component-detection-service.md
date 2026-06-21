@@ -129,6 +129,45 @@ Quando o serviço tenta detectar componentes
 Então retorna erro NO_COMPONENTS_DETECTED com mensagem amigável
 ```
 
+## Contratos de Entrada/Saída
+
+### Entrada (consumido desta spec)
+| Contrato | Tipo | Vem de |
+|----------|------|--------|
+| `image_path` | `str \| Path` | Upload da API (Spec 001) |
+
+### Saída (produzido por esta spec)
+| Contrato | Tipo | Vai para |
+|----------|------|----------|
+| `ArchitectureGraph` | Pydantic model | Spec 004 (STRIDE) |
+| `DetectedComponent` | Pydantic model | Spec 004 (STRIDE) |
+| `DataFlow` | Pydantic model | Spec 004 (STRIDE) |
+
+### Mock para Spec 004 (quando modelo não está pronto)
+
+```python
+# tests/mocks/fake_architecture_graph.py
+from uuid import uuid4
+from domain.models import ArchitectureGraph, DetectedComponent, DataFlow, BoundingBox, Point
+
+fake_graph = ArchitectureGraph(
+    components=[
+        DetectedComponent(
+            id=str(uuid4()), type="user", confidence=0.95,
+            bbox=BoundingBox(x_min=10, y_min=50, x_max=60, y_max=100),
+            center=Point(x_center=35, y_center=75),
+        ),
+        DetectedComponent(
+            id=str(uuid4()), type="api", confidence=0.91,
+            bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
+            center=Point(x_center=250, y_center=85),
+        ),
+    ],
+    data_flows=[DataFlow(source_id="comp-1", target_id="comp-2", direction="unidirectional", inferred=True)],
+    trust_boundaries=[["comp-1"], ["comp-2"]],
+)
+```
+
 ## Dependências
 
 ### Internas

@@ -208,6 +208,38 @@ Então os arquivos .json, .md, .html, .csv e .pdf existem em reports/
 E o campo Job.output_report_path contém a lista de todos os arquivos gerados
 ```
 
+## Contratos de Entrada/Saída
+
+### Entrada (consumido desta spec)
+| Contrato | Tipo | Vem de |
+|----------|------|--------|
+| `EnrichedThreat` | `list[EnrichedThreat]` | Spec 005 (Vulnerabilidades) |
+| `ArchitectureGraph` | Pydantic model | Spec 003 (Detecção) — opcional, para diagrama no relatório |
+| `Job` | Pydantic model | Spec 001 (API Core) — para metadados do job |
+
+### Saída (produzido por esta spec)
+| Artefato | Formato | Destino |
+|----------|---------|---------|
+| Relatório | `.md`, `.json`, `.html`, `.csv`, `.pdf` | Download do usuário / storage local |
+
+### Mock para desenvolvimento independente
+
+```python
+# tests/mocks/fake_report_input.py
+from uuid import uuid4
+from domain.models import (
+    EnrichedThreat, Severity, Countermeasure,
+    ArchitectureGraph, DetectedComponent, Job, JobStatus
+)
+
+fake_job = Job(
+    id=uuid4(),
+    status=JobStatus.COMPLETED,
+    input_image_path="/uploads/diagrama.png",
+    output_report_path="/reports/job-123/report.md",
+)
+```
+
 ## Dependências
 
 ### Internas
