@@ -201,13 +201,13 @@ E o coverage report mostra ≥ 80% para src/api/ e src/core/
 - `pydantic==2.x`
 - `pydantic-settings==2.x`
 - `sqlalchemy[asyncio]==2.0.x`
-- `asyncpg==0.29.x`
-- `alembic==1.13.x`
+- `asyncpg==0.30.x`
+- `alembic==1.14.x`
 - `slowapi==0.1.x` (rate limiting)
 - `python-multipart==0.0.x` (uploads)
-- `httpx==0.27.x` (testes async)
-- `pytest-asyncio==0.23.x`
-- `orjson==3.9.x`
+- `httpx==0.28.x` (testes async)
+- `pytest-asyncio==0.25.x`
+- `orjson==3.10.x`
 
 ## Decisões Técnicas (ADR)
 

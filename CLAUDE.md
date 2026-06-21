@@ -6,13 +6,13 @@ See @specs/sdd.md for full Software Design Document and @specs/features/ for det
 
 ## Context7 Rule (MANDATORY)
 
-Every code change MUST query the Context7 MCP for current docs, best practices, and examples of any library, framework, SDK, API, or CLI used — including FastAPI, Pydantic, PyTorch, Docker, OpenCV, YOLOv8, SQLAlchemy. Apply even when knowledge seems obvious; training data may be stale. Prefer Context7 over Web Search for technical docs.
+Every code change MUST query the Context7 MCP for current docs, best practices, and examples of any library, framework, SDK, API, or CLI used — including FastAPI, Pydantic, PyTorch, Docker, OpenCV, YOLOv11n, SQLAlchemy. Apply even when knowledge seems obvious; training data may be stale. Prefer Context7 over Web Search for technical docs.
 
 ## Domain Context
 
 **Company**: FIAP Software Security.
 **Goal**: Automatically perform STRIDE threat modeling from software architecture diagram images.
-**Pipeline**: Upload image → Detect components (YOLOv8) → Apply STRIDE → Lookup CVEs/CWEs → Generate report.
+**Pipeline**: Upload image → Detect components (YOLOv11n) → Apply STRIDE → Lookup CVEs/CWEs → Generate report.
 
 **STRIDE categories**:
 - S = Spoofing (Authentication)
@@ -60,7 +60,7 @@ Every change goes through:
 
 ## Architecture Decisions
 
-- YOLOv8n as detection backbone (speed over accuracy for MVP; upgrade to s/m if needed).
+- YOLOv11n as detection backbone (speed over accuracy for MVP; upgrade to s/m if needed).
 - ONNX Runtime for production inference; PyTorch `.pt` kept for retraining.
 - STRIDE engine is rule-based (YAML mappings), not LLM-driven, for determinism and speed.
 - Vulnerability lookup uses local YAML DB as primary source; NVD API as optional enhancement.

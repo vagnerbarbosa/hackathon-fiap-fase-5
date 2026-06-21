@@ -141,7 +141,7 @@ Todas as specs estão em `specs/features/`:
 
 | ID | Título | Decisão | Justificativa |
 |----|--------|---------|---------------|
-| ADR-001 | Framework CV | YOLOv8n (Ultralytics) | Velocidade, familiaridade Fase 4, fácil fine-tuning |
+| ADR-001 | Framework CV | YOLOv11n (Ultralytics) | Velocidade, familiaridade Fase 4 (v8), fácil fine-tuning |
 | ADR-002 | STRIDE Engine | Regras YAML puras Python | Determinístico, rápido, sem dependência de LLM externo |
 | ADR-003 | API + Workers | FastAPI + Redis | Performance, escalabilidade, não bloqueia uploads |
 | ADR-004 | ONNX Runtime | Prioridade ONNX em produção | ~2x speedup vs PyTorch, menor memória |
