@@ -117,6 +117,31 @@ Então detecta pelo menos 80% dos componentes esperados
 E classifica corretamente os tipos (user, api, database, etc.)
 ```
 
+## Contratos de Saída
+
+Esta spec **produz** os seguintes artefatos consumidos por outras specs:
+
+| Artefato | Localização | Consumido por |
+|----------|------------|---------------|
+| `best.pt` (PyTorch) | `models/best.pt` | Spec 003 (treinamento, debugging) |
+| `best.onnx` (ONNX) | `models/best.onnx` | Spec 003 (inferência em produção) |
+| `data.yaml` | `dataset/data.yaml` | Spec 003 (taxonomia de classes) |
+
+### Exemplo de Mock para Spec 003
+
+Se o modelo ainda não está treinado, a Spec 003 pode usar um stub:
+
+```python
+# tests/mocks/stub_model.py
+class StubYOLOModel:
+    def predict(self, image_path, conf=0.25, iou=0.45):
+        return [StubResult(boxes=[{"cls": 0, "conf": 0.92, "xyxy": [10, 10, 100, 100]}])]
+
+class StubResult:
+    def __init__(self, boxes):
+        self.boxes = boxes
+```
+
 ## Dependências
 
 ### Bibliotecas

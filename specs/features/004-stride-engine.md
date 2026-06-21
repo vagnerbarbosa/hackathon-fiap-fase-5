@@ -141,6 +141,49 @@ Quando o motor é reiniciado
 Então reconhece o novo componente e aplica as ameaças configuradas
 ```
 
+## Contratos de Entrada/Saída
+
+### Entrada (consumido desta spec)
+| Contrato | Tipo | Vem de |
+|----------|------|--------|
+| `ArchitectureGraph` | Pydantic model | Spec 003 (Detecção) |
+| `DetectedComponent` | Pydantic model | Spec 003 (Detecção) |
+| `DataFlow` | Pydantic model | Spec 003 (Detecção) |
+
+### Saída (produzido por esta spec)
+| Contrato | Tipo | Vai para |
+|----------|------|----------|
+| `Threat` | Pydantic model | Spec 005 (Vulnerabilidades) + Spec 006 (Relatórios) |
+
+### Mock para Spec 005 (quando motor STRIDE ainda não está pronto)
+
+```python
+# tests/mocks/fake_threats.py
+from uuid import uuid4
+from domain.models import Threat, Severity
+
+fake_threats = [
+    Threat(
+        id=str(uuid4()),
+        category="T",  # Tampering
+        component_id="comp-db-1",
+        component_type="database",
+        description="Possibilidade de alteração não autorizada dos dados em repouso.",
+        severity=Severity.HIGH,
+        affected_data_flows=[],
+    ),
+    Threat(
+        id=str(uuid4()),
+        category="I",  # Information Disclosure
+        component_id="comp-db-1",
+        component_type="database",
+        description="Exfiltração de dados sensíveis sem criptografia.",
+        severity=Severity.CRITICAL,
+        affected_data_flows=[],
+    ),
+]
+```
+
 ## Dependências
 
 ### Internas
