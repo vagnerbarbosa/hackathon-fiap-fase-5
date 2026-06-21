@@ -95,9 +95,9 @@ Então o GitHub rejeita
 - **Spec 002** — depende do dataset e modelo existirem
 
 ### Bibliotecas Python (dev)
-- `pytest-cov==5.x`
-- `ruff==0.4.x`
-- `mypy==1.10.x`
+- `pytest-cov==6.x`
+- `ruff==0.9.x`
+- `mypy==1.15.x`
 
 ## Decisões Técnicas (ADR)
 
