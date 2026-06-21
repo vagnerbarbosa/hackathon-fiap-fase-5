@@ -102,12 +102,25 @@ Endpoint `GET /api/v1/threat-model/{job_id}/report?format=json` retorna:
 }
 ```
 
-### RF-03: Relatório HTML (Opcional)
+### RF-03: Relatório HTML (Exportação)
 - Template Jinja2 renderizado para HTML com CSS básico.
 - Responsivo (lê bem em mobile).
-- Botão de "Exportar PDF" (via browser print ou WeasyPrint).
+- Cores de severidade (vermelho=critical, laranja=high, amarelo=medium, verde=low).
 
-### RF-04: Score de Risco (Opcional)
+### RF-04: Relatório CSV (Exportação)
+- Endpoint `GET /api/v1/threat-model/{job_id}/report?format=csv` retorna CSV flat.
+- Colunas: `threat_id`, `category`, `component_type`, `severity`, `description`, `cwe_id`, `countermeasure_title`.
+- Útil para importar em planilhas (Excel, Google Sheets) ou SIEM.
+- Gerado com `pandas.DataFrame.to_csv()`.
+
+### RF-05: Relatório PDF (Exportação)
+- Endpoint `GET /api/v1/threat-model/{job_id}/report?format=pdf` retorna PDF.
+- Renderizado via **WeasyPrint** a partir do template HTML + CSS.
+- Inclui header com logo/nome do projeto e footer com número de página.
+- Ideal para compartilhamento executivo e entregáveis formais.
+- Fallback: se WeasyPrint falhar (fonts ausentes), retornar HTML com instrução "imprimir como PDF".
+
+### RF-06: Score de Risco
 Implementar cálculo de score agregado por componente:
 ```
 risk_score(component) = Σ(severity_weight[threat.severity])
@@ -121,16 +134,28 @@ severity_weight = {
 ```
 - Componentes com maior score são destacados no relatório.
 
-### RF-05: Persistência do Relatório
-- Relatório JSON salvo em arquivo (`reports/{job_id}.json`).
-- Relatório Markdown salvo em arquivo (`reports/{job_id}.md`).
-- Path armazenado no campo `output_report_path` do modelo `Job` (Spec 001).
+### RF-07: Endpoint Único de Relatório
+`GET /api/v1/threat-model/{job_id}/report?format={md|json|html|csv|pdf}`
+- `json` → resposta inline (Content-Type: application/json).
+- `md|html|csv|pdf` → download como attachment (Content-Disposition: attachment).
+- Formato default: `json`.
+
+### RF-08: Persistência dos Relatórios
+- Todos os formatos gerados são salvos em `reports/{job_id}.{ext}`:
+  - `.json` — estrutura completa da análise
+  - `.md` — relatório legível
+  - `.html` — versão renderizada
+  - `.csv` — dados tabulares
+  - `.pdf` — versão executiva
+- Path armazenado no campo `output_report_path` do modelo `Job` (Spec 001) como lista de arquivos.
 
 ## Requisitos Não-Funcionais (RNF)
 
 ### RNF-01: Performance
-- Geração de relatório Markdown: < 1 segundo.
-- Geração de relatório HTML: < 2 segundos.
+- Geração Markdown/JSON: < 500ms.
+- Geração HTML: < 1 segundo.
+- Geração CSV: < 500ms.
+- Geração PDF (WeasyPrint): < 5 segundos.
 
 ### RNF-02: Estética
 - Markdown deve ser renderizável corretamente no GitHub/GitLab.
@@ -159,11 +184,28 @@ Então recebe JSON válido com todos os campos documentados
 E o campo summary.total_threats condiz com o tamanho da lista
 ```
 
-### CA-03: Persistência
+### CA-03: Relatório CSV
+```gherkin
+Dado um Job concluído
+Quando acessa GET /api/v1/threat-model/{id}/report?format=csv
+Então recebe um arquivo CSV com colunas: threat_id, category, component_type, severity, description, cwe_id, countermeasure_title
+E o Content-Type é text/csv
+```
+
+### CA-04: Relatório PDF
+```gherkin
+Dado um Job concluído
+Quando acessa GET /api/v1/threat-model/{id}/report?format=pdf
+Então recebe um arquivo PDF binário
+E o PDF contém header com nome do projeto e footer com número de página
+E o Content-Type é application/pdf
+```
+
+### CA-05: Persistência
 ```gherkin
 Dado que um relatório foi gerado
-Então os arquivos .json e .md existem em reports/
-E o campo Job.output_report_path está atualizado
+Então os arquivos .json, .md, .html, .csv e .pdf existem em reports/
+E o campo Job.output_report_path contém a lista de todos os arquivos gerados
 ```
 
 ## Dependências
@@ -175,20 +217,23 @@ E o campo Job.output_report_path está atualizado
 - **Spec 005** — depende de EnrichedThreats para detalhamento
 
 ### Bibliotecas Python
-- `jinja2==3.1.x`
-- `markdown==3.6.x` (conversão MD -> HTML, opcional)
-- `weasyprint==61.x` (geração de PDF, opcional — pode ser complexo de instalar)
+- `jinja2==3.1.x` — templating Markdown/HTML
+- `markdown==3.6.x` — conversão MD → HTML (opcional)
+- `pandas==2.2.x` — geração de CSV via `DataFrame.to_csv()`
+- `weasyprint==61.x` — geração de PDF a partir de HTML+CSS (render engine visual)
 
 ## Decisões Técnicas (ADR)
 
-### ADR-001: Markdown como formato primário
-- **Contexto**: Precisamos de um formato legível, versionável, e fácil de gerar.
-- **Decisão**: Markdown é o formato primário. HTML é secundário. PDF é opcional.
+### ADR-001: Múltiplos formatos de saída
+- **Contexto**: Diferentes stakeholders precisam consumir o relatório de formas distintas: devs (Markdown), máquinas (JSON), executivos (PDF), analistas (CSV).
+- **Decisão**: Suportar 5 formatos: JSON (API default), Markdown (legível), HTML (renderizado), CSV (dados tabulares), PDF (executivo formal).
 - **Justificativa**:
-  - Markdown é universal (GitHub, GitLab, VS Code).
-  - Não requer dependências pesadas.
-  - Pode ser convertido para HTML/PDF por ferramentas externas se necessário.
-- **Consequências**: Menos "bonito" que um PDF gerado, mas mais funcional para devs.
+  - JSON: formato nativo da API, processável por outras ferramentas.
+  - Markdown: universal, versionável, leve.
+  - HTML: renderizado com CSS para apresentações.
+  - CSV: importável em Excel/SIEM para análise quantitativa.
+  - PDF: gerado via WeasyPrint a partir do HTML, ideal para entregáveis formais.
+- **Consequências**: Mais templates para manter, mas cobertura completa de casos de uso.
 
 ### ADR-002: Jinja2 para Templating
 - **Contexto**: Precisamos de templates parametrizáveis para relatórios.
@@ -203,12 +248,15 @@ E o campo Job.output_report_path está atualizado
 
 | Arquivo | Responsabilidade |
 |---------|------------------|
-| `src/services/report_generator.py` | `ReportGenerator` — orquestração |
-| `src/core/templates/stride_report.md.j2` | Template principal Markdown |
-| `src/core/templates/stride_report.html.j2` | Template HTML (opcional) |
-| `src/core/templates/partials/` | Partials reutilizáveis (matriz, sumário, etc.) |
-| `src/api/routes/report.py` | Endpoints de download do relatório |
-| `tests/unit/test_report_generator.py` | Testes de snapshot |
+| `src/services/report_generator.py` | `ReportGenerator` — orquestração de todos os formatos |
+| `src/services/csv_exporter.py` | Exportação de ameaças para CSV via pandas |
+| `src/services/pdf_exporter.py` | Renderização HTML → PDF via WeasyPrint |
+| `src/core/templates/stride_report.md.j2` | Template Markdown |
+| `src/core/templates/stride_report.html.j2` | Template HTML (base para PDF) |
+| `src/core/templates/stride_report.csv.j2` | Template CSV (header/row) |
+| `src/core/templates/partials/` | Partials reutilizáveis |
+| `src/api/routes/report.py` | Endpoint único `GET /report?format=` |
+| `tests/unit/test_report_generator.py` | Testes de snapshot para todos os formatos |
 
 ---
 
