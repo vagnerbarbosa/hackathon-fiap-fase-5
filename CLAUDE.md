@@ -32,10 +32,18 @@
 
 ### Evolução das Fases Anteriores
 
-- **Fase 3** ([vagnerbarbosa/tech-challenge-fase-3](https://github.com/vagnerbarbosa/tech-challenge-fase-3)): Assistente virtual médico com NLP, RAG, LangChain/LangGraph, fine-tuning de LLMs (LLaMA/Falcon) e anonimização LGPD.
-- **Fase 4** ([vagnerbarbosa/tech-challenge-fase-4](https://github.com/vagnerbarbosa/tech-challenge-fase-4)): Plataforma de análise de saúde da mulher com detecção precoce de riscos maternos e sinais de violência doméstica, utilizando FastAPI, Azure AI (Language, Speech, Content Safety), YOLOv8/OpenCV e conformidade LGPD/OWASP.
+| Fase | Repositório | Domínio | Tecnologias-Chave |
+|------|-------------|---------|-------------------|
+| **Fase 1** | [vagnerbarbosa/tech-challenge-fase-1](https://github.com/vagnerbarbosa/tech-challenge-fase-1) | ML Clássico para saúde | Python, scikit-learn, XGBoost, SMOTE, Pandas, SHAP. Predição de diabetes com KNN Imputer, Random Forest e comparativos de pipelines. |
+| **Fase 2** | [vagnerbarbosa/tech-challenge-fase-2](https://github.com/vagnerbarbosa/tech-challenge-fase-2) | Otimização + LLM para saúde | Algoritmos Genéticos (DEAP), Random Forest, Threshold Optimization, Gemini Flash (LLM) para interpretabilidade clínica. Aumento de sensibilidade via evolução de hiperparâmetros. |
+| **Fase 3** | [vagnerbarbosa/tech-challenge-fase-3](https://github.com/vagnerbarbosa/tech-challenge-fase-3) | Assistente Virtual Médico | NLP, RAG, LangChain/LangGraph, fine-tuning de LLMs (LLaMA/Falcon), PEFT/LoRA, SQLite, TF-IDF/SentenceTransformers, LGPD. |
+| **Fase 4** | [vagnerbarbosa/tech-challenge-fase-4](https://github.com/vagnerbarbosa/tech-challenge-fase-4) | Análise Multimodal de Saúde | FastAPI, Pydantic v2, Azure AI (Language, Speech, Content Safety), YOLOv8, OpenCV, PostgreSQL, Docker Compose, OWASP API Top 10, LGPD. |
+| **Fase 5** | [vagnerbarbosa/hackathon-fiap-fase-5](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5) | **Segurança de Software** | FastAPI, Pydantic v2, YOLOv8, PyTorch, OpenCV, STRIDE, PostgreSQL, Redis, Docker, NVD API. |
 
-**Fase 5 (Atual)** herda as melhores práticas das fases anteriores e aplica-as no domínio de segurança de software com threat modeling automatizado.
+**Fase 5 (Atual)** herda as melhores práticas de todas as fases anteriores:
+- **De Fase 1/2**: rigor científico em ML, validação de modelos, métricas de performance.
+- **De Fase 3**: pipelines de NLP, arquitetura modular, LGPD, documentação estruturada.
+- **De Fase 4**: FastAPI + Pydantic v2, Docker, YOLOv8/OpenCV, segurança OWASP, CI/CD.
 
 ---
 
@@ -231,9 +239,20 @@ Utilizados para:
 
 ## Links Úteis
 
-- [Repositório Fase 3](https://github.com/vagnerbarbosa/tech-challenge-fase-3)
-- [Repositório Fase 4](https://github.com/vagnerbarbosa/tech-challenge-fase-4)
+### Repositórios do Grupo 27 — FIAP/Alura
+
+- [Repositório Fase 1 — ML Clássico (Diabetes)](https://github.com/vagnerbarbosa/tech-challenge-fase-1)
+- [Repositório Fase 2 — Algoritmos Genéticos + LLM](https://github.com/vagnerbarbosa/tech-challenge-fase-2)
+- [Repositório Fase 3 — Assistente Virtual Médico](https://github.com/vagnerbarbosa/tech-challenge-fase-3)
+- [Repositório Fase 4 — Análise Multimodal de Saúde](https://github.com/vagnerbarbosa/tech-challenge-fase-4)
+- [Repositório Fase 5 (Atual) — Modelagem de Ameaças STRIDE](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5)
+
+### Referências de Segurança e Compliance
+
 - [OWASP API Security Top 10](https://owasp.org/www-project-api-security/)
+- [OWASP Cheat Sheet Series](https://cheatsheetseries.owasp.org/)
+- [NVD — National Vulnerability Database](https://nvd.nist.gov/)
+- [STRIDE Threat Modeling — Microsoft](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
 - [LGPD - Lei 13.709/2018](http://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm)
 
 ---
