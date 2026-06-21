@@ -1,1 +1,190 @@
-# Hackathon FIAP Fase 5 - Modelagem de Ameaças com IA (STRIDE)
+# 🛡️🔍 Hackathon FIAP Fase 5 - Modelagem de Ameaças com IA (STRIDE)
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.4+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-111F68?style=flat-square)](https://ultralytics.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Spec Kit](https://img.shields.io/badge/Spec%20Kit-SDD-2ea44f?style=flat-square)](https://github.com/github/spec-kit)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-ff6b35?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/code)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+
+**Sistema automatizado de modelagem de ameaças STRIDE a partir de diagramas de arquitetura de software usando Visão Computacional e IA.**
+
+> **📅 Atualizado**: 2026-06-21 | **Versão**: 0.1.0 | **Status**: Desenvolvimento MVP
+
+---
+
+## 🎯 Objetivo
+
+Sistema para **identificação automática de componentes de arquitetura de software em imagens** e **modelagem de ameaças baseada na metodologia STRIDE** (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege).
+
+O sistema recebe um diagrama de arquitetura, detecta componentes (usuários, APIs, bancos de dados, filas, etc.) via YOLOv8, aplica STRIDE programaticamente, busca vulnerabilidades conhecidas (CVE/CWE) e gera um relatório estruturado com contramedidas.
+
+### Pipeline da Solução
+
+```
+Imagem de Arquitetura
+        |
+        v
+[Upload + Pré-processamento]
+        |
+        v
+[Detecção de Componentes] → YOLOv8
+        |
+        v
+[Análise STRIDE] → S, T, R, I, D, E
+        |
+        v
+[Busca de Vulnerabilidades] → CVE / CWE
+        |
+        v
+[Geração de Relatório] → Markdown / JSON / HTML
+```
+
+---
+
+## 🚀 Deploy
+
+[![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8000/health)
+
+### Ambientes
+
+| Ambiente | URL | Status |
+|----------|-----|--------|
+| Local | `http://localhost:8000` | 🟢 Desenvolvimento |
+| Healthcheck | `http://localhost:8000/health` | 🟢 Online |
+| Swagger UI | `http://localhost:8000/docs` | 🟢 Documentação API |
+
+---
+
+## 🛠️ Tecnologias
+
+| Camada | Tecnologia | Propósito |
+|--------|-----------|-----------|
+| 🌐 **API** | FastAPI + Pydantic v2 | Endpoints REST para upload e relatórios |
+| 🧠 **Detecção** | YOLOv8 (Ultralytics) | Detecção de componentes em diagramas |
+| 🔥 **Framework IA** | PyTorch + torchvision | Treinamento supervisionado do modelo |
+| 🎨 **CV** | OpenCV | Pré-processamento de imagens |
+| 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
+| ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
+| 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+├── src/
+│   ├── api/              # Rotas FastAPI, controllers, DTOs
+│   ├── core/             # Configurações, segurança, logging
+│   ├── services/         # Casos de uso (detecção, STRIDE, relatórios)
+│   ├── infrastructure/   # Adaptadores (DB, ML, cache)
+│   ├── models/           # Entidades de domínio (ORM)
+│   └── workers/          # Processamento assíncrono
+├── tests/
+│   ├── unit/             # Testes isolados
+│   ├── integration/      # Testes de integração
+│   └── e2e/              # Testes end-to-end
+├── specs/                # Especificações SpeckIt / SDD
+├── docs/                 # Documentação
+├── scripts/              # Scripts auxiliares
+├── notebooks/            # Notebooks de treinamento
+├── dataset/              # Dataset de diagramas (YOLO)
+├── config/               # Mapeamentos YAML (STRIDE, vulnerabilidades)
+├── docker-compose.yml
+├── Dockerfile
+├── pyproject.toml
+└── README.md
+```
+
+---
+
+## 🚦 Como Executar
+
+### Pré-requisitos
+
+- Docker + Docker Compose
+- Git
+- 8GB+ RAM (16GB recomendado para treinamento)
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/vagnerbarbosa/hackathon-fiap-fase-5.git
+cd hackathon-fiap-fase-5
+```
+
+### 2. Inicie com Docker Compose
+
+```bash
+cp .env.example .env
+docker-compose up --build
+```
+
+### 3. Acesse a API
+
+- **Swagger UI**: http://localhost:8000/docs
+- **Healthcheck**: http://localhost:8000/health
+
+---
+
+## 📊 Metodologia STRIDE
+
+| Categoria | Ameaça | Propriedade Violada |
+|-----------|--------|---------------------|
+| **S** | Spoofing | Autenticação |
+| **T** | Tampering | Integridade |
+| **R** | Repudiation | Não-repudiação |
+| **I** | Information Disclosure | Confidencialidade |
+| **D** | Denial of Service | Disponibilidade |
+| **E** | Elevation of Privilege | Autorização |
+
+---
+
+## 📋 Checklist de Desenvolvimento
+
+- [x] Definição do tema e regras do hackathon
+- [x] Especificações SpeckIt (8 features)
+- [x] SDD consolidado
+- [ ] Scaffolding FastAPI + Docker
+- [ ] Dataset de diagramas sintéticos
+- [ ] Treinamento YOLOv8n
+- [ ] Módulo de detecção de componentes
+- [ ] Motor STRIDE
+- [ ] Busca de vulnerabilidades e contramedidas
+- [ ] Gerador de relatórios
+- [ ] CI/CD GitHub Actions
+- [ ] Vídeo de demonstração (15 min)
+
+---
+
+## 🤝 Contribuição
+
+Este projeto segue o fluxo de **Pull Requests** rigoroso:
+
+1. Crie uma branch a partir da `main`: `git checkout -b feature/nome-da-spec`
+2. Faça seus commits seguindo [Conventional Commits](https://www.conventionalcommits.org/)
+3. Abra um Pull Request para `main`
+4. Aguarde review e CI passando antes do merge
+
+> ⚠️ **Nunca commitar diretamente na `main`.**
+
+---
+
+## 📄 Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
+
+Copyright (c) 2026 Grupo 27 Hackathon - FIAP
+
+---
+
+## 🔒 Segurança
+
+Para reportar vulnerabilidades, consulte nossa [Política de Segurança](SECURITY.md).
+
+---
+
+> **Desenvolvido para o Hackathon FIAP Fase 5 — FIAP Software Security**
