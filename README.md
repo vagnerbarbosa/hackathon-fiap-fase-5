@@ -177,7 +177,7 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
 
-Copyright (c) 2026 Grupo 27 Tech Challenge - FIAP/Alura
+Copyright (c) 2026 Grupo 27 Hackaton - FIAP
 
 ---
 
