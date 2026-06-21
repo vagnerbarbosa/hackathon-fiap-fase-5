@@ -25,8 +25,8 @@ Every code change MUST query the Context7 MCP for current docs, best practices, 
 ## Tech Stack
 
 - Python 3.11+, FastAPI + Pydantic v2, SQLAlchemy 2.0 + asyncpg + Alembic
-- OpenCV + YOLOv8 (Ultralytics) + PyTorch
-- PostgreSQL 15, Redis 7
+- OpenCV + YOLOv11 (Ultralytics) + PyTorch
+- PostgreSQL 17, Redis 8
 - Docker + Docker Compose
 - pytest + httpx (async tests)
 - ruff, black, mypy

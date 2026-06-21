@@ -185,9 +185,9 @@ Todas as specs estão em `specs/features/`:
 | ORM | SQLAlchemy | 2.0.x |
 | DB Driver | asyncpg | 0.29.x |
 | Migrations | Alembic | 1.13.x |
-| Cache / Queue | Redis | 7.x |
-| Computer Vision | OpenCV + YOLOv8 (Ultralytics) | 4.10.x / 8.3.x |
-| Deep Learning | PyTorch + torchvision | 2.4.x |
+| Cache / Queue | Redis | 8.x |
+| Computer Vision | OpenCV + YOLOv11 (Ultralytics) | 4.13.x / 8.3.x |
+| Deep Learning | PyTorch + torchvision | 2.11.x |
 | Templating | Jinja2 | 3.1.x |
 | Testing | pytest + httpx | 8.x / 0.27.x |
 | Lint | ruff + black + mypy | 0.4.x / 1.10.x |

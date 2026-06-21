@@ -11,7 +11,7 @@ O core do MVP é interpretar automaticamente um diagrama de arquitetura de softw
 Implementar um serviço `ComponentDetectionService` que:
 1. Recebe um path de imagem (local ou remoto).
 2. Pré-processa a imagem para otimizar a detecção.
-3. Executa inferência com o modelo YOLOv8n treinado (Spec 002).
+3. Executa inferência com o modelo YOLOv11n (ou YOLOv8n fallback) treinado (Spec 002).
 4. Retorna uma lista estruturada de componentes detectados: tipo, bounding box, confiança.
 5. Infere fluxos de dados (Data Flows) e trust boundaries com base na posição espacial dos componentes.
 
@@ -136,10 +136,10 @@ Então retorna erro NO_COMPONENTS_DETECTED com mensagem amigável
 - **Spec 002** — depende do modelo treinado (`best.pt` / `best.onnx`)
 
 ### Bibliotecas Python
-- `ultralytics==8.3.x`
-- `opencv-python==4.10.x`
-- `torch==2.4.x` (se usar .pt) ou `onnxruntime` (se usar .onnx)
-- `redis==5.0.x` (para cache)
+- `ultralytics>=8.3.0` (suporta YOLOv11)
+- `opencv-python==4.13.x`
+- `torch==2.11.x` (se usar .pt) ou `onnxruntime` (se usar .onnx)
+- `redis>=5.0.0` (para cache)
 
 ## Decisões Técnicas (ADR)
 

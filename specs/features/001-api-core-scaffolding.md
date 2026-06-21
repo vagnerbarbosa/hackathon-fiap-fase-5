@@ -125,8 +125,8 @@ Criar estrutura padrão do projeto:
 - `Dockerfile` multi-stage (builder + runtime) para Python 3.11 slim.
 - `docker-compose.yml` com serviços:
   - `api`: aplicação FastAPI (porta 8000)
-  - `db`: PostgreSQL 15 (volume persistente)
-  - `redis`: Redis 7 (para cache/fila — opcional mas recomendado)
+  - `db`: PostgreSQL 17 (volume persistente)
+  - `redis`: Redis 8 (para cache/fila — opcional mas recomendado)
 - Healthcheck no container `api` via `curl -f http://localhost:8000/health`.
 - `.env.example` com valores padrão para desenvolvimento local.
 
@@ -219,7 +219,7 @@ E o coverage report mostra ≥ 80% para src/api/ e src/core/
 
 ### ADR-002: PostgreSQL + Alembic
 - **Contexto**: Precisamos persistir jobs de análise e relatórios.
-- **Decisão**: PostgreSQL 15 com Alembic para migrações.
+- **Decisão**: PostgreSQL 17 com Alembic para migrações.
 - **Justificativa**: Robustez, suporte a JSONB (para metadados flexíveis), ACID. Alembic é padrão da comunidade SQLAlchemy.
 - **Consequências**: Adiciona complexidade de infraestrutura (container DB). SQLite não é suficiente para concorrência real.
 
