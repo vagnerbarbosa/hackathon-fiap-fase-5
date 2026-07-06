@@ -6,11 +6,14 @@ Este documento define como os 4 membros da equipe trabalham em paralelo nas 8 sp
 
 ---
 
-## 🎯 Spec 000 — O Ponto de Partida
+## 🎯 Spec 000 — ✅ CONCLUÍDA
 
-**Antes de tudo**: a [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) deve ser mergeada em `main`. Ela define os **models Pydantic** (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) que são a "lingua franca" entre todas as specs.
+**Status**: ✅ **Implementada e mergeada em `main`**  
+**Commit**: `20027e8` — feat: implementa Spec 000 — Contratos de Domínio
 
-Sem a Spec 000, ninguém consegue trabalhar em paralelo. É o alicerce.
+A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi **concluída** e está disponível em `main`. Todos os **models Pydantic** (`ArchitectureGraph`, `Threat`, `EnrichedThreat`, `Job`) estão implementados em `src/domain/models.py`.
+
+> 🎉 **Time liberado para trabalhar em paralelo!** Use os mocks em `tests/mocks/` quando necessário.
 
 | Modelo | Onde está definido | Usado por |
 |--------|-------------------|-----------|
@@ -36,10 +39,13 @@ Sem a Spec 000, ninguém consegue trabalhar em paralelo. É o alicerce.
 
 ## 🔄 Ordem de Prioridade
 
-1. **Primeiro (dia 0)**: Vagner mergeia a **[Spec 000](../features/000-domain-contracts.md)** em `main`. Sem os contratos de domínio, ninguém consegue trabalhar em paralelo.
-2. **Segundo**: Todos criam branches `feature/00X-nome-da-spec` a partir da `main` atualizada.
-3. **Terceiro**: Cada um implementa sua spec usando **mocks/stubs** para as dependências ainda não prontas.
-4. **Quarto**: Pull Requests para `main`, review cruzado, CI passando, merge.
+### ✅ Fase 1 — Concluída
+- [x] **Spec 000** — Contratos de Domínio implementados e mergeados
+
+### 🚀 Fase 2 — Em Execução (trabalho em paralelo)
+1. **Todos criam branches** `feature/00X-nome-da-spec` a partir da `main` atualizada
+2. **Cada um implementa sua spec** usando **mocks/stubs** para as dependências ainda não prontas
+3. **Pull Requests para `main`**, review cruzado, CI passando, merge
 
 ---
 

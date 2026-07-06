@@ -58,10 +58,17 @@ Imagem de Arquitetura
 
 Todas as specs estão em `specs/features/`:
 
-| # | Arquivo | Título | Responsabilidade |
-|---|---------|--------|------------------|
-| **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** |
-| 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP |
+| # | Arquivo | Título | Responsabilidade | Status |
+|---|---------|--------|------------------|--------|
+| **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** | ✅ **Concluída** |
+| 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP | ⏳ Pendente |
+| 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo | ⏳ Pendente |
+| 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial | ⏳ Pendente |
+| 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE | ⏳ Pendente |
+| 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP | ⏳ Pendente |
+| 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
+| 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build | ⏳ Pendente |
+| 008 | `008-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
 | 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial |
 | 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE |
