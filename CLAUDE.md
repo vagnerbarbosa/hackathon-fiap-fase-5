@@ -1,6 +1,6 @@
 # Hackathon FIAP Fase 5 — Modelagem de Ameaças com IA (STRIDE)
 
-See @specs/sdd.md for full Software Design Document and @specs/features/ for detailed specs.
+See @docs/sdd.md for full Software Design Document and @specs/features/ for detailed specs.
 
 ---
 
