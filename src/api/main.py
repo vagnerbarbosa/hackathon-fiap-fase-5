@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.api.routes import health, threat_model
 from src.core.config import settings
 from src.core.logging import get_logger, setup_logging
+from src.core.security import setup_security
 from src.infrastructure.database import close_engine
 
 logger = get_logger(__name__)
@@ -43,6 +44,9 @@ app = FastAPI(
     docs_url="/docs" if settings.debug else None,
     redoc_url="/redoc" if settings.debug else None,
 )
+
+# Setup security middleware (must be before CORS)
+setup_security(app)
 
 # CORS middleware
 if settings.cors_origins:
