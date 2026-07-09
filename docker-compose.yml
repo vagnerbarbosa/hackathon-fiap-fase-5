@@ -13,6 +13,7 @@ services:
       - LOG_LEVEL=INFO
       - API_RATE_LIMIT=60
       - API_KEY=${API_KEY:-dev-api-key-change-in-production}
+      - DEBUG=true
     volumes:
       - ./storage:/app/storage
       - ./logs:/app/logs
