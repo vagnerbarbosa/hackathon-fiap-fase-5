@@ -107,6 +107,14 @@ Criar estrutura padrão do projeto:
 - **CORS**: configurável via env, default `allow_origins=[]`.
 - **Validação de uploads**: magic bytes para PNG/JPG (herdado Fase 4).
 - **Sanitização de logs**: nunca logar paths absolutos sensíveis ou tokens.
+- **Fallback Rate Limiting**: Se Redis indisponível, usar in-memory como fallback com warning no log.
+
+### RF-05a: Autenticação API Key (MVP)
+- **Header**: `X-API-Key` para autenticação simples.
+- **Configuração**: `API_KEY` definida em variável de ambiente.
+- **Validação**: Middleware valida API Key em todos os endpoints exceto `/health` e `/docs`.
+- **Erro**: Retorna 401 Unauthorized se API Key ausente ou inválida.
+- **Nota**: Para MVP, autenticação simples. Futuro: OAuth2/JWT.
 
 ### RF-06: Healthcheck
 - Endpoint `GET /health` retorna:
