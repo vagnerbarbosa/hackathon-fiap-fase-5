@@ -59,17 +59,12 @@ class Settings(BaseSettings):
         description="CORS allowed origins (comma-separated)",
     )
 
-    @classmethod
-    def settings_customise_sources(cls, settings_cls, init_settings, env_settings, file_secret_settings):
-        """Customize settings sources to handle cors_origins as comma-separated string."""
-        return env_settings, init_settings, file_secret_settings
-
     def __init__(self, **kwargs):
+        # Parse CORS origins from comma-separated string before validation
+        if "cors_origins" in kwargs and isinstance(kwargs["cors_origins"], str):
+            origins = kwargs["cors_origins"]
+            kwargs["cors_origins"] = [o.strip() for o in origins.split(",") if o.strip()]
         super().__init__(**kwargs)
-        # Parse CORS origins from comma-separated string if needed
-        if isinstance(self.cors_origins, str):
-            origins = self.cors_origins
-            self.cors_origins = [o.strip() for o in origins.split(",") if o.strip()]
 
 
 @lru_cache

@@ -36,9 +36,14 @@ class JSONFormatter(logging.Formatter):
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
 
-        # Add extra fields from record
-        if hasattr(record, "extra_fields"):
-            log_data.update(record.extra_fields)
+        # Add extra fields from record (passed via extra= in logging call)
+        # Standard logging extras are stored in record.__dict__
+        standard_keys = {"name", "msg", "args", "levelname", "levelno", "pathname", "filename",
+                        "module", "exc_info", "exc_text", "stack_info", "lineno", "funcName",
+                        "created", "msecs", "relativeCreated", "thread", "threadName",
+                        "processName", "process", "request_id", "message", "asctime", "exception"}
+        extra_fields = {k: v for k, v in record.__dict__.items() if k not in standard_keys}
+        log_data.update(extra_fields)
 
         return json.dumps(log_data, default=str)
 

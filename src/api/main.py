@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger.info(
         "Starting up",
-        extra_fields={
+        extra={
             "app_name": settings.app_name,
             "version": settings.app_version,
             "debug": settings.debug,
