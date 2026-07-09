@@ -116,17 +116,48 @@ git clone https://github.com/vagnerbarbosa/hackathon-fiap-fase-5.git
 cd hackathon-fiap-fase-5
 ```
 
-### 2. Inicie com Docker Compose
+### 2. Configure o ambiente
 
 ```bash
 cp .env.example .env
+# Edite .env e defina DATABASE_URL, REDIS_URL, API_KEY
+```
+
+### 3. Inicie com Docker Compose
+
+```bash
 docker-compose up --build
 ```
 
-### 3. Acesse a API
+### 4. Execute migrações (primeira vez)
 
-- **Swagger UI**: http://localhost:8000/docs
-- **Healthcheck**: http://localhost:8000/health
+```bash
+docker-compose exec api alembic upgrade head
+```
+
+### 5. Teste a API
+
+```bash
+# Health check (público)
+curl http://localhost:8000/health
+
+# API protegida (requer API Key)
+curl -H "X-API-Key: sua-api-key" \
+  http://localhost:8000/api/v1/threat-model/analyze
+```
+
+### Endpoints disponíveis
+
+| Endpoint | Método | Auth | Descrição |
+|----------|--------|------|-----------|
+| `/health` | GET | ❌ | Health check com status do DB |
+| `/docs` | GET | ❌ | Swagger UI (documentação) |
+| `/version` | GET | ❌ | Versão da API |
+| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise (placeholder) |
+| `/api/v1/threat-model/{id}` | GET | ✅ | Status da análise (placeholder) |
+| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório (placeholder) |
+
+> **Nota**: Autenticação via header `X-API-Key`. Defina em `.env`.
 
 ---
 
@@ -148,15 +179,14 @@ docker-compose up --build
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
-- [ ] Scaffolding FastAPI + Docker
-- [ ] Dataset de diagramas sintéticos
-- [ ] Treinamento YOLOv11n
-- [ ] Módulo de detecção de componentes
-- [ ] Motor STRIDE
-- [ ] Busca de vulnerabilidades e contramedidas
-- [ ] Gerador de relatórios
-- [ ] CI/CD GitHub Actions
-- [ ] Vídeo de demonstração (15 min)
+- [x] **Spec 001**: API Core + Scaffolding (✅ Concluída)
+- [ ] Spec 002: Dataset + Treinamento YOLOv11n
+- [ ] Spec 003: Módulo de detecção de componentes
+- [ ] Spec 004: Motor STRIDE
+- [ ] Spec 005: Busca de vulnerabilidades e contramedidas
+- [ ] Spec 006: Gerador de relatórios
+- [ ] Spec 007: CI/CD GitHub Actions
+- [ ] Spec 008: Vídeo de demonstração (15 min)
 
 ---
 
