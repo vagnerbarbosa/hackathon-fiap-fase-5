@@ -61,14 +61,27 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Strict-Transport-Security"] = (
             "max-age=31536000; includeSubDomains"
         )
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "script-src 'self'; "
-            "style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data:; "
-            "font-src 'self'; "
-            "connect-src 'self'"
-        )
+
+        # Content-Security-Policy: allow CDN resources in debug mode for Swagger
+        if settings.debug:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net unpkg.com; "
+                "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net; "
+                "img-src 'self' data: cdn.jsdelivr.net fastapi.tiangolo.com; "
+                "font-src 'self' cdn.jsdelivr.net; "
+                "connect-src 'self'"
+            )
+        else:
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data:; "
+                "font-src 'self'; "
+                "connect-src 'self'"
+            )
+
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Permissions-Policy"] = (
             "geolocation=(), microphone=(), camera=()"
@@ -223,7 +236,7 @@ def validate_upload_file(content: bytes, filename: str) -> tuple[str, str]:
 
     logger.info(
         "File validated",
-        extra_fields={
+        extra={
             "original_filename": filename,
             "safe_filename": safe_filename,
             "mime_type": mime_type,
