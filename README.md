@@ -123,16 +123,52 @@ cp .env.example .env
 # Edite .env e defina DATABASE_URL, REDIS_URL, API_KEY
 ```
 
-### 3. Inicie com Docker Compose
+### 3. Inicie a API (escolha seu método)
 
+#### 🚀 Opção 1: Script Automático (Recomendado)
+
+**Linux/macOS:**
 ```bash
-docker-compose up --build
+./scripts/start-api.sh
 ```
 
-### 4. Execute migrações (primeira vez)
+**Windows (PowerShell):**
+```powershell
+.\scripts\start-api.ps1
+```
+
+**Python (Cross-platform):**
+```bash
+# Funciona em qualquer sistema com Python 3
+python scripts/start-api.py
+```
+
+**Makefile (Linux/macOS):**
+```bash
+make start
+```
+
+#### 🐳 Opção 2: Docker Compose Manual
 
 ```bash
+# Build e start
+docker-compose up --build -d
+
+# Executar migrações (primeira vez)
 docker-compose exec api alembic upgrade head
+```
+
+### Opções do Script
+
+```bash
+# Modo rápido (sem rebuild)
+./scripts/start-api.sh --no-build
+
+# Modo foreground (ver logs em tempo real)
+./scripts/start-api.sh --foreground
+
+# Sem migrações automáticas
+./scripts/start-api.sh --no-migrations
 ```
 
 ### 5. Teste a API
@@ -158,6 +194,44 @@ curl -H "X-API-Key: sua-api-key" \
 | `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório (placeholder) |
 
 > **Nota**: Autenticação via header `X-API-Key`. Defina em `.env`.
+
+---
+
+### 🛠️ Comandos Úteis (Makefile)
+
+Disponíveis em Linux/macOS (requer `make`):
+
+```bash
+# Iniciar a API
+make start
+
+# Início rápido (sem rebuild)
+make start-quick
+
+# Ver logs em tempo real
+make logs
+
+# Parar a API
+make stop
+
+# Executar migrações
+make migrate
+
+# Criar nova migração
+make migrate-create msg="descrição"
+
+# Executar testes
+make test
+
+# Testes com cobertura
+make test-cov
+
+# Limpar containers e arquivos temporários
+make clean
+
+# Ver todos os comandos
+make help
+```
 
 ---
 
