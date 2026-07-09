@@ -83,6 +83,10 @@ Ajustes finais e configurações de qualidade.
 - [x] T031 Create placeholder `.github/workflows/ci.yml` for Spec 007
 - [x] T032 Add healthcheck to Dockerfile with curl
 - [x] T033 Update root `README.md` with setup instructions for this spec
+- [x] T034 [P] Create `scripts/start-api.sh` (Linux/macOS) with Docker Compose automation, health checks, migration support
+- [x] T035 [P] Create `scripts/start-api.ps1` (Windows PowerShell) equivalent to start-api.sh
+- [x] T036 [P] Create `scripts/start-api.py` (Python cross-platform fallback) for maximum compatibility
+- [x] T037 Create `Makefile` with convenience commands (start, stop, logs, migrate, test)
 
 ---
 
@@ -96,11 +100,11 @@ Ajustes finais e configurações de qualidade.
 | Phase 4: API Core | 5 | 1 | FastAPI app, routes |
 | Phase 5: Security | 3 | 0 | OWASP, rate limiting |
 | Phase 6: Tests | 5 | 2 | pytest, fixtures |
-| Phase 7: Polish | 5 | 0 | Scripts, docs |
+| Phase 7: Polish | 9 | 4 | Scripts, docs |
 
-**Total Tasks**: 32
-**Parallel Tasks**: 10 (marked with [P])
-**Sequential Tasks**: 22
+**Total Tasks**: 37
+**Parallel Tasks**: 14 (marked with [P])
+**Sequential Tasks**: 23
 
 ---
 
