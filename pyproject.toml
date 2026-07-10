@@ -23,6 +23,9 @@ python-multipart = "^0.0.9"
 orjson = "^3.10.0"
 redis = "^5.2.0"
 python-magic = "^0.4.27"
+numpy = "^2.0.0"
+opencv-python = "^4.10.0"
+onnxruntime = "^1.18.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
