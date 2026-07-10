@@ -2,7 +2,7 @@
 
 ## 📋 Sumário
 
-Este documento define como os 4 membros da equipe trabalham em paralelo nas 8 specs do projeto, respeitando as dependências do SDD e minimizando bloqueios.
+Este documento define como os 4 membros da equipe trabalham em paralelo nas 9 specs do projeto, respeitando as dependências do SDD e minimizando bloqueios.
 
 ---
 
@@ -33,7 +33,8 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 | **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **000** (Contratos) + **001** (API Core) + **003** (Detecção) | Contratos de domínio, scaffolding, integração CV→API |
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
-| **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **008** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
+| **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
+| **A Definir** | — | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
 
 ---
 
@@ -150,7 +151,7 @@ git push origin feature/004-stride-engine
 ┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
 │  Vagner │────→│  Lucas  │     │ Adriel  │────→│ Leticia │
 │  (001)  │     │  (002)  │     │ (004)   │     │ (006)   │
-│  (003)  │←────│         │     │ (005)   │     │ (008)   │
+│  (003)  │←────│  (007)  │     │ (005)   │     │ (009)   │
 └────┬────┘     └────┬────┘     └────┬────┘     └────┬────┘
      │               │               │               │
      └───────────────┴───────────────┴───────────────┘
@@ -181,7 +182,8 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
-| **Leticia** | 008 Vídeo | ⏳ Bloqueada | Aguardar integração |
+| **A Definir** | 008 Frontend | ⏳ Bloqueada | Aguardar API + Reports |
+| **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
 ---
 
@@ -294,7 +296,7 @@ enriched = [service.enrich(t) for t in fake_threats]  # ✅ Funciona sem Spec 00
 
 ---
 
-### Leticia — Spec 006 (Relatórios) + 008 (Vídeo)
+### Leticia — Spec 006 (Relatórios) + 009 (Vídeo)
 
 **Spec 006**: Usar múltiplos mocks para desenvolver gerador de relatórios:
 
@@ -313,7 +315,28 @@ gen = ReportGenerator()
 report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/005
 ```
 
-**Spec 008**: ⏳ **AGUARDAR**. Só comece quando todas as specs 001-006 estiverem integradas.
+**Spec 009**: ⏳ **AGUARDAR**. Só comece quando todas as specs 001-008 estiverem integradas.
+
+---
+
+### A Definir — Spec 008 (Frontend React)
+
+**Spec 008**: ⏳ **AGUARDAR**. Desenvolver interface React quando Spec 001 (API) e Spec 006 (Reports) estiverem prontos.
+
+```typescript
+// Interface principal
+interface ReportViewerProps {
+  jobId: string;
+  report: ReportData;
+  onExport: (format: ExportFormat) => void;
+}
+
+// Componentes principais
+- UploadZone: Drag-drop de imagens
+- LoadingState: Polling de status do job
+- ReportViewer: Visualização do relatório STRIDE
+- ExportButtons: JSON, Markdown, HTML, PDF, CSV
+```
 
 ---
 
@@ -338,11 +361,17 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 - [ ] `fake_graph` funciona
 - [ ] `data/cwes.yaml` criado
 
-### Leticia (006 + 008)
+### Leticia (006 + 009)
 - [ ] Branch `feature/006-report-generator` criada
 - [ ] Jinja2 instalado
 - [ ] Templates iniciais criados
 - [ ] Todos os mocks importam corretamente
+
+### A Definir (008)
+- [ ] Branch `feature/008-frontend-react` criada
+- [ ] Vite + React + TypeScript configurado
+- [ ] Tailwind CSS instalado
+- [ ] React Query configurado
 ```
 
 ---
@@ -378,4 +407,4 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-06*
+*Documento atualizado: 2026-07-09*
