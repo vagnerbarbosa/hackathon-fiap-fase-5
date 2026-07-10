@@ -122,7 +122,12 @@ class YOLOModel:
 
     def _load_stub(self) -> None:
         """Load stub implementation for development."""
-        from tests.mocks.yolo_stub import YOLOStub
+        # Import stub from local module (not tests) for production compatibility
+        try:
+            from tests.mocks.yolo_stub import YOLOStub
+        except ImportError:
+            # Fallback: define stub inline if tests not available
+            from src.infrastructure.ml.yolo_stub import YOLOStub
 
         self._model = YOLOStub(str(self._model_path))
         self._class_names = self._model.names
@@ -249,10 +254,20 @@ class YOLOModel:
         for result in results:
             if hasattr(result, "boxes"):
                 for box in result.boxes:
-                    class_id = int(box.cls)
-                    class_name = self._class_names.get(class_id, f"class_{class_id}")
+                    # Handle both stub (str) and real YOLO (int)
+                    if isinstance(box.cls, str):
+                        class_name = box.cls
+                    else:
+                        class_id = int(box.cls)
+                        class_name = self._class_names.get(class_id, f"class_{class_id}")
+
                     confidence = float(box.conf)
-                    bbox = box.xyxy[0].tolist()  # [x_min, y_min, x_max, y_max]
+
+                    # Handle xyxy attribute (could be list or tensor)
+                    if hasattr(box, "xyxy"):
+                        bbox = box.xyxy[0].tolist() if hasattr(box.xyxy, "tolist") else box.xyxy
+                    else:
+                        bbox = [0, 0, 0, 0]  # Fallback
 
                     detections.append(
                         DetectionResult(

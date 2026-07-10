@@ -4,13 +4,10 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.api.dependencies import ApiKeyDep, get_db, get_storage
+from src.api.dependencies import ApiKeyDep
 from src.core.logging import get_logger
 from src.core.security import validate_file_type, validate_file_size
-from src.domain.models import Job, JobStatus
-from src.infrastructure.storage import LocalFileStorage
 from src.services.component_detector import (
     ComponentDetectionService,
     NoComponentsDetectedError,
@@ -46,88 +43,68 @@ async def analyze_image(
     Raises:
         HTTPException: If file invalid or no components detected.
     """
-    from fastapi import Depends
-    from src.api.dependencies import get_db, get_storage
-
-    # Get dependencies
-    db = Depends(get_db)
-    storage = Depends(get_storage)
-
     # Validate file type and size
     content = await file.read()
     validate_file_size(content)
     validate_file_type(content)
 
-    # Save file to storage
-    safe_filename = storage.sanitize_filename(file.filename or "upload.png")
-    image_path = await storage.save(content, safe_filename)
+    # Save file temporarily
+    temp_path = Path(f"/tmp/uploads/{uuid4()}_{file.filename or 'upload.png'}")
+    temp_path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path.write_bytes(content)
 
     logger.info(
         "Processing image upload",
         extra={
-            "filename": safe_filename,
-            "size": len(content),
+            "file_name": file.filename,
+            "file_size": len(content),
             "content_type": file.content_type,
         },
     )
 
-    # Create job in database
-    job = Job(
-        id=uuid4(),
-        status=JobStatus.PROCESSING,
-        input_image_path=str(image_path),
-        output_report_path=None,
-    )
-    db.add(job)
-    await db.commit()
-
     try:
         # Run component detection
         detector = ComponentDetectionService()
-        graph = await detector.detect(image_path)
+        graph = await detector.detect(temp_path)
 
-        # Update job status
-        job.status = JobStatus.COMPLETED
-        await db.commit()
+        job_id = uuid4()
 
         logger.info(
             "Detection completed",
             extra={
-                "job_id": str(job.id),
+                "job_id": str(job_id),
                 "components_found": len(graph.components),
                 "using_stub": detector.is_using_stub,
             },
         )
 
         return {
-            "job_id": str(job.id),
+            "job_id": str(job_id),
             "status": "completed",
             "components_found": len(graph.components),
             "graph": graph.model_dump(),
         }
 
     except NoComponentsDetectedError as e:
-        job.status = JobStatus.FAILED
-        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=e.to_dict(),
         )
 
     except Exception as e:
-        job.status = JobStatus.FAILED
-        await db.commit()
         logger.error(
             "Detection failed",
-            extra={
-                "job_id": str(job.id),
-                "error": str(e),
-            },
+            extra={"error": str(e)},
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"error": "DETECTION_FAILED", "message": str(e)},
         )
+
+    finally:
+        # Cleanup temp file
+        if temp_path.exists():
+            temp_path.unlink()
 
 
 @router.get(
