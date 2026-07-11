@@ -178,7 +178,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Vagner** | 001 API Core | ✅ **CONCLUÍDA** | — |
 | **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
 | **Vagner** | 003 Detecção | ✅ **CONCLUÍDA** | — |
-| **Adriel** | 004 STRIDE | ✅ Livre | `fake_architecture_graph` |
+| **Adriel** | 004 STRIDE | 🔄 **EM ANDAMENTO** | Usa `ArchitectureGraph` da Spec 003 |
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
