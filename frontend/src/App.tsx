@@ -9,17 +9,30 @@ function App() {
   useEffect(() => {
     // Fetch system version from API on mount
     const fetchVersion = async () => {
+      // Tenta primeiro via proxy (desenvolvimento)
       try {
         const response = await fetch('/api/version')
         if (response.ok) {
           const data = await response.json()
-          console.log('[Version] API version:', data.version)
+          console.log('[Version] API version (proxy):', data.version)
           setSystemVersion(data.version)
-        } else {
-          console.error('[Version] API responded with status:', response.status)
+          return
         }
       } catch (error) {
-        console.error('[Version] Failed to fetch system version:', error)
+        console.log('[Version] Proxy failed, trying direct...')
+      }
+
+      // Fallback: tenta acessar API diretamente na porta 8001
+      try {
+        const response = await fetch('http://localhost:8001/api/version')
+        if (response.ok) {
+          const data = await response.json()
+          console.log('[Version] API version (direct):', data.version)
+          setSystemVersion(data.version)
+          return
+        }
+      } catch (error) {
+        console.error('[Version] Failed to fetch from both proxy and direct:', error)
       }
     }
     fetchVersion()
