@@ -47,15 +47,15 @@ Imagem de Arquitetura
 
 ## 🚀 Deploy
 
-[![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8000/health)
+[![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8001/health)
 
 ### Ambientes
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
-| Local | `http://localhost:8000` | 🟢 Desenvolvimento |
-| Healthcheck | `http://localhost:8000/health` | 🟢 Online |
-| Swagger UI | `http://localhost:8000/docs` | 🟢 Documentação API |
+| Local | `http://localhost:8001` | 🟢 Desenvolvimento |
+| Healthcheck | `http://localhost:8001/health` | 🟢 Online |
+| Swagger UI | `http://localhost:8001/docs` | 🟢 Documentação API |
 
 ---
 
@@ -116,17 +116,122 @@ git clone https://github.com/vagnerbarbosa/hackathon-fiap-fase-5.git
 cd hackathon-fiap-fase-5
 ```
 
-### 2. Inicie com Docker Compose
+### 2. Configure o ambiente
 
 ```bash
 cp .env.example .env
-docker-compose up --build
+# Edite .env e defina DATABASE_URL, REDIS_URL, API_KEY
 ```
 
-### 3. Acesse a API
+### 3. Inicie a API (escolha seu método)
 
-- **Swagger UI**: http://localhost:8000/docs
-- **Healthcheck**: http://localhost:8000/health
+#### 🚀 Opção 1: Script Automático (Recomendado)
+
+**Linux/macOS:**
+```bash
+./scripts/start-api.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\start-api.ps1
+```
+
+**Python (Cross-platform):**
+```bash
+# Funciona em qualquer sistema com Python 3
+python scripts/start-api.py
+```
+
+**Makefile (Linux/macOS):**
+```bash
+make start
+```
+
+#### 🐳 Opção 2: Docker Compose Manual
+
+```bash
+# Build e start
+docker-compose up --build -d
+
+# Executar migrações (primeira vez)
+docker-compose exec api alembic upgrade head
+```
+
+### Opções do Script
+
+```bash
+# Modo rápido (sem rebuild)
+./scripts/start-api.sh --no-build
+
+# Modo foreground (ver logs em tempo real)
+./scripts/start-api.sh --foreground
+
+# Sem migrações automáticas
+./scripts/start-api.sh --no-migrations
+```
+
+### 5. Teste a API
+
+```bash
+# Health check (público)
+curl http://localhost:8001/health
+
+# API protegida (requer API Key)
+curl -H "X-API-Key: sua-api-key" \
+  http://localhost:8001/api/v1/threat-model/analyze
+```
+
+### Endpoints disponíveis
+
+| Endpoint | Método | Auth | Descrição |
+|----------|--------|------|-----------|
+| `/health` | GET | ❌ | Health check com status do DB |
+| `/docs` | GET | ❌ | Swagger UI (documentação) |
+| `/version` | GET | ❌ | Versão da API |
+| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise (placeholder) |
+| `/api/v1/threat-model/{id}` | GET | ✅ | Status da análise (placeholder) |
+| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório (placeholder) |
+
+> **Nota**: Autenticação via header `X-API-Key`. Defina em `.env`.
+
+---
+
+### 🛠️ Comandos Úteis (Makefile)
+
+Disponíveis em Linux/macOS (requer `make`):
+
+```bash
+# Iniciar a API
+make start
+
+# Início rápido (sem rebuild)
+make start-quick
+
+# Ver logs em tempo real
+make logs
+
+# Parar a API
+make stop
+
+# Executar migrações
+make migrate
+
+# Criar nova migração
+make migrate-create msg="descrição"
+
+# Executar testes
+make test
+
+# Testes com cobertura
+make test-cov
+
+# Limpar containers e arquivos temporários
+make clean
+
+# Ver todos os comandos
+make help
+```
 
 ---
 
@@ -148,15 +253,14 @@ docker-compose up --build
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
-- [ ] Scaffolding FastAPI + Docker
-- [ ] Dataset de diagramas sintéticos
-- [ ] Treinamento YOLOv11n
-- [ ] Módulo de detecção de componentes
-- [ ] Motor STRIDE
-- [ ] Busca de vulnerabilidades e contramedidas
-- [ ] Gerador de relatórios
-- [ ] CI/CD GitHub Actions
-- [ ] Vídeo de demonstração (15 min)
+- [x] **Spec 001**: API Core + Scaffolding (✅ Concluída)
+- [ ] Spec 002: Dataset + Treinamento YOLOv11n
+- [ ] Spec 003: Módulo de detecção de componentes
+- [ ] Spec 004: Motor STRIDE
+- [ ] Spec 005: Busca de vulnerabilidades e contramedidas
+- [ ] Spec 006: Gerador de relatórios
+- [ ] Spec 007: CI/CD GitHub Actions
+- [ ] Spec 008: Vídeo de demonstração (15 min)
 
 ---
 
