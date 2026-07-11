@@ -1,7 +1,7 @@
-"""YOLO model wrapper for component detection.
+"""Wrapper do modelo YOLO para detecção de componentes.
 
-Supports both PyTorch (.pt) and ONNX (.onnx) model formats.
-Falls back to stub implementation if model file not available.
+Suporta formatos de modelo PyTorch (.pt) e ONNX (.onnx).
+Fallback para implementação stub se arquivo de modelo não disponível.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class DetectionResult:
-    """Normalized detection result from YOLO/ONNX."""
+    """Resultado de detecção normalizado do YOLO/ONNX."""
 
     def __init__(
         self,
@@ -35,10 +35,10 @@ class DetectionResult:
 
 
 class YOLOModel:
-    """Wrapper for YOLO model with support for .pt and .onnx formats.
+    """Wrapper para modelo YOLO com suporte a formatos .pt e .onnx.
 
-    This class loads a YOLOv11 model and provides a unified interface
-    for inference. Supports fallback to stub if model not available.
+    Esta classe carrega um modelo YOLOv11 e fornece uma interface unificada
+    para inferência. Suporta fallback para stub se modelo não disponível.
 
     Usage:
         >>> model = YOLOModel("models/best.pt")
