@@ -1,15 +1,43 @@
-import { useState, useEffect } from 'react'
-import { Shield, Upload, Info, AlertTriangle, Github } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Shield, Upload, Info, AlertTriangle, Github, FileImage, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
 import './App.css'
+
+// Tipos para a resposta da API
+interface UploadResponse {
+  job_id: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  message: string
+}
+
+interface JobStatusResponse {
+  job_id: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  progress?: number
+  result?: {
+    threats_count: number
+    report_url: string
+  }
+  error?: string
+}
 
 function App() {
   const [activeTab, setActiveTab] = useState<'upload' | 'about'>('upload')
   const [systemVersion, setSystemVersion] = useState<string>('')
 
+  // Estados do upload
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle')
+  const [jobId, setJobId] = useState<string>('')
+  const [jobStatus, setJobStatus] = useState<JobStatusResponse | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [uploadProgress, setUploadProgress] = useState<number>(0)
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Buscar versão do sistema
   useEffect(() => {
-    // Fetch system version from API on mount
     const fetchVersion = async () => {
-      // Tenta primeiro via proxy (nginx no Docker)
       try {
         const response = await fetch('/version')
         if (response.ok) {
@@ -22,7 +50,6 @@ function App() {
         console.log('[Version] Proxy failed, trying direct...')
       }
 
-      // Fallback: tenta acessar API diretamente na porta 8001
       try {
         const response = await fetch('http://localhost:8001/version')
         if (response.ok) {
@@ -37,6 +64,149 @@ function App() {
     }
     fetchVersion()
   }, [])
+
+  // Polling do status do job
+  useEffect(() => {
+    if (jobId && uploadStatus === 'processing') {
+      pollingIntervalRef.current = setInterval(async () => {
+        try {
+          const response = await fetch(`/api/v1/threat-model/${jobId}`)
+          if (response.ok) {
+            const data: JobStatusResponse = await response.json()
+            setJobStatus(data)
+
+            if (data.status === 'completed' || data.status === 'failed') {
+              setUploadStatus(data.status === 'completed' ? 'completed' : 'error')
+              if (data.error) {
+                setErrorMessage(data.error)
+              }
+              if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current)
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao consultar status:', error)
+        }
+      }, 2000)
+    }
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current)
+      }
+    }
+  }, [jobId, uploadStatus])
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      validateAndSetFile(file)
+    }
+  }
+
+  const validateAndSetFile = (file: File) => {
+    // Validar tipo
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg']
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage('Formato inválido. Use PNG, JPG ou JPEG.')
+      setUploadStatus('error')
+      return
+    }
+
+    // Validar tamanho (50MB)
+    const maxSize = 50 * 1024 * 1024
+    if (file.size > maxSize) {
+      setErrorMessage('Arquivo muito grande. Máximo 50MB.')
+      setUploadStatus('error')
+      return
+    }
+
+    setSelectedFile(file)
+    setErrorMessage('')
+    setUploadStatus('idle')
+  }
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const file = event.dataTransfer.files?.[0]
+    if (file) {
+      validateAndSetFile(file)
+    }
+  }
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+  }
+
+  const handleUpload = async () => {
+    if (!selectedFile) return
+
+    setUploadStatus('uploading')
+    setUploadProgress(0)
+    setErrorMessage('')
+
+    const formData = new FormData()
+    formData.append('file', selectedFile)
+
+    try {
+      // Simular progresso de upload
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return 90
+          }
+          return prev + 10
+        })
+      }, 200)
+
+      const response = await fetch('/api/v1/threat-model/analyze', {
+        method: 'POST',
+        body: formData,
+      })
+
+      clearInterval(progressInterval)
+      setUploadProgress(100)
+
+      if (response.ok) {
+        const data: UploadResponse = await response.json()
+        setJobId(data.job_id)
+        setUploadStatus('processing')
+
+        // Se o backend retornar completed imediatamente (mock)
+        if (data.status === 'completed') {
+          setUploadStatus('completed')
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}))
+        setErrorMessage(errorData.detail || `Erro ${response.status}: Falha no upload`)
+        setUploadStatus('error')
+      }
+    } catch (error) {
+      console.error('Erro no upload:', error)
+      setErrorMessage('Erro de conexão com o servidor. Verifique se a API está rodando.')
+      setUploadStatus('error')
+    }
+  }
+
+  const handleReset = () => {
+    setSelectedFile(null)
+    setUploadStatus('idle')
+    setJobId('')
+    setJobStatus(null)
+    setErrorMessage('')
+    setUploadProgress(0)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const downloadReport = () => {
+    if (jobId) {
+      window.open(`/api/v1/threat-model/${jobId}/report?format=md`, '_blank')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fiap-gray-900 via-fiap-black to-fiap-gray-900">
@@ -109,27 +279,174 @@ function App() {
 
             {/* Upload Section */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-700/50 rounded-full mb-6">
-                  <Upload className="w-10 h-10 text-slate-400" />
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  Upload de Diagrama de Arquitetura
-                </h3>
-                <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                  Arraste e solte uma imagem do diagrama ou clique para selecionar.
-                  Formatos suportados: PNG, JPG, JPEG (máx. 50MB)
-                </p>
-                <button
-                  disabled
-                  className="px-6 py-3 bg-slate-700 text-slate-400 rounded-lg font-medium cursor-not-allowed"
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                accept=".png,.jpg,.jpeg"
+                className="hidden"
+              />
+
+              {uploadStatus === 'idle' && !selectedFile && (
+                <div
+                  className="text-center py-12 border-2 border-dashed border-slate-600 rounded-xl hover:border-fiap-pink/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
                 >
-                  Selecionar Arquivo
-                </button>
-                <p className="text-sm text-slate-500 mt-4">
-                  🔒 Os arquivos são processados localmente e não são persistidos
-                </p>
-              </div>
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-700/50 rounded-full mb-6">
+                    <Upload className="w-10 h-10 text-slate-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Upload de Diagrama de Arquitetura
+                  </h3>
+                  <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                    Arraste e solte uma imagem do diagrama ou clique para selecionar.
+                    Formatos suportados: PNG, JPG, JPEG (máx. 50MB)
+                  </p>
+                  <button className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors">
+                    Selecionar Arquivo
+                  </button>
+                  <p className="text-sm text-slate-500 mt-4">
+                    🔒 Os arquivos são processados localmente e não são persistidos
+                  </p>
+                </div>
+              )}
+
+              {/* Arquivo selecionado, aguardando upload */}
+              {uploadStatus === 'idle' && selectedFile && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
+                    <FileImage className="w-10 h-10 text-fiap-pink" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Arquivo Selecionado
+                  </h3>
+                  <p className="text-slate-300 mb-2">{selectedFile.name}</p>
+                  <p className="text-slate-500 text-sm mb-6">
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={handleUpload}
+                      className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Iniciar Análise
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Trocar Arquivo
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload em progresso */}
+              {uploadStatus === 'uploading' && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
+                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Enviando Arquivo...
+                  </h3>
+                  <div className="max-w-md mx-auto mb-4">
+                    <div className="bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-fiap-pink h-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                    <p className="text-slate-400 mt-2">{uploadProgress}%</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Processando análise */}
+              {uploadStatus === 'processing' && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
+                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Analisando Diagrama...
+                  </h3>
+                  <p className="text-slate-400 mb-4 max-w-md mx-auto">
+                    Detectando componentes e aplicando modelagem STRIDE.
+                    Isso pode levar alguns minutos.
+                  </p>
+                  <div className="max-w-md mx-auto">
+                    <div className="bg-slate-700 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-fiap-pink h-full animate-pulse"
+                        style={{ width: '60%' }}
+                      />
+                    </div>
+                  </div>
+                  {jobId && (
+                    <p className="text-slate-500 text-sm mt-4">
+                      Job ID: {jobId}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Upload concluído */}
+              {uploadStatus === 'completed' && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 rounded-full mb-6">
+                    <CheckCircle className="w-10 h-10 text-emerald-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Análise Concluída!
+                  </h3>
+                  <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                    {jobStatus?.result?.threats_count
+                      ? `Foram identificadas ${jobStatus.result.threats_count} potenciais ameaças no diagrama.`
+                      : 'A análise STRIDE foi concluída com sucesso.'}
+                  </p>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={downloadReport}
+                      className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Baixar Relatório
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Nova Análise</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Erro */}
+              {uploadStatus === 'error' && (
+                <div className="text-center py-12">
+                  <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500/10 rounded-full mb-6">
+                    <XCircle className="w-10 h-10 text-red-500" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    Erro na Análise
+                  </h3>
+                  <p className="text-red-400 mb-6 max-w-md mx-auto">
+                    {errorMessage || 'Ocorreu um erro ao processar o arquivo. Tente novamente.'}
+                  </p>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={handleReset}
+                      className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Tentar Novamente
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* STRIDE Explanation */}
