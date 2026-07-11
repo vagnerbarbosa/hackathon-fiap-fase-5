@@ -78,27 +78,48 @@ Imagem de Arquitetura
 ## 📁 Estrutura do Projeto
 
 ```
-├── src/
-│   ├── api/              # Rotas FastAPI, controllers, DTOs
-│   ├── core/             # Configurações, segurança, logging
-│   ├── services/         # Casos de uso (detecção, STRIDE, relatórios)
-│   ├── infrastructure/   # Adaptadores (DB, ML, cache)
-│   ├── models/           # Entidades de domínio (ORM)
-│   └── workers/          # Processamento assíncrono
-├── tests/
-│   ├── unit/             # Testes isolados
-│   ├── integration/      # Testes de integração
-│   └── e2e/              # Testes end-to-end
-├── specs/                # Especificações SpeckIt / SDD
-├── docs/                 # Documentação
-├── scripts/              # Scripts auxiliares
-├── notebooks/            # Notebooks de treinamento
-├── dataset/              # Dataset de diagramas (YOLO)
-├── config/               # Mapeamentos YAML (STRIDE, vulnerabilidades)
-├── docker-compose.yml
-├── Dockerfile
-├── pyproject.toml
-└── README.md
+├── src/                          # Código fonte Python (FastAPI)
+│   ├── api/                      # Rotas FastAPI, controllers, DTOs
+│   ├── core/                     # Configurações, segurança, logging
+│   ├── services/                 # Casos de uso (detecção, STRIDE, relatórios)
+│   ├── infrastructure/           # Adaptadores (DB, ML, cache)
+│   ├── models/                   # Entidades de domínio (ORM)
+│   └── workers/                  # Processamento assíncrono
+├── tests/                        # Testes
+│   ├── unit/                     # Testes isolados
+│   ├── integration/              # Testes de integração
+│   └── e2e/                      # Testes end-to-end
+├── frontend/                     # Aplicação React (TypeScript + Vite)
+│   ├── src/                      # Código fonte React
+│   │   ├── components/           # Componentes React
+│   │   ├── App.tsx               # Componente principal
+│   │   ├── main.tsx              # Entry point
+│   │   └── index.css             # Estilos globais
+│   ├── public/                   # Assets estáticos
+│   ├── dist/                     # Build de produção
+│   ├── Dockerfile                # Container do frontend
+│   ├── nginx.conf                # Config Nginx
+│   ├── package.json              # Dependências npm
+│   ├── tailwind.config.js        # Config Tailwind
+│   ├── vite.config.ts            # Config Vite
+│   └── tsconfig.json             # Config TypeScript
+├── scripts/                      # Scripts de automação
+│   ├── start-api.sh              # Start Linux/macOS
+│   ├── start-api.ps1             # Start Windows (PowerShell)
+│   └── start-api.py              # Start Python (cross-platform)
+├── specs/                        # Especificações SpeckIt
+│   └── features/                 # Specs de features
+├── docs/                         # Documentação
+│   ├── sdd.md                    # Software Design Document
+│   └── divisao-de-trabalho.md    # Divisão da equipe
+├── models/                       # Modelos YOLO treinados
+├── storage/                      # Uploads temporários
+├── logs/                         # Logs da aplicação
+├── docker-compose.yml            # Orquestração Docker
+├── Dockerfile                    # Container da API
+├── pyproject.toml                # Dependências Python
+├── CLAUDE.md                     # Instruções para Claude Code
+└── README.md                     # Este arquivo
 ```
 
 ---
