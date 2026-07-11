@@ -261,7 +261,7 @@ make help
 - [x] SDD consolidado
 - [x] **Spec 001**: API Core + Scaffolding (✅ Concluída)
 - [ ] Spec 002: Dataset + Treinamento YOLOv11n
-- [ ] Spec 003: Módulo de detecção de componentes
+- [x] **Spec 003**: Módulo de detecção de componentes (✅ Concluída)
 - [ ] Spec 004: Motor STRIDE
 - [ ] Spec 005: Busca de vulnerabilidades e contramedidas
 - [ ] Spec 006: Gerador de relatórios
