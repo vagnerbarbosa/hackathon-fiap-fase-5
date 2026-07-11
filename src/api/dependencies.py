@@ -1,4 +1,4 @@
-"""FastAPI dependency injection providers."""
+"""Provedores de injeção de dependência do FastAPI."""
 
 from typing import Annotated, AsyncGenerator
 
@@ -14,12 +14,12 @@ logger = get_logger(__name__)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Provide database session dependency.
+    """Fornece dependência de sessão do banco de dados.
 
     Yields:
-        AsyncSession: Database session.
+        AsyncSession: Sessão do banco de dados.
 
-    Example:
+    Exemplo:
         @app.get("/items")
         async def get_items(db: SessionDep):
             ...
@@ -32,25 +32,25 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def get_storage() -> LocalFileStorage:
-    """Provide file storage dependency.
+    """Fornece dependência de armazenamento de arquivos.
 
     Returns:
-        LocalFileStorage: Storage service instance.
+        LocalFileStorage: Instância do serviço de armazenamento.
     """
     return LocalFileStorage()
 
 
 async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None) -> str:
-    """Verify API Key header.
+    """Verifica header de API Key.
 
     Args:
-        x_api_key: API Key from X-API-Key header.
+        x_api_key: API Key do header X-API-Key.
 
     Returns:
-        str: Validated API Key.
+        str: API Key validada.
 
     Raises:
-        HTTPException: 401 if API Key is missing or invalid.
+        HTTPException: 401 se a API Key estiver ausente ou inválida.
     """
     if not x_api_key:
         raise HTTPException(

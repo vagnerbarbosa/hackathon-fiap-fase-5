@@ -8,7 +8,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 import sys
-sys.path.insert(0, "/app")
+from pathlib import Path
+
+# Adiciona o diretório raiz ao path (funciona dentro e fora do container)
+project_root = Path(__file__).parent.parent.absolute()
+sys.path.insert(0, str(project_root))
 
 from src.models.base import Base
 from src.core.config import settings

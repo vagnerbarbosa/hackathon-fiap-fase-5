@@ -1,4 +1,4 @@
-"""Application configuration using Pydantic Settings."""
+"""Configuração da aplicação usando Pydantic Settings."""
 
 from functools import lru_cache
 from typing import List
@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
+    """Configurações da aplicação carregadas de variáveis de ambiente."""
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -69,13 +69,13 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Get cached settings instance.
+    """Obtém instância cacheada das configurações.
 
     Returns:
-        Settings: Application settings instance.
+        Settings: Instância das configurações da aplicação.
 
     Raises:
-        SystemExit: If settings validation fails.
+        SystemExit: Se a validação das configurações falhar.
     """
     try:
         return Settings()

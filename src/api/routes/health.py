@@ -1,4 +1,4 @@
-"""Health check endpoint."""
+"""Endpoint de verificação de saúde da API."""
 
 from datetime import datetime, timezone
 
@@ -21,14 +21,14 @@ router = APIRouter(tags=["health"])
     description="Check API and database health status.",
 )
 async def health_check(db: AsyncSession = Depends(get_db)) -> dict:
-    """Check API health status.
+    """Verifica status de saúde da API.
 
     Returns:
-        dict: Health status information.
+        dict: Informações de status de saúde.
 
     Response Codes:
-        200: API and database are healthy
-        503: Database is unavailable
+        200: API e banco de dados estão saudáveis
+        503: Banco de dados indisponível
     """
     # Check database connectivity
     try:
@@ -63,7 +63,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> dict:
     include_in_schema=False,
 )
 async def root() -> dict:
-    """Root endpoint redirect to docs."""
+    """Endpoint raiz que redireciona para documentação."""
     return {
         "message": "FIAP STRIDE API",
         "version": settings.app_version,

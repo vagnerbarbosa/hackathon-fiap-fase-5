@@ -1,7 +1,7 @@
 """
-Shared Pydantic v2 models for domain entities.
+Modelos Pydantic v2 compartilhados para entidades de domínio.
 
-These models serve as the "lingua franca" between all project modules.
+Estes modelos servem como a "lingua franca" entre todos os módulos do projeto.
 """
 
 from datetime import datetime
@@ -16,7 +16,7 @@ from pydantic import BaseModel, Field
 
 
 class BoundingBox(BaseModel):
-    """Pixel coordinates of a detected component."""
+    """Coordenadas em pixels de um componente detectado."""
 
     x_min: int
     y_min: int
@@ -25,14 +25,14 @@ class BoundingBox(BaseModel):
 
 
 class Point(BaseModel):
-    """Center point of a component."""
+    """Ponto central de um componente."""
 
     x: int
     y: int
 
 
 class DetectedComponent(BaseModel):
-    """Single detected architectural component."""
+    """Componente arquitetural individual detectado."""
 
     id: str  # UUID gerado
     type: str  # ex: "user", "api", "database"
@@ -42,7 +42,7 @@ class DetectedComponent(BaseModel):
 
 
 class DataFlow(BaseModel):
-    """Connection between components."""
+    """Conexão entre componentes."""
 
     source_id: str
     target_id: str
@@ -51,7 +51,7 @@ class DataFlow(BaseModel):
 
 
 class ArchitectureGraph(BaseModel):
-    """Complete detection result."""
+    """Resultado completo da detecção."""
 
     components: list[DetectedComponent]
     data_flows: list[DataFlow]
@@ -62,7 +62,7 @@ class ArchitectureGraph(BaseModel):
 
 
 class Severity(str, Enum):
-    """Threat severity levels."""
+    """Níveis de severidade de ameaças."""
 
     CRITICAL = "critical"
     HIGH = "high"
@@ -72,7 +72,7 @@ class Severity(str, Enum):
 
 
 class Threat(BaseModel):
-    """Single STRIDE threat identified."""
+    """Ameaça STRIDE individual identificada."""
 
     id: str
     category: str  # "S","T","R","I","D","E"
@@ -87,7 +87,7 @@ class Threat(BaseModel):
 
 
 class Countermeasure(BaseModel):
-    """Mitigation for a threat."""
+    """Contramedida para uma ameaça."""
 
     title: str
     description: str
@@ -95,7 +95,7 @@ class Countermeasure(BaseModel):
 
 
 class EnrichedThreat(BaseModel):
-    """Threat with vulnerability data."""
+    """Ameaça com dados de vulnerabilidade."""
 
     id: str
     category: str  # "S","T","R","I","D","E"
@@ -113,7 +113,7 @@ class EnrichedThreat(BaseModel):
 
 
 class JobStatus(str, Enum):
-    """Processing status."""
+    """Status de processamento."""
 
     PENDING = "pending"
     PROCESSING = "processing"
@@ -122,7 +122,7 @@ class JobStatus(str, Enum):
 
 
 class Job(BaseModel):
-    """Analysis job tracking."""
+    """Rastreamento de job de análise."""
 
     id: UUID = Field(default_factory=uuid4)
     status: JobStatus

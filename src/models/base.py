@@ -1,12 +1,12 @@
-"""SQLAlchemy base model configuration."""
+"""Configuração do modelo base do SQLAlchemy."""
 
 from sqlalchemy.orm import DeclarativeBase
 
 
 class Base(DeclarativeBase):
-    """Base class for all SQLAlchemy models.
+    """Classe base para todos os modelos SQLAlchemy.
 
-    Uses SQLAlchemy 2.0 declarative style with Mapped and mapped_column.
+    Usa estilo declarativo do SQLAlchemy 2.0 com Mapped e mapped_column.
     """
 
     pass

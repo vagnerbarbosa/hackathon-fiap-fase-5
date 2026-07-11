@@ -50,6 +50,12 @@ Imagem de Arquitetura
         |
         v
   Relatório Markdown/HTML/JSON
+        |
+        v
+[Frontend React]              --> Spec 008 (UI/UX)
+        |
+        v
+  Visualização Interativa + Exportação
 ```
 
 ---
@@ -61,21 +67,15 @@ Todas as specs estão em `specs/features/`:
 | # | Arquivo | Título | Responsabilidade | Status |
 |---|---------|--------|------------------|--------|
 | **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** | ✅ **Concluída** |
-| 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP | ⏳ Pendente |
+| **001** | **`001-api-core-scaffolding.md`** | **API Core + Scaffolding** | **FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP** | ✅ **Concluída** |
 | 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo | ⏳ Pendente |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial | ⏳ Pendente |
 | 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE | ⏳ Pendente |
 | 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP | ⏳ Pendente |
 | 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
 | 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build | ⏳ Pendente |
-| 008 | `008-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
-| 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo |
-| 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial |
-| 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE |
-| 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP |
-| 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON |
-| 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build |
-| 008 | `008-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min |
+| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ⏳ Pendente |
+| 009 | `009-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
 
 ---
 
@@ -187,12 +187,15 @@ Todas as specs estão em `specs/features/`:
   |       |         |
   |       |         v
   |       +---> 006 (Report Generator)
+  |       |         |
+  |       |         v
+  |       +---> 008 (Frontend React) --depends-on--> 001, 006
   |       |
-  |       +---> 007 (CI/CD) --depends-on--> 001, 002
+  |       +---> 007 (CI/CD) --depends-on--> 001, 002, 008
   |
   +---> 002 (Dataset) --produz--> modelos para 003
 
-008 (Video) --depends-on--> 001-006 (sistema funcional)
+009 (Video) --depends-on--> 001-008 (sistema funcional)
 ```
 
 ---
@@ -211,6 +214,8 @@ Todas as specs estão em `specs/features/`:
 | Computer Vision | OpenCV + YOLOv11 (Ultralytics) | 4.13.x / 8.3.x |
 | Deep Learning | PyTorch + torchvision | 2.11.x |
 | Templating | Jinja2 | 3.1.x |
+| Frontend | React + TypeScript + Vite | 18.x / 5.x |
+| Frontend UI | Tailwind CSS + React Query | 3.4.x / 5.x |
 | Testing | pytest + httpx | 8.x / 0.28.x |
 | Lint | ruff + black + mypy | 0.9.x / 1.15.x |
 | Container | Docker + Docker Compose | — |
@@ -237,10 +242,11 @@ Todas as specs estão em `specs/features/`:
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
 | Documentação do fluxo | Em progresso (este SDD + specs) | Equipe |
-| Vídeo de até 15 min | Planejado (Spec 008) | Equipe |
+| Frontend React | Pendente (Spec 008) | Equipe |
+| Vídeo de até 15 min | Planejado (Spec 009) | Equipe |
 | Link do GitHub | Pendente criação do repo | Equipe |
 
 ---
 
-*SDD consolidado em: 2026-06-21*
+*SDD consolidado em: 2026-07-11*
 *Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*

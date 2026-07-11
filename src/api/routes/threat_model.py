@@ -1,4 +1,4 @@
-"""Threat model analysis endpoints."""
+"""Endpoints de análise de modelagem de ameaças."""
 
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -31,17 +31,17 @@ async def analyze_image(
     api_key: ApiKeyDep,
     file: UploadFile = File(..., description="Architecture diagram image (PNG/JPG)"),
 ) -> dict:
-    """Analyze architecture image and return component detection.
+    """Analisa imagem de arquitetura e retorna detecção de componentes.
 
     Args:
-        api_key: Validated API Key.
-        file: Uploaded image file.
+        api_key: API Key validada.
+        file: Arquivo de imagem enviado.
 
     Returns:
-        dict: Job ID and detected components.
+        dict: ID do job e componentes detectados.
 
     Raises:
-        HTTPException: If file invalid or no components detected.
+        HTTPException: Se arquivo inválido ou nenhum componente detectado.
     """
     # Validate file type and size
     content = await file.read()
@@ -117,14 +117,14 @@ async def get_analysis_status(
     job_id: UUID,
     api_key: ApiKeyDep,
 ) -> dict:
-    """Placeholder for getting job status.
+    """Placeholder para obtenção de status do job.
 
     Args:
-        job_id: Job UUID.
-        api_key: Validated API Key.
+        job_id: UUID do job.
+        api_key: API Key validada.
 
     Returns:
-        dict: Job status information.
+        dict: Informações de status do job.
     """
     return {
         "message": "Endpoint placeholder - Implement in Spec 003",
@@ -144,15 +144,15 @@ async def get_report(
     api_key: ApiKeyDep,
     format: str = "json",
 ) -> dict:
-    """Placeholder for getting analysis report.
+    """Placeholder para obtenção de relatório de análise.
 
     Args:
-        job_id: Job UUID.
-        api_key: Validated API Key.
-        format: Report format (json, md, html, pdf, csv).
+        job_id: UUID do job.
+        api_key: API Key validada.
+        format: Formato do relatório (json, md, html, pdf, csv).
 
     Returns:
-        dict: Report data or download URL.
+        dict: Dados do relatório ou URL de download.
     """
     return {
         "message": "Endpoint placeholder - Implement in Spec 006",

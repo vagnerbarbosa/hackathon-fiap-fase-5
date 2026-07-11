@@ -4,7 +4,7 @@
 
 ## Contexto / Motivação
 
-Todas as specs (001–008) precisam compartilhar os mesmos tipos de dados para garantir consistência entre módulos. Esta spec define os **contratos de domínio** (models Pydantic v2) que são a "lingua franca" do projeto.
+Todas as specs (001–009) precisam compartilhar os mesmos tipos de dados para garantir consistência entre módulos. Esta spec define os **contratos de domínio** (models Pydantic v2) que são a "lingua franca" do projeto.
 
 > **Regra de ouro**: ninguém altera estes models sem avisar no grupo e abrir PR exclusiva.
 

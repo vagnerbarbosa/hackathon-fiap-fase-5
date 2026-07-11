@@ -1,4 +1,4 @@
-"""Security utilities: rate limiting, headers, file validation."""
+"""Utilitários de segurança: rate limiting, headers, validação de arquivos."""
 
 import logging
 from pathlib import Path
@@ -22,7 +22,7 @@ limiter: Optional[Limiter] = None
 
 
 def get_limiter() -> Limiter:
-    """Get or create rate limiter instance."""
+    """Obtém ou cria instância do rate limiter."""
     global limiter
     if limiter is None:
         try:
@@ -48,10 +48,10 @@ def get_limiter() -> Limiter:
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add OWASP security headers to all responses."""
+    """Adiciona headers de segurança OWASP em todas as respostas."""
 
     async def dispatch(self, request: Request, call_next: Callable):
-        """Add security headers to response."""
+        """Adiciona headers de segurança na resposta."""
         response = await call_next(request)
 
         # OWASP security headers
@@ -91,10 +91,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
-    """Add request ID to all requests for tracing."""
+    """Adiciona ID de requisição em todas as requisições para rastreamento."""
 
     async def dispatch(self, request: Request, call_next: Callable):
-        """Add request ID to request state and logs."""
+        """Adiciona ID de requisição ao estado e logs."""
         import uuid
 
         request_id = str(uuid.uuid4())
@@ -108,10 +108,10 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
 
 def setup_security(app: FastAPI) -> None:
-    """Configure security middleware and handlers for FastAPI app.
+    """Configura middleware e handlers de segurança para aplicação FastAPI.
 
     Args:
-        app: FastAPI application instance.
+        app: Instância da aplicação FastAPI.
     """
     # Add security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
@@ -145,16 +145,16 @@ MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
 
 def validate_file_type(content: bytes) -> str:
-    """Validate file type using magic bytes.
+    """Valida tipo de arquivo usando magic bytes.
 
     Args:
-        content: File content as bytes.
+        content: Conteúdo do arquivo em bytes.
 
     Returns:
-        str: Detected MIME type.
+        str: Tipo MIME detectado.
 
     Raises:
-        HTTPException: If file type is not allowed.
+        HTTPException: Se o tipo de arquivo não for permitido.
     """
     try:
         detected = magic.from_buffer(content, mime=True)
@@ -175,13 +175,13 @@ def validate_file_type(content: bytes) -> str:
 
 
 def validate_file_size(content: bytes) -> None:
-    """Validate file size.
+    """Valida tamanho do arquivo.
 
     Args:
-        content: File content as bytes.
+        content: Conteúdo do arquivo em bytes.
 
     Raises:
-        HTTPException: If file exceeds maximum size.
+        HTTPException: Se o arquivo exceder o tamanho máximo.
     """
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(
@@ -191,13 +191,13 @@ def validate_file_size(content: bytes) -> None:
 
 
 def sanitize_filename(filename: str) -> str:
-    """Sanitize filename to prevent path traversal.
+    """Sanitiza nome de arquivo para prevenir path traversal.
 
     Args:
-        filename: Original filename.
+        filename: Nome do arquivo original.
 
     Returns:
-        str: Sanitized filename.
+        str: Nome do arquivo sanitizado.
     """
     # Remove path components
     safe = Path(filename).name
@@ -213,17 +213,17 @@ def sanitize_filename(filename: str) -> str:
 
 
 def validate_upload_file(content: bytes, filename: str) -> tuple[str, str]:
-    """Validate uploaded file content and name.
+    """Valida conteúdo e nome do arquivo enviado.
 
     Args:
-        content: File content as bytes.
-        filename: Original filename.
+        content: Conteúdo do arquivo em bytes.
+        filename: Nome do arquivo original.
 
     Returns:
-        tuple: (sanitized_filename, mime_type)
+        tuple: (nome_sanitizado, tipo_mime)
 
     Raises:
-        HTTPException: If validation fails.
+        HTTPException: Se a validação falhar.
     """
     # Validate size
     validate_file_size(content)

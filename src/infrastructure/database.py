@@ -1,4 +1,4 @@
-"""Database configuration with SQLAlchemy async."""
+"""Configuração do banco de dados com SQLAlchemy async."""
 
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -36,12 +36,12 @@ AsyncSessionLocal = async_sessionmaker(
 
 @asynccontextmanager
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Get database session as async context manager.
+    """Obtém sessão do banco de dados como gerenciador de contexto async.
 
     Yields:
-        AsyncSession: Database session.
+        AsyncSession: Sessão do banco de dados.
 
-    Example:
+    Exemplo:
         async with get_session() as session:
             result = await session.execute(query)
     """
@@ -57,16 +57,16 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def close_engine() -> None:
-    """Close database engine connections."""
+    """Fecha conexões do engine do banco de dados."""
     await engine.dispose()
     logger.info("Database engine disposed")
 
 
 async def test_connection() -> bool:
-    """Test database connectivity.
+    """Testa conectividade do banco de dados.
 
     Returns:
-        bool: True if connection successful, False otherwise.
+        bool: True se a conexão for bem-sucedida, False caso contrário.
     """
     try:
         async with engine.connect() as conn:

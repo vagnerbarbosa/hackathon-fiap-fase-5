@@ -47,15 +47,15 @@ Imagem de Arquitetura
 
 ## 🚀 Deploy
 
-[![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8000/health)
+[![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8001/health)
 
 ### Ambientes
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
-| Local | `http://localhost:8000` | 🟢 Desenvolvimento |
-| Healthcheck | `http://localhost:8000/health` | 🟢 Online |
-| Swagger UI | `http://localhost:8000/docs` | 🟢 Documentação API |
+| Local | `http://localhost:8001` | 🟢 Desenvolvimento |
+| Healthcheck | `http://localhost:8001/health` | 🟢 Online |
+| Swagger UI | `http://localhost:8001/docs` | 🟢 Documentação API |
 
 ---
 
@@ -175,11 +175,11 @@ docker-compose exec api alembic upgrade head
 
 ```bash
 # Health check (público)
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 
 # API protegida (requer API Key)
 curl -H "X-API-Key: sua-api-key" \
-  http://localhost:8000/api/v1/threat-model/analyze
+  http://localhost:8001/api/v1/threat-model/analyze
 ```
 
 ### Endpoints disponíveis
