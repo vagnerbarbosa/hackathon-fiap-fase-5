@@ -54,19 +54,19 @@ class YOLOModel:
     _class_names: dict = {}
 
     def __new__(cls, model_path: Optional[str] = None) -> YOLOModel:
-        """Singleton pattern - ensures model is loaded only once."""
+        """Padrão Singleton - garante que o modelo seja carregado apenas uma vez."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialize(model_path)
         return cls._instance
 
     def _initialize(self, model_path: Optional[str] = None) -> None:
-        """Initialize the model wrapper."""
+        """Inicializa o wrapper do modelo."""
         self._model_path = Path(model_path) if model_path else Path("models/best.pt")
         self._load_model()
 
     def _load_model(self) -> None:
-        """Load model from file or fallback to stub."""
+        """Carrega modelo do arquivo ou faz fallback para stub."""
         if not self._model_path.exists():
             logger.warning(f"Model file not found: {self._model_path}")
             self._load_stub()
@@ -87,7 +87,7 @@ class YOLOModel:
             self._load_stub()
 
     def _load_pytorch(self) -> None:
-        """Load PyTorch YOLO model."""
+        """Carrega modelo YOLO PyTorch."""
         try:
             from ultralytics import YOLO
 
@@ -100,7 +100,7 @@ class YOLOModel:
             self._load_stub()
 
     def _load_onnx(self) -> None:
-        """Load ONNX model."""
+        """Carrega modelo ONNX."""
         try:
             import onnxruntime as ort
 
@@ -121,7 +121,7 @@ class YOLOModel:
             self._load_stub()
 
     def _load_stub(self) -> None:
-        """Load stub implementation for development."""
+        """Carrega implementação stub para desenvolvimento."""
         # Import stub from local module (not tests) for production compatibility
         try:
             from tests.mocks.yolo_stub import YOLOStub
@@ -135,7 +135,7 @@ class YOLOModel:
         logger.info("Using YOLO stub (model not available)")
 
     def _load_class_names(self) -> dict:
-        """Load class names mapping."""
+        """Carrega mapeamento de nomes de classes."""
         # Default class names for architecture components
         return {
             0: "user",
@@ -152,12 +152,12 @@ class YOLOModel:
 
     @property
     def is_stub(self) -> bool:
-        """Check if using stub implementation."""
+        """Verifica se está usando implementação stub."""
         return self._using_stub
 
     @property
     def class_names(self) -> dict:
-        """Get class names mapping."""
+        """Obtém mapeamento de nomes de classes."""
         return self._class_names
 
     def predict(
@@ -167,16 +167,16 @@ class YOLOModel:
         iou: float = 0.45,
         imgsz: int = 640,
     ) -> List[DetectionResult]:
-        """Run inference on image.
+        """Executa inferência na imagem.
 
         Args:
-            image: Image path or numpy array.
-            conf: Confidence threshold.
-            iou: IoU threshold for NMS.
-            imgsz: Input image size.
+            image: Caminho da imagem ou array numpy.
+            conf: Limiar de confiança.
+            iou: Limiar IoU para NMS.
+            imgsz: Tamanho da imagem de entrada.
 
         Returns:
-            List of DetectionResult with class_name, confidence, bbox.
+            Lista de DetectionResult com class_name, confidence, bbox.
         """
         if self._using_stub:
             return self._predict_stub(image, conf, iou, imgsz)
@@ -194,7 +194,7 @@ class YOLOModel:
         iou: float,
         imgsz: int,
     ) -> List[DetectionResult]:
-        """Predict using stub."""
+        """Prediz usando stub."""
         results = self._model.predict(image, conf=conf, iou=iou, imgsz=imgsz)
         return self._parse_results(results)
 
@@ -205,7 +205,7 @@ class YOLOModel:
         iou: float,
         imgsz: int,
     ) -> List[DetectionResult]:
-        """Predict using PyTorch YOLO."""
+        """Prediz usando YOLO PyTorch."""
         results = self._model.predict(
             source=image,
             conf=conf,
@@ -222,7 +222,7 @@ class YOLOModel:
         iou: float,
         imgsz: int,
     ) -> List[DetectionResult]:
-        """Predict using ONNX Runtime."""
+        """Prediz usando ONNX Runtime."""
         import onnxruntime as ort
 
         # Preprocess image
@@ -248,7 +248,7 @@ class YOLOModel:
         return self._parse_onnx_outputs(outputs[0], conf)
 
     def _parse_results(self, results: Any) -> List[DetectionResult]:
-        """Parse YOLO results into DetectionResult objects."""
+        """Analisa resultados YOLO em objetos DetectionResult."""
         detections = []
 
         for result in results:
@@ -282,7 +282,7 @@ class YOLOModel:
     def _parse_onnx_outputs(
         self, outputs: np.ndarray, conf_threshold: float
     ) -> List[DetectionResult]:
-        """Parse ONNX model outputs."""
+        """Analisa saídas do modelo ONNX."""
         detections = []
 
         # YOLO output format: [batch, num_boxes, 5 + num_classes]
@@ -314,10 +314,10 @@ class YOLOModel:
 
 
 class YOLOWrapper:
-    """Convenience wrapper that provides a simpler interface."""
+    """Wrapper de conveniência que fornece uma interface mais simples."""
 
     def __init__(self, model_path: Optional[str] = None):
-        """Initialize wrapper."""
+        """Inicializa wrapper."""
         self.model = YOLOModel(model_path)
 
     def detect(
@@ -325,18 +325,18 @@ class YOLOWrapper:
         image_path: Union[str, Path],
         conf: float = 0.25,
     ) -> List[DetectionResult]:
-        """Detect components in image.
+        """Detecta componentes na imagem.
 
         Args:
-            image_path: Path to image file.
-            conf: Confidence threshold.
+            image_path: Caminho para o arquivo de imagem.
+            conf: Limiar de confiança.
 
         Returns:
-            List of detections.
+            Lista de detecções.
         """
         return self.model.predict(image_path, conf=conf)
 
     @property
     def is_stub(self) -> bool:
-        """Check if using stub."""
+        """Verifica se está usando stub."""
         return self.model.is_stub

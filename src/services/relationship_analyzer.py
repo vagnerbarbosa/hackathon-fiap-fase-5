@@ -260,15 +260,15 @@ class RelationshipAnalyzer:
         self,
         components: List[DetectedComponent],
     ) -> List[List[str]]:
-        """Group components by spatial proximity.
+        """Agrupa componentes por proximidade espacial.
 
-        Simple clustering: if within threshold, same group.
+        Clustering simples: se dentro do limiar, mesmo grupo.
 
         Args:
-            components: List of components to group.
+            components: Lista de componentes para agrupar.
 
         Returns:
-            List of component ID groups.
+            Lista de grupos de IDs de componentes.
         """
         if not components:
             return []

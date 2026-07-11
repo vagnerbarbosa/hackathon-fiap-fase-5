@@ -1,7 +1,7 @@
-"""Redis cache for detection results.
+"""Cache Redis para resultados de detecção.
 
-Caches ArchitectureGraph results keyed by image hash (SHA-256).
-TTL: 1 hour (3600 seconds).
+Armazena resultados ArchitectureGraph indexados por hash da imagem (SHA-256).
+TTL: 1 hora (3600 segundos).
 """
 
 import hashlib
@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 
 
 class DetectionCache:
-    """Cache for component detection results.
+    """Cache para resultados de detecção de componentes.
 
-    Uses Redis to cache ArchitectureGraph results by image hash.
-    Falls back to in-memory dict if Redis unavailable.
+    Usa Redis para armazenar resultados ArchitectureGraph por hash da imagem.
+    Fallback para dicionário em memória se Redis indisponível.
 
-    Usage:
+    Uso:
         >>> cache = DetectionCache()
         >>> graph = cache.get("/path/to/image.png")
         >>> if graph is None:
@@ -33,10 +33,10 @@ class DetectionCache:
     TTL_SECONDS = 3600  # 1 hour
 
     def __init__(self, redis_url: Optional[str] = None):
-        """Initialize cache with Redis connection.
+        """Inicializa cache com conexão Redis.
 
         Args:
-            redis_url: Redis URL. If None, uses settings.REDIS_URL.
+            redis_url: URL do Redis. Se None, usa settings.REDIS_URL.
         """
         self._redis_url = redis_url or settings.redis_url
         self._redis = None
@@ -44,7 +44,7 @@ class DetectionCache:
         self._connect()
 
     def _connect(self) -> None:
-        """Connect to Redis or fallback to memory."""
+        """Conecta ao Redis ou fallback para memória."""
         try:
             import redis.asyncio as redis
 
@@ -58,13 +58,13 @@ class DetectionCache:
             self._redis = None
 
     def _compute_hash(self, image_path: Path) -> str:
-        """Compute SHA-256 hash of image file.
+        """Calcula hash SHA-256 do arquivo de imagem.
 
         Args:
-            image_path: Path to image file.
+            image_path: Caminho para o arquivo de imagem.
 
         Returns:
-            SHA-256 hex digest of file content.
+            Digest hexadecimal SHA-256 do conteúdo do arquivo.
         """
         sha256 = hashlib.sha256()
         with open(image_path, "rb") as f:
@@ -73,24 +73,24 @@ class DetectionCache:
         return sha256.hexdigest()
 
     def _make_key(self, image_hash: str) -> str:
-        """Create cache key from image hash.
+        """Cria chave de cache a partir do hash da imagem.
 
         Args:
-            image_hash: SHA-256 hash of image.
+            image_hash: Hash SHA-256 da imagem.
 
         Returns:
-            Cache key string.
+            String da chave de cache.
         """
         return f"detection:{image_hash}"
 
     async def get(self, image_path: Path) -> Optional[ArchitectureGraph]:
-        """Get cached detection result.
+        """Obtém resultado de detecção em cache.
 
         Args:
-            image_path: Path to image file.
+            image_path: Caminho para o arquivo de imagem.
 
         Returns:
-            ArchitectureGraph if cached, None otherwise.
+            ArchitectureGraph se em cache, None caso contrário.
         """
         image_hash = self._compute_hash(image_path)
         key = self._make_key(image_hash)
@@ -114,11 +114,11 @@ class DetectionCache:
         return None
 
     async def set(self, image_path: Path, graph: ArchitectureGraph) -> None:
-        """Cache detection result.
+        """Armazena resultado de detecção em cache.
 
         Args:
-            image_path: Path to image file.
-            graph: Detection result to cache.
+            image_path: Caminho para o arquivo de imagem.
+            graph: Resultado de detecção a ser armazenado.
         """
         image_hash = self._compute_hash(image_path)
         key = self._make_key(image_hash)
@@ -136,10 +136,10 @@ class DetectionCache:
             logger.warning(f"Cache set error: {e}")
 
     async def invalidate(self, image_path: Path) -> None:
-        """Remove cached result.
+        """Remove resultado em cache.
 
         Args:
-            image_path: Path to image file.
+            image_path: Caminho para o arquivo de imagem.
         """
         image_hash = self._compute_hash(image_path)
         key = self._make_key(image_hash)
@@ -153,7 +153,7 @@ class DetectionCache:
             logger.warning(f"Cache invalidate error: {e}")
 
     async def clear(self) -> None:
-        """Clear all detection cache entries."""
+        """Limpa todas as entradas do cache de detecção."""
         try:
             if self._redis:
                 # Delete all keys matching "detection:*"

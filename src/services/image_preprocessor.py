@@ -1,4 +1,4 @@
-"""Image preprocessing for YOLO detection.
+"""Pré-processamento de imagens para detecção YOLO.
 
 Redimensiona, normaliza e prepara imagens para inferência.
 """

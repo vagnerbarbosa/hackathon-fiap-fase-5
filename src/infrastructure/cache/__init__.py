@@ -1,4 +1,4 @@
-"""Cache infrastructure modules."""
+"""Módulos de infraestrutura de cache."""
 
 from src.infrastructure.cache.detection_cache import DetectionCache
 

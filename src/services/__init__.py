@@ -1,4 +1,4 @@
-"""Services modules."""
+"""Módulos de serviços."""
 
 from src.services.component_detector import (
     ComponentDetectionService,

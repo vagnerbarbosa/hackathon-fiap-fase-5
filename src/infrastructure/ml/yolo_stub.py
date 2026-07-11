@@ -1,9 +1,9 @@
-"""Stub/mock for YOLO model to enable parallel development.
+"""Stub/mock para modelo YOLO para habilitar desenvolvimento paralelo.
 
-This module provides a mock implementation of the Ultralytics YOLO interface,
-allowing Spec 003 development without waiting for Spec 002 (model training).
+Este módulo fornece uma implementação mock da interface Ultralytics YOLO,
+permitindo o desenvolvimento da Spec 003 sem aguardar a Spec 002 (treinamento do modelo).
 
-When Lucas finishes Spec 002, replace YOLOStub with actual YOLO model.
+Quando Lucas finalizar a Spec 002, substitua YOLOStub pelo modelo YOLO real.
 """
 
 from dataclasses import dataclass, field
@@ -13,15 +13,15 @@ from uuid import uuid4
 
 @dataclass
 class MockBox:
-    """Mock YOLO detection box."""
+    """Mock da caixa de detecção YOLO."""
 
-    cls: str  # class name, e.g., "user", "api", "database"
+    cls: str  # nome da classe, ex: "user", "api", "database"
     conf: float  # confidence 0.0-1.0
     xyxy: List[float]  # [x_min, y_min, x_max, y_max]
 
     @property
     def xywh(self) -> List[float]:
-        """Convert xyxy to xywh (center x, center y, width, height)."""
+        """Converte xyxy para xywh (centro x, centro y, largura, altura)."""
         x_min, y_min, x_max, y_max = self.xyxy
         w = x_max - x_min
         h = y_max - y_min
@@ -32,22 +32,22 @@ class MockBox:
 
 @dataclass
 class MockResult:
-    """Mock YOLO result containing detections."""
+    """Resultado mock YOLO contendo detecções."""
 
     boxes: List[MockBox] = field(default_factory=list)
 
     def __iter__(self):
-        """Allow iteration over boxes."""
+        """Permite iteração sobre as caixas."""
         return iter(self.boxes)
 
 
 class YOLOStub:
-    """Stub implementation of Ultralytics YOLO model.
+    """Implementação stub do modelo Ultralytics YOLO.
 
-    Simulates a trained YOLOv11n model for architecture component detection.
-    Returns mock detections without actually running inference.
+    Simula um modelo YOLOv11n treinado para detecção de componentes de arquitetura.
+    Retorna detecções mock sem realizar inferência real.
 
-    Usage:
+    Uso:
         >>> from tests.mocks.yolo_stub import YOLOStub
         >>> model = YOLOStub("models/best.pt")
         >>> results = model.predict("image.jpg", conf=0.25)
@@ -55,7 +55,7 @@ class YOLOStub:
         ...     print(f"{box.cls}: {box.conf:.2f}")
     """
 
-    # Class-level model names mapping (label_id -> class_name)
+    # Mapeamento de nomes de classes no nível da classe (label_id -> class_name)
     names = {
         0: "user",
         1: "web_server",
@@ -70,11 +70,11 @@ class YOLOStub:
     }
 
     def __init__(self, model_path: Optional[str] = None, task: Optional[str] = None):
-        """Initialize stub (no actual model loading).
+        """Inicializa stub (sem carregamento real do modelo).
 
         Args:
-            model_path: Ignored in stub (for compatibility).
-            task: Ignored in stub (for compatibility).
+            model_path: Ignorado no stub (para compatibilidade).
+            task: Ignorado no stub (para compatibilidade).
         """
         self._model_path = model_path
         self._task = task or "detect"
@@ -87,19 +87,19 @@ class YOLOStub:
         imgsz: int = 640,
         **kwargs: Any,
     ) -> List[MockResult]:
-        """Mock prediction returning simulated detections.
+        """Predição mock retornando detecções simuladas.
 
         Args:
-            source: Image path or PIL/numpy image (ignored in stub).
-            conf: Confidence threshold (filtered in mock).
-            iou: IoU threshold for NMS (ignored in stub).
-            imgsz: Input image size (ignored in stub).
-            **kwargs: Additional arguments (ignored in stub).
+            source: Caminho da imagem ou imagem PIL/numpy (ignorado no stub).
+            conf: Limiar de confiança (filtrado no mock).
+            iou: Limiar IoU para NMS (ignorado no stub).
+            imgsz: Tamanho da imagem de entrada (ignorado no stub).
+            **kwargs: Argumentos adicionais (ignorados no stub).
 
         Returns:
-            List[MockResult]: Simulated detection results.
+            List[MockResult]: Resultados de detecção simulados.
         """
-        # Simulate typical architecture diagram components
+        # Simula componentes típicos de diagrama de arquitetura
         mock_boxes = [
             MockBox(cls="user", conf=0.95, xyxy=[10.0, 50.0, 60.0, 100.0]),
             MockBox(cls="api", conf=0.91, xyxy=[200.0, 50.0, 300.0, 120.0]),
@@ -108,26 +108,26 @@ class YOLOStub:
             MockBox(cls="cache", conf=0.65, xyxy=[350.0, 200.0, 420.0, 260.0]),
         ]
 
-        # Filter by confidence threshold
+        # Filtra pelo limiar de confiança
         filtered_boxes = [b for b in mock_boxes if b.conf >= conf]
 
         return [MockResult(boxes=filtered_boxes)]
 
     def __call__(self, source: Any, **kwargs: Any) -> List[MockResult]:
-        """Allow model(source) syntax."""
+        """Permite sintaxe model(source)."""
         return self.predict(source, **kwargs)
 
 
 class YOLOWrapper:
-    """Wrapper that tries real YOLO, falls back to stub."""
+    """Wrapper que tenta YOLO real, faz fallback para stub."""
 
     def __init__(self, model_path: str = "models/best.pt"):
-        """Initialize wrapper.
+        """Inicializa wrapper.
 
-        Tries to load real YOLO model, falls back to stub if not available.
+        Tenta carregar modelo YOLO real, faz fallback para stub se não disponível.
 
         Args:
-            model_path: Path to model file (.pt or .onnx).
+            model_path: Caminho para arquivo do modelo (.pt ou .onnx).
         """
         self.model_path = model_path
         self._model = None
@@ -136,7 +136,7 @@ class YOLOWrapper:
         self._load_model()
 
     def _load_model(self) -> None:
-        """Attempt to load model, fallback to stub."""
+        """Tenta carregar modelo, faz fallback para stub."""
         try:
             from ultralytics import YOLO
 
@@ -150,24 +150,24 @@ class YOLOWrapper:
 
     @property
     def is_stub(self) -> bool:
-        """Check if using stub implementation."""
+        """Verifica se está usando implementação stub."""
         return self._using_stub
 
     @property
     def names(self) -> dict:
-        """Get class names mapping."""
+        """Obtém mapeamento de nomes de classes."""
         return self._model.names
 
     def predict(self, *args: Any, **kwargs: Any) -> Any:
-        """Run prediction (delegates to model or stub)."""
+        """Executa predição (delega para modelo ou stub)."""
         return self._model.predict(*args, **kwargs)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """Allow model(source) syntax."""
+        """Permite sintaxe model(source)."""
         return self._model(*args, **kwargs)
 
 
-# Convenience instances for tests
+# Instâncias de conveniência para testes
 stub_model = YOLOStub()
 standard_mock_result = MockResult(
     boxes=[
