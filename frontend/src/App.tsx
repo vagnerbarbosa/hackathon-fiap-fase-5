@@ -9,9 +9,9 @@ function App() {
   useEffect(() => {
     // Fetch system version from API on mount
     const fetchVersion = async () => {
-      // Tenta primeiro via proxy (desenvolvimento)
+      // Tenta primeiro via proxy (nginx no Docker)
       try {
-        const response = await fetch('/api/version')
+        const response = await fetch('/version')
         if (response.ok) {
           const data = await response.json()
           console.log('[Version] API version (proxy):', data.version)
@@ -24,7 +24,7 @@ function App() {
 
       // Fallback: tenta acessar API diretamente na porta 8001
       try {
-        const response = await fetch('http://localhost:8001/api/version')
+        const response = await fetch('http://localhost:8001/version')
         if (response.ok) {
           const data = await response.json()
           console.log('[Version] API version (direct):', data.version)
