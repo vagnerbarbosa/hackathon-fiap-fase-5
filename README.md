@@ -73,6 +73,8 @@ Imagem de Arquitetura
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
 | ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
+| ⚛️ **Frontend** | React + TypeScript + Vite | Interface web para upload e visualização |
+| 🎨 **UI** | Tailwind CSS + React Query | Estilização e gerenciamento de estado |
 | 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
 
 ---
