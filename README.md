@@ -55,6 +55,7 @@ Imagem de Arquitetura
 |----------|-----|--------|
 | Healthcheck | `http://localhost:8001/health` | 🟢 Online |
 | Swagger UI | `http://localhost:8001/docs` | 🟢 Documentação API |
+| Frontend | `http://localhost:5173` | 🟢 Interface Web (Vite Dev) |
 
 ---
 
@@ -275,6 +276,16 @@ make help
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
+- [x] **Spec 000**: Contratos de Domínio (Pydantic Models)
+- [x] **Spec 001**: API Core + Scaffolding (FastAPI, Docker, PostgreSQL)
+- [ ] **Spec 002**: Dataset e Treinamento YOLO (em desenvolvimento)
+- [x] **Spec 003**: Serviço de Detecção de Componentes
+- [ ] **Spec 004**: Motor STRIDE (pendente)
+- [ ] **Spec 005**: Vulnerabilidades e Contramedidas (pendente)
+- [ ] **Spec 006**: Gerador de Relatórios (pendente)
+- [ ] **Spec 007**: CI/CD GitHub Actions (em desenvolvimento)
+- [x] **Spec 008**: Frontend React (implementado, aguardando merge)
+- [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
 
 ---
 

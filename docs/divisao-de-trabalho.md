@@ -6,6 +6,22 @@ Este documento define como os 4 membros da equipe trabalham em paralelo nas 9 sp
 
 ---
 
+## ⚙️ Tecnologias
+
+| Camada | Tecnologia | Versão | Propósito |
+|--------|-----------|--------|-----------|
+| **API** | Python + FastAPI | 3.11+ / 0.115+ | Endpoints REST assíncronos |
+| **Validação** | Pydantic v2 | 2.x | Modelos e validação de dados |
+| **CV / IA** | PyTorch + YOLOv11 | 2.11+ / 8.3+ | Detecção de componentes em diagramas |
+| **Banco** | PostgreSQL + SQLAlchemy 2.0 | 17 / 2.0+ | Persistência de jobs e relatórios |
+| **Cache** | Redis | 8.x | Cache e rate limiting |
+| **Frontend** | React + TypeScript + Vite | 18+ / 5.x | Interface web moderna |
+| **UI** | Tailwind CSS + Lucide | 3.4+ | Estilização e ícones |
+| **Query** | React Query (TanStack) | 5.x | State management e cache |
+| **Container** | Docker + Compose | — | Orquestração de serviços |
+
+---
+
 ## 🎯 Spec 000 — ✅ CONCLUÍDA
 
 **Status**: ✅ **Implementada e mergeada em `main`**  
