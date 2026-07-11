@@ -30,7 +30,7 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 
 | Membro | GitHub | Spec(s) | Responsabilidade |
 |--------|--------|---------|------------------|
-| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **000** (Contratos) + **001** (API Core) + **003** (Detecção) + **008** (Frontend) | Contratos de domínio, scaffolding, integração CV→API, interface web |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **000** (Contratos) + **001** (API Core) + **003** (Detecção) | Contratos de domínio, scaffolding, integração CV→API |
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
 | **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
@@ -182,7 +182,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
-| **Vagner** | 008 Frontend | 🔄 **EM ANDAMENTO** | Aguardar 006 (Reports) |
+| **A Definir** | 008 Frontend | ⏳ Bloqueada | Aguardar API + Reports |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
 ---
@@ -207,25 +207,21 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 ## 👤 Orientações por Membro
 
-### Vagner — Spec 008 (Frontend React)
+### Vagner — Spec 003 (Detecção)
 
-**Spec 008**: Implementar interface web React para upload de diagramas e visualização de relatórios STRIDE:
-- **Tecnologias**: React 18 + TypeScript + Vite + Tailwind CSS + React Query
-- **Features**:
-  - Drag-and-drop de imagens para upload
-  - Dashboard com status dos jobs
-  - Visualização interativa de ameaças STRIDE
-  - Exportação de relatórios em múltiplos formatos
-  - Integração com API REST (`/api/v1/threat-model/analyze`)
+**Spec 003**: Implementar serviço de detecção usando stub YOLO:
 
-```typescript
-// Interface principal
-interface ReportViewerProps {
-  jobId: string;
-  report: ReportData;
-  onExport: (format: ExportFormat) => void;
-}
+```python
+# tests/mocks/yolo_stub.py
+class YOLOStub:
+    def predict(self, image):
+        return [
+            {"class": "database", "confidence": 0.92, "bbox": [100, 100, 200, 200]},
+            {"class": "api", "confidence": 0.88, "bbox": [300, 150, 400, 250]},
+        ]
 ```
+
+Quando Lucas (002) terminar, substitua `YOLOStub` pelo modelo real.
 
 ---
 
@@ -321,19 +317,34 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 
 ---
 
+### A Definir — Spec 008 (Frontend React)
+
+**Spec 008**: ⏳ **AGUARDAR**. Desenvolver interface React quando Spec 001 (API) e Spec 006 (Reports) estiverem prontos.
+
+```typescript
+// Interface principal
+interface ReportViewerProps {
+  jobId: string;
+  report: ReportData;
+  onExport: (format: ExportFormat) => void;
+}
+
+// Componentes principais
+- UploadZone: Drag-drop de imagens
+- LoadingState: Polling de status do job
+- ReportViewer: Visualização do relatório STRIDE
+- ExportButtons: JSON, Markdown, HTML, PDF, CSV
+```
+
+---
 
 ## 📋 Checklist de Início
 
 ```markdown
-### Vagner (003 + 008)
+### Vagner (003)
 - [x] ~~Branch `feature/001-api-core` criada~~ ✅ CONCLUÍDA
 - [x] ~~Branch `feature/003-component-detection` criada~~ ✅ CONCLUÍDA
 - [x] ~~`YOLOStub` funciona~~ ✅ CONCLUÍDO
-- [ ] Branch `feature/008-frontend-react` criada
-- [ ] Vite + React + TypeScript configurado
-- [ ] Tailwind CSS instalado
-- [ ] React Query configurado
-- [ ] Integração com API REST funcionando
 
 ### Lucas (002 + 007)
 - [ ] Branch `feature/002-dataset-yolo` criada
@@ -352,6 +363,12 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 - [ ] Jinja2 instalado
 - [ ] Templates iniciais criados
 - [ ] Todos os mocks importam corretamente
+
+### A Definir (008)
+- [ ] Branch `feature/008-frontend-react` criada
+- [ ] Vite + React + TypeScript configurado
+- [ ] Tailwind CSS instalado
+- [ ] React Query configurado
 ```
 
 ---
@@ -387,4 +404,4 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-11 — Spec 003 marcada como CONCLUÍDA, Spec 008 em andamento*
+*Documento atualizado: 2026-07-11 — Spec 003 marcada como CONCLUÍDA*
