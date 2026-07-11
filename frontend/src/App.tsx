@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Shield, Upload, Info, AlertTriangle, Github, FileImage, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import StrideCard from './components/StrideCard'
+import TechBadge from './components/TechBadge'
 import './App.css'
 
 // Tipos para a resposta da API
@@ -285,6 +287,7 @@ function App() {
                 onChange={handleFileSelect}
                 accept=".png,.jpg,.jpeg"
                 className="hidden"
+                data-testid="file-input"
               />
 
               {uploadStatus === 'idle' && !selectedFile && (
@@ -293,6 +296,7 @@ function App() {
                   onClick={() => fileInputRef.current?.click()}
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
+                  data-testid="upload-dropzone"
                 >
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-700/50 rounded-full mb-6">
                     <Upload className="w-10 h-10 text-slate-400" />
@@ -315,27 +319,29 @@ function App() {
 
               {/* Arquivo selecionado, aguardando upload */}
               {uploadStatus === 'idle' && selectedFile && (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="file-selected">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
                     <FileImage className="w-10 h-10 text-fiap-pink" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Arquivo Selecionado
                   </h3>
-                  <p className="text-slate-300 mb-2">{selectedFile.name}</p>
-                  <p className="text-slate-500 text-sm mb-6">
+                  <p className="text-slate-300 mb-2" data-testid="filename">{selectedFile.name}</p>
+                  <p className="text-slate-500 text-sm mb-6" data-testid="filesize">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                   <div className="flex justify-center space-x-4">
                     <button
                       onClick={handleUpload}
                       className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                      data-testid="start-analysis"
                     >
                       Iniciar Análise
                     </button>
                     <button
                       onClick={handleReset}
                       className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
+                      data-testid="change-file"
                     >
                       Trocar Arquivo
                     </button>
@@ -345,7 +351,7 @@ function App() {
 
               {/* Upload em progresso */}
               {uploadStatus === 'uploading' && (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="uploading">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
                     <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
                   </div>
@@ -357,16 +363,17 @@ function App() {
                       <div
                         className="bg-fiap-pink h-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
+                        data-testid="progress-bar"
                       />
                     </div>
-                    <p className="text-slate-400 mt-2">{uploadProgress}%</p>
+                    <p className="text-slate-400 mt-2" data-testid="progress-text">{uploadProgress}%</p>
                   </div>
                 </div>
               )}
 
               {/* Processando análise */}
               {uploadStatus === 'processing' && (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="processing">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
                     <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
                   </div>
@@ -386,7 +393,7 @@ function App() {
                     </div>
                   </div>
                   {jobId && (
-                    <p className="text-slate-500 text-sm mt-4">
+                    <p className="text-slate-500 text-sm mt-4" data-testid="job-id">
                       Job ID: {jobId}
                     </p>
                   )}
@@ -395,7 +402,7 @@ function App() {
 
               {/* Upload concluído */}
               {uploadStatus === 'completed' && (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="completed">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 rounded-full mb-6">
                     <CheckCircle className="w-10 h-10 text-emerald-500" />
                   </div>
@@ -411,12 +418,14 @@ function App() {
                     <button
                       onClick={downloadReport}
                       className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                      data-testid="download-report"
                     >
                       Baixar Relatório
                     </button>
                     <button
                       onClick={handleReset}
                       className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
+                      data-testid="new-analysis"
                     >
                       <RefreshCw className="w-4 h-4" />
                       <span>Nova Análise</span>
@@ -427,20 +436,21 @@ function App() {
 
               {/* Erro */}
               {uploadStatus === 'error' && (
-                <div className="text-center py-12">
+                <div className="text-center py-12" data-testid="error">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500/10 rounded-full mb-6">
                     <XCircle className="w-10 h-10 text-red-500" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Erro na Análise
                   </h3>
-                  <p className="text-red-400 mb-6 max-w-md mx-auto">
+                  <p className="text-red-400 mb-6 max-w-md mx-auto" data-testid="error-message">
                     {errorMessage || 'Ocorreu um erro ao processar o arquivo. Tente novamente.'}
                   </p>
                   <div className="flex justify-center space-x-4">
                     <button
                       onClick={handleReset}
                       className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                      data-testid="try-again"
                     >
                       Tentar Novamente
                     </button>
@@ -524,7 +534,7 @@ function App() {
                 © 2026 Grupo 27
               </p>
               {systemVersion && (
-                <p className="text-xs text-slate-600 mb-2">
+                <p className="text-xs text-slate-600 mb-2" data-testid="system-version">
                   v{systemVersion}
                 </p>
               )}
@@ -536,34 +546,6 @@ function App() {
           </div>
         </div>
       </footer>
-    </div>
-  )
-}
-
-interface StrideCardProps {
-  letter: string
-  title: string
-  description: string
-  color: 'red' | 'orange' | 'yellow' | 'blue' | 'purple' | 'pink'
-}
-
-function StrideCard({ letter, title, description, color }: StrideCardProps) {
-  const colorClasses = {
-    red: 'bg-red-500/10 border-red-500/20 text-red-400',
-    orange: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
-    yellow: 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-    pink: 'bg-pink-500/10 border-pink-500/20 text-pink-400',
-  }
-
-  return (
-    <div className={`p-4 rounded-xl border ${colorClasses[color]} hover:bg-opacity-20 transition-colors`}>
-      <div className="flex items-center space-x-3 mb-2">
-        <span className="text-2xl font-bold">{letter}</span>
-        <span className="font-semibold">{title}</span>
-      </div>
-      <p className="text-sm text-slate-400">{description}</p>
     </div>
   )
 }
@@ -684,28 +666,6 @@ function AboutSection() {
           <TechBadge name="PyTorch" color="orange" />
         </div>
       </div>
-    </div>
-  )
-}
-
-interface TechBadgeProps {
-  name: string
-  color: 'emerald' | 'blue' | 'cyan' | 'red' | 'purple' | 'orange'
-}
-
-function TechBadge({ name, color }: TechBadgeProps) {
-  const colorClasses = {
-    emerald: 'bg-fiap-pink/10 border-fiap-pink/20 text-fiap-pink',
-    blue: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-    cyan: 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400',
-    red: 'bg-red-500/10 border-red-500/20 text-red-400',
-    purple: 'bg-purple-500/10 border-purple-500/20 text-purple-400',
-    orange: 'bg-orange-500/10 border-orange-500/20 text-orange-400',
-  }
-
-  return (
-    <div className={`px-4 py-2 rounded-lg border text-center font-medium ${colorClasses[color]}`}>
-      {name}
     </div>
   )
 }
