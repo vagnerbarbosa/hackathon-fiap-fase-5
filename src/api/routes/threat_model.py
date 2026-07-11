@@ -1,4 +1,4 @@
-"""Threat model analysis endpoints (placeholder for future specs)."""
+"""Endpoints de análise de modelagem de ameaças (placeholder para specs futuras)."""
 
 from uuid import UUID
 
@@ -24,13 +24,13 @@ router = APIRouter(
 async def analyze_image(
     api_key: ApiKeyDep,
 ) -> dict:
-    """Placeholder for image analysis endpoint.
+    """Placeholder para endpoint de análise de imagem.
 
     Args:
-        api_key: Validated API Key.
+        api_key: API Key validada.
 
     Returns:
-        dict: Job ID for tracking analysis.
+        dict: ID do job para rastreamento da análise.
     """
     # Placeholder implementation
     return {
@@ -50,14 +50,14 @@ async def get_analysis_status(
     job_id: UUID,
     api_key: ApiKeyDep,
 ) -> dict:
-    """Placeholder for getting job status.
+    """Placeholder para obtenção de status do job.
 
     Args:
-        job_id: Job UUID.
-        api_key: Validated API Key.
+        job_id: UUID do job.
+        api_key: API Key validada.
 
     Returns:
-        dict: Job status information.
+        dict: Informações de status do job.
     """
     return {
         "message": "Endpoint placeholder - Implement in Spec 003",
@@ -77,15 +77,15 @@ async def get_report(
     api_key: ApiKeyDep,
     format: str = "json",
 ) -> dict:
-    """Placeholder for getting analysis report.
+    """Placeholder para obtenção de relatório de análise.
 
     Args:
-        job_id: Job UUID.
-        api_key: Validated API Key.
-        format: Report format (json, md, html, pdf, csv).
+        job_id: UUID do job.
+        api_key: API Key validada.
+        format: Formato do relatório (json, md, html, pdf, csv).
 
     Returns:
-        dict: Report data or download URL.
+        dict: Dados do relatório ou URL de download.
     """
     return {
         "message": "Endpoint placeholder - Implement in Spec 006",

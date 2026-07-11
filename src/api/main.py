@@ -1,4 +1,4 @@
-"""FastAPI application entry point."""
+"""Ponto de entrada da aplicação FastAPI."""
 
 from contextlib import asynccontextmanager
 
@@ -16,9 +16,9 @@ logger = get_logger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Manage application lifecycle.
+    """Gerencia o ciclo de vida da aplicação.
 
-    Setup on startup, cleanup on shutdown.
+    Configuração na inicialização, limpeza no desligamento.
     """
     # Startup
     setup_logging()
@@ -65,7 +65,7 @@ app.include_router(threat_model.router)
 
 @app.get("/version")
 async def get_version() -> dict:
-    """Get API version information."""
+    """Obtém informações da versão da API."""
     return {
         "name": settings.app_name,
         "version": settings.app_version,

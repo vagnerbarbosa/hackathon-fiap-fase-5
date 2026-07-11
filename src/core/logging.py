@@ -1,4 +1,4 @@
-"""Structured JSON logging configuration."""
+"""Configuração de logging JSON estruturado."""
 
 import json
 import logging
@@ -10,16 +10,16 @@ from src.core.config import settings
 
 
 class JSONFormatter(logging.Formatter):
-    """Custom JSON formatter for structured logging."""
+    """Formatador JSON customizado para logging estruturado."""
 
     def format(self, record: logging.LogRecord) -> str:
-        """Format log record as JSON.
+        """Formata registro de log como JSON.
 
         Args:
-            record: Log record to format.
+            record: Registro de log a ser formatado.
 
         Returns:
-            str: JSON formatted log entry.
+            str: Entrada de log formatada em JSON.
         """
         log_data: Dict[str, Any] = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -49,9 +49,9 @@ class JSONFormatter(logging.Formatter):
 
 
 def setup_logging() -> None:
-    """Configure application logging with JSON formatter.
+    """Configura logging da aplicação com formatador JSON.
 
-    Sets up root logger with JSON output to stdout.
+    Configura o logger raiz com saída JSON para stdout.
     """
     # Create handler
     handler = logging.StreamHandler(sys.stdout)
@@ -69,25 +69,25 @@ def setup_logging() -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
-    """Get logger instance with given name.
+    """Obtém instância de logger com o nome dado.
 
     Args:
-        name: Logger name (typically __name__).
+        name: Nome do logger (tipicamente __name__).
 
     Returns:
-        logging.Logger: Logger instance.
+        logging.Logger: Instância do logger.
     """
     return logging.getLogger(name)
 
 
 class RequestIdFilter(logging.Filter):
-    """Filter that adds request_id to log records."""
+    """Filtro que adiciona request_id aos registros de log."""
 
     def __init__(self, request_id: str = ""):
         super().__init__()
         self.request_id = request_id
 
     def filter(self, record: logging.LogRecord) -> bool:
-        """Add request_id to record."""
+        """Adiciona request_id ao registro."""
         record.request_id = self.request_id  # type: ignore
         return True

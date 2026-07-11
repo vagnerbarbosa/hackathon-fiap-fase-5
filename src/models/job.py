@@ -1,4 +1,4 @@
-"""Job model for threat modeling analysis."""
+"""Modelo de Job para análise de modelagem de ameaças."""
 
 from datetime import datetime, timezone
 from enum import Enum as PyEnum
@@ -12,7 +12,7 @@ from src.models.base import Base
 
 
 class JobStatus(str, PyEnum):
-    """Job processing status."""
+    """Status de processamento do Job."""
 
     PENDING = "pending"
     PROCESSING = "processing"
@@ -21,9 +21,9 @@ class JobStatus(str, PyEnum):
 
 
 class Job(Base):
-    """Threat modeling analysis job.
+    """Job de análise de modelagem de ameaças.
 
-    Represents an analysis request from image upload to report generation.
+    Representa uma requisição de análise desde o upload da imagem até a geração do relatório.
     """
 
     __tablename__ = "jobs"
