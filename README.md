@@ -283,6 +283,17 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 
 ---
 
+## 👥 Integrantes Grupo 27
+
+| Nome | GitHub | Atribuição |
+|------|--------|------------|
+| **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | Spec 004 (STRIDE) + 005 (Vulnerabilidades) |
+| **Leticia Nepomucena** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | Spec 006 (Relatórios) + 009 (Vídeo) |
+| **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | Spec 002 (Dataset YOLO) + 007 (CI/CD) |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | Spec 000/001/003 (Contratos, API Core, Detecção) |
+
+---
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
