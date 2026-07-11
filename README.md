@@ -53,9 +53,10 @@ Imagem de Arquitetura
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
-| Local | `http://localhost:8000` | 🟢 Desenvolvimento |
-| Healthcheck | `http://localhost:8000/health` | 🟢 Online |
-| Swagger UI | `http://localhost:8000/docs` | 🟢 Documentação API |
+| Frontend | `http://localhost:5173` | 🟢 React App |
+| API | `http://localhost:8001` | 🟢 Desenvolvimento |
+| Healthcheck | `http://localhost:8001/health` | 🟢 Online |
+| Swagger UI | `http://localhost:8001/docs` | 🟢 Documentação API |
 
 ---
 
