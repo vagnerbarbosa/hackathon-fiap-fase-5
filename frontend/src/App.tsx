@@ -4,20 +4,19 @@ import './App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'upload' | 'about'>('upload')
-  const [apiVersion, setApiVersion] = useState<string>('')
-  const FRONTEND_VERSION = '0.8.0'
+  const [systemVersion, setSystemVersion] = useState<string>('')
 
   useEffect(() => {
-    // Fetch API version on mount
+    // Fetch system version from API on mount
     const fetchVersion = async () => {
       try {
         const response = await fetch('/api/version')
         if (response.ok) {
           const data = await response.json()
-          setApiVersion(data.version)
+          setSystemVersion(data.version)
         }
       } catch (error) {
-        console.error('Failed to fetch API version:', error)
+        console.error('Failed to fetch system version:', error)
       }
     }
     fetchVersion()
@@ -191,9 +190,11 @@ function App() {
               <p className="text-sm text-slate-500 mb-2">
                 © 2026 Grupo 27
               </p>
-              <p className="text-xs text-slate-600 mb-2">
-                Frontend v{FRONTEND_VERSION}{apiVersion && ` | API v${apiVersion}`}
-              </p>
+              {systemVersion && (
+                <p className="text-xs text-slate-600 mb-2">
+                  v{systemVersion}
+                </p>
+              )}
               <p className="text-xs text-slate-600 max-w-md md:ml-auto">
                 Este site não coleta dados pessoais, não utiliza cookies de rastreamento
                 e não armazena informações dos visitantes.
