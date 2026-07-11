@@ -24,7 +24,6 @@ $ProjectDir = Split-Path -Parent $ScriptDir
 function Show-Help {
     Write-Host "Usage: .\scripts\start-api.ps1 [OPTIONS]"
     Write-Host ""
-    Write-Host "Start the FIAP STRIDE API + FRONTEND with Docker Compose"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Help              Show this help message"
@@ -33,15 +32,6 @@ function Show-Help {
     Write-Host "  -NoMigrations      Skip database migrations"
     Write-Host ""
     Write-Host "Examples:"
-    Write-Host "  .\scripts\start-api.ps1              # Start API + Frontend with build"
-    Write-Host "  .\scripts\start-api.ps1 -NoBuild    # Start quickly without rebuild"
-    Write-Host "  .\scripts\start-api.ps1 -Foreground  # Run in foreground mode"
-    Write-Host ""
-    Write-Host "Services started:"
-    Write-Host "  • Frontend (React): http://localhost:5173"
-    Write-Host "  • API (FastAPI):    http://localhost:8001"
-    Write-Host "  • PostgreSQL:       localhost:5432"
-    Write-Host "  • Redis:            localhost:6379"
 }
 
 # Show help if requested
@@ -97,7 +87,6 @@ New-Item -ItemType Directory -Force -Path "storage" | Out-Null
 New-Item -ItemType Directory -Force -Path "logs" | Out-Null
 
 Write-Host "${Blue}╔════════════════════════════════════════════════════════╗${NC}"
-Write-Host "${Blue}║        FIAP STRIDE API + FRONTEND - Docker Startup   ${NC}"
 Write-Host "${Blue}╚════════════════════════════════════════════════════════╝${NC}"
 Write-Host ""
 
@@ -129,58 +118,12 @@ Write-Host ""
 Write-Host "${Blue}Waiting for services to be ready...${NC}"
 Start-Sleep -Seconds 5
 
-# Check if services are healthy
-Write-Host "${Blue}Checking services health...${NC}"
-$MaxRetries = 30
-$RetryCount = 0
-$ApiHealthy = $false
-$FrontendHealthy = $false
-
-while ($RetryCount -lt $MaxRetries) {
-    # Check API (port 8001 is mapped to 8000 in container)
-    if (-not $ApiHealthy) {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost:8001/health" -UseBasicParsing -ErrorAction Stop
-            if ($response.StatusCode -eq 200) {
-                Write-Host "${Green}✓ API is healthy${NC}"
-                $ApiHealthy = $true
-            }
-        } catch {
-            # API not ready yet
-        }
-    }
-
-    # Check Frontend
-    if (-not $FrontendHealthy) {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost:5173" -UseBasicParsing -ErrorAction Stop
-            if ($response.StatusCode -eq 200) {
-                Write-Host "${Green}✓ Frontend is healthy${NC}"
-                $FrontendHealthy = $true
-            }
-        } catch {
-            # Frontend not ready yet
-        }
-    }
-
-    # Break if both are healthy
-    if ($ApiHealthy -and $FrontendHealthy) {
-        break
-    }
-
-    $RetryCount++
-    Write-Host "${Yellow}Waiting for services... API: $ApiHealthy | Frontend: $FrontendHealthy ($RetryCount/$MaxRetries)${NC}"
-    Start-Sleep -Seconds 2
 }
 
 if (-not $ApiHealthy) {
     Write-Host "${Red}✗ API failed to start within expected time${NC}"
     Write-Host "Check logs with: ${ComposeCmd} logs api"
     exit 1
-}
-
-if (-not $FrontendHealthy) {
-    Write-Host "${Yellow}⚠ Frontend may still be starting...${NC}"
 }
 
 # Run migrations if requested
@@ -197,22 +140,5 @@ if (-not $NoMigrations) {
 # Print success message
 Write-Host ""
 Write-Host "${Green}╔════════════════════════════════════════════════════════╗${NC}"
-Write-Host "${Green}║     🚀 API + FRONTEND Started Successfully!          ║${NC}"
-Write-Host "${Green}╚════════════════════════════════════════════════════════╝${NC}"
-Write-Host ""
-Write-Host "${Blue}Frontend (React App):${NC}"
-Write-Host "  ${Green}• Application:${NC} http://localhost:5173"
-Write-Host ""
-Write-Host "${Blue}API Endpoints:${NC}"
-Write-Host "  ${Green}• Health Check:${NC} http://localhost:8001/health"
-Write-Host "  ${Green}• Swagger UI:${NC}   http://localhost:8001/docs"
-Write-Host "  ${Green}• API Version:${NC}  http://localhost:8001/version"
-Write-Host ""
-Write-Host "${Blue}To stop all services:${NC}"
-Write-Host "  ${Yellow}${ComposeCmd} down${NC}"
-Write-Host ""
-Write-Host "${Blue}To view logs:${NC}"
-Write-Host "  ${Yellow}API:     ${ComposeCmd} logs -f api${NC}"
-Write-Host "  ${YELLOW}Frontend:${ComposeCmd} logs -f frontend${NC}"
 Write-Host ""
 Write-Host "${Blue}Happy hacking! 🛡️🔍${NC}"

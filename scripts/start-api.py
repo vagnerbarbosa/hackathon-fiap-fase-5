@@ -94,74 +94,11 @@ def run_command(cmd: str, cwd: Path | None = None, check: bool = True) -> subpro
     return result
 
 
-def wait_for_services(timeout: int = 60) -> tuple[bool, bool]:
-    """Wait for API and Frontend to be healthy."""
-    import urllib.request
-    import urllib.error
-
-    print("⏳ Waiting for services to be ready...")
-    start_time = time.time()
-    api_healthy = False
-    frontend_healthy = False
-
-    while time.time() - start_time < timeout:
-        # Check API
-        if not api_healthy:
-            try:
-                response = urllib.request.urlopen(
-                    "http://localhost:8001/health",
-                    timeout=2
-                )
-                if response.status == 200:
-                    print("✅ API is healthy")
-                    api_healthy = True
-            except (urllib.error.URLError, urllib.error.HTTPError):
-                pass
-
-        # Check Frontend
-        if not frontend_healthy:
-            try:
-                response = urllib.request.urlopen(
-                    "http://localhost:5173",
-                    timeout=2
-                )
-                if response.status == 200:
-                    print("✅ Frontend is healthy")
-                    frontend_healthy = True
-            except (urllib.error.URLError, urllib.error.HTTPError):
-                pass
-
-        # Break if both are healthy
-        if api_healthy and frontend_healthy:
-            return True, True
-
-        print(f"⏳ Waiting... API: {api_healthy} | Frontend: {frontend_healthy}", end="\r")
-        time.sleep(2)
-
-    if not api_healthy:
-        print("❌ API failed to start within expected time")
-    if not frontend_healthy:
-        print("⚠️ Frontend may still be starting...")
-
-    return api_healthy, frontend_healthy
 
 
 def main() -> None:
     """Main function."""
     parser = argparse.ArgumentParser(
-        description="Start the FIAP STRIDE API + FRONTEND with Docker Compose",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python scripts/start-api.py              # Start API + Frontend with build
-  python scripts/start-api.py --no-build   # Start quickly without rebuild
-  python scripts/start-api.py --foreground # Run in foreground mode
-
-Services started:
-  • Frontend (React): http://localhost:5173
-  • API (FastAPI):    http://localhost:8001
-  • PostgreSQL:       localhost:5432
-  • Redis:            localhost:6379
 """
     )
 
@@ -187,7 +124,6 @@ Services started:
     project_dir = get_project_dir()
 
     print("=" * 60)
-    print("     FIAP STRIDE API + FRONTEND - Docker Startup")
     print("=" * 60)
     print("")
 
@@ -222,11 +158,6 @@ Services started:
             print("\n👋 Stopped by user")
         return
 
-    # Wait for services
-    time.sleep(5)  # Give containers time to start
-
-    api_healthy, frontend_healthy = wait_for_services()
-    if not api_healthy:
         print(f"Check logs with: {compose_cmd} logs api")
         sys.exit(1)
 
@@ -242,23 +173,6 @@ Services started:
     # Success message
     print("")
     print("=" * 60)
-    print("     🚀 API + FRONTEND Started Successfully!")
-    print("=" * 60)
-    print("")
-    print("Frontend (React App):")
-    print("  • Application: http://localhost:5173")
-    print("")
-    print("API Endpoints:")
-    print("  • Health Check: http://localhost:8001/health")
-    print("  • Swagger UI:   http://localhost:8001/docs")
-    print("  • API Version:  http://localhost:8001/version")
-    print("")
-    print("To stop all services:")
-    print(f"  {compose_cmd} down")
-    print("")
-    print("To view logs:")
-    print(f"  API:      {compose_cmd} logs -f api")
-    print(f"  Frontend: {compose_cmd} logs -f frontend")
     print("")
     print("Happy hacking! 🛡️🔍")
 

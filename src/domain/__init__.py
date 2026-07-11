@@ -1,5 +1,5 @@
 """
-Domain package containing shared Pydantic models.
+Pacote de domínio contendo modelos Pydantic compartilhados.
 
-These models serve as the "lingua franca" for all project modules.
+Estes modelos servem como a "lingua franca" para todos os módulos do projeto.
 """

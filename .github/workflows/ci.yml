@@ -1,0 +1,27 @@
+# CI/CD Pipeline - Placeholder for Spec 007
+# This file is a placeholder. Full implementation in Spec 007.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Placeholder
+        run: echo "Full CI/CD implementation in Spec 007"
+
+# TODO: Spec 007 will implement:
+# - Lint with ruff
+# - Type check with mypy
+# - Test with pytest (coverage >= 70%)
+# - Docker build
+# - Security scan

@@ -1,9 +1,27 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Shield, Upload, Info, AlertTriangle, Github } from 'lucide-react'
 import './App.css'
 
 function App() {
   const [activeTab, setActiveTab] = useState<'upload' | 'about'>('upload')
+  const [apiVersion, setApiVersion] = useState<string>('')
+  const FRONTEND_VERSION = '0.8.0'
+
+  useEffect(() => {
+    // Fetch API version on mount
+    const fetchVersion = async () => {
+      try {
+        const response = await fetch('/api/version')
+        if (response.ok) {
+          const data = await response.json()
+          setApiVersion(data.version)
+        }
+      } catch (error) {
+        console.error('Failed to fetch API version:', error)
+      }
+    }
+    fetchVersion()
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fiap-gray-900 via-fiap-black to-fiap-gray-900">
@@ -161,17 +179,20 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Shield className="w-5 h-5 text-fiap-pink" />
-                <span className="font-semibold text-white">FIAP STRIDE</span>
+                <Shield className="w-5 h-5 text-emerald-400" />
+                <span className="font-semibold text-white">STRIDE</span>
               </div>
               <p className="text-sm text-slate-400">
                 Modelagem de ameaças automatizada usando IA e metodologia STRIDE.
-                Desenvolvido durante o Hackathon FIAP Fase 5.
+                Desenvolvido durante o Hackathon Fase 5.
               </p>
             </div>
             <div className="md:text-right">
               <p className="text-sm text-slate-500 mb-2">
-                © 2026 FIAP STRIDE - Grupo 27
+                © 2026 Grupo 27
+              </p>
+              <p className="text-xs text-slate-600 mb-2">
+                Frontend v{FRONTEND_VERSION}{apiVersion && ` | API v${apiVersion}`}
               </p>
               <p className="text-xs text-slate-600 max-w-md md:ml-auto">
                 Este site não coleta dados pessoais, não utiliza cookies de rastreamento
