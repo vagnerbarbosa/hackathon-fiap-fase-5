@@ -1,6 +1,6 @@
-"""Heuristic relationship analyzer for architecture components.
+"""Analisador heurístico de relacionamentos para componentes de arquitetura.
 
-Infers data flows and trust boundaries based on spatial positions.
+Infere data flows e trust boundaries baseado em posições espaciais.
 """
 
 import logging
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ProximityResult:
-    """Result of proximity check between two components."""
+    """Resultado de verificação de proximidade entre dois componentes."""
 
     source_id: str
     target_id: str
@@ -23,11 +23,11 @@ class ProximityResult:
 
 
 class RelationshipAnalyzer:
-    """Analyze spatial relationships between detected components.
+    """Analisa relacionamentos espaciais entre componentes detectados.
 
-    Uses heuristics to infer:
-    - Data Flows: components close and aligned
-    - Trust Boundaries: groups by component type
+    Usa heurísticas para inferir:
+    - Data Flows: componentes próximos e alinhados
+    - Trust Boundaries: grupos por tipo de componente
 
     Usage:
         >>> analyzer = RelationshipAnalyzer(proximity_threshold=150)
@@ -40,11 +40,11 @@ class RelationshipAnalyzer:
         proximity_threshold: float = 150.0,
         alignment_tolerance: float = 50.0,
     ):
-        """Initialize analyzer.
+        """Inicializa o analisador.
 
         Args:
-            proximity_threshold: Max distance (pixels) for flow inference.
-            alignment_tolerance: Tolerance for horizontal/vertical alignment.
+            proximity_threshold: Distância máxima (pixels) para inferência de flow.
+            alignment_tolerance: Tolerância para alinhamento horizontal/vertical.
         """
         self.proximity_threshold = proximity_threshold
         self.alignment_tolerance = alignment_tolerance
@@ -53,17 +53,17 @@ class RelationshipAnalyzer:
         self,
         components: List[DetectedComponent],
     ) -> List[DataFlow]:
-        """Infer data flows based on component proximity.
+        """Infere data flows baseado na proximidade dos componentes.
 
-        Creates flows between components that are:
-        1. Within proximity_threshold distance
-        2. Horizontally or vertically aligned
+        Cria flows entre componentes que estão:
+        1. Dentro da distância proximity_threshold
+        2. Alinhados horizontalmente ou verticalmente
 
         Args:
-            components: List of detected components.
+            components: Lista de componentes detectados.
 
         Returns:
-            List of inferred DataFlow objects.
+            Lista de objetos DataFlow inferidos.
         """
         if len(components) < 2:
             return []
@@ -112,20 +112,20 @@ class RelationshipAnalyzer:
         self,
         components: List[DetectedComponent],
     ) -> List[List[str]]:
-        """Group components into trust boundaries by type.
+        """Agrupa componentes em trust boundaries por tipo.
 
-        Rules:
-        - "user", "mobile_app" -> Public zone
+        Regras:
+        - "user", "mobile_app" -> Zona pública
         - "api", "web_server" -> DMZ/Frontend
-        - "database", "cache", "storage", "queue" -> Private/Data Layer
-        - "external_service" -> External zone
-        - "container" -> Depends on context (grouped by proximity)
+        - "database", "cache", "storage", "queue" -> Camada privada/dados
+        - "external_service" -> Zona externa
+        - "container" -> Depende do contexto (agrupado por proximidade)
 
         Args:
-            components: List of detected components.
+            components: Lista de componentes detectados.
 
         Returns:
-            List of component ID groups (trust boundaries).
+            Lista de grupos de IDs de componentes (trust boundaries).
         """
         if not components:
             return []
@@ -181,14 +181,14 @@ class RelationshipAnalyzer:
         comp1: DetectedComponent,
         comp2: DetectedComponent,
     ) -> float:
-        """Compute Euclidean distance between component centers.
+        """Calcula distância euclidiana entre centros de componentes.
 
         Args:
-            comp1: First component.
-            comp2: Second component.
+            comp1: Primeiro componente.
+            comp2: Segundo componente.
 
         Returns:
-            Distance in pixels.
+            Distância em pixels.
         """
         dx = comp1.center.x - comp2.center.x
         dy = comp1.center.y - comp2.center.y
@@ -199,14 +199,14 @@ class RelationshipAnalyzer:
         comp1: DetectedComponent,
         comp2: DetectedComponent,
     ) -> bool:
-        """Check if components are horizontally or vertically aligned.
+        """Verifica se componentes estão alinhados horizontalmente ou verticalmente.
 
         Args:
-            comp1: First component.
-            comp2: Second component.
+            comp1: Primeiro componente.
+            comp2: Segundo componente.
 
         Returns:
-            True if aligned within tolerance.
+            True se alinhado dentro da tolerância.
         """
         # Check horizontal alignment (similar Y)
         dy = abs(comp1.center.y - comp2.center.y)
@@ -225,11 +225,11 @@ class RelationshipAnalyzer:
         source: DetectedComponent,
         target: DetectedComponent,
     ) -> str:
-        """Infer flow direction based on component types.
+        """Infere direção do flow baseado nos tipos de componentes.
 
         Args:
-            source: Source component.
-            target: Target component.
+            source: Componente fonte.
+            target: Componente alvo.
 
         Returns:
             "unidirectional" or "bidirectional".

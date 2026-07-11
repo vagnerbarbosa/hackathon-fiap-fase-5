@@ -1,11 +1,11 @@
-"""Component Detection Service.
+"""Serviço de Detecção de Componentes.
 
-Orchestrates the full detection pipeline:
-1. Check cache
-2. Preprocess image
-3. Run YOLO inference
-4. Analyze relationships
-5. Cache result
+Orquestra o pipeline completo de detecção:
+1. Verifica cache
+2. Pré-processa imagem
+3. Executa inferência YOLO
+4. Analisa relacionamentos
+5. Armazena resultado em cache
 """
 
 import logging
@@ -30,10 +30,10 @@ logger = logging.getLogger(__name__)
 
 
 class ComponentDetectionService:
-    """Service for detecting architectural components in images.
+    """Serviço para detecção de componentes arquiteturais em imagens.
 
-    Coordinates the full detection pipeline including preprocessing,
-    model inference, relationship analysis, and caching.
+    Coordena o pipeline completo de detecção incluindo pré-processamento,
+    inferência do modelo, análise de relacionamentos e cache.
 
     Usage:
         >>> service = ComponentDetectionService()
@@ -41,10 +41,10 @@ class ComponentDetectionService:
         >>> print(f"Found {len(graph.components)} components")
 
     Attributes:
-        model: YOLO model wrapper (supports .pt and .onnx).
-        preprocessor: Image preprocessing pipeline.
-        analyzer: Relationship analyzer for flows and boundaries.
-        cache: Redis cache for detection results.
+        model: Wrapper do modelo YOLO (suporta .pt e .onnx).
+        preprocessor: Pipeline de pré-processamento de imagens.
+        analyzer: Analisador de relacionamentos para flows e boundaries.
+        cache: Cache Redis para resultados de detecção.
     """
 
     def __init__(
@@ -52,11 +52,11 @@ class ComponentDetectionService:
         model_path: str = "models/best.pt",
         confidence_threshold: float = 0.25,
     ):
-        """Initialize detection service.
+        """Inicializa o serviço de detecção.
 
         Args:
-            model_path: Path to YOLO model file.
-            confidence_threshold: Minimum confidence for detections.
+            model_path: Caminho para o arquivo do modelo YOLO.
+            confidence_threshold: Confiança mínima para detecções.
         """
         self.model = YOLOModel(model_path)
         self.preprocessor = ImagePreprocessor(target_size=640)
@@ -77,25 +77,25 @@ class ComponentDetectionService:
         )
 
     async def detect(self, image_path: Union[str, Path]) -> ArchitectureGraph:
-        """Detect components in image.
+        """Detecta componentes na imagem.
 
-        Full pipeline:
-        1. Check cache
-        2. Load and preprocess image
-        3. Run YOLO inference
-        4. Convert to domain models
-        5. Analyze relationships
-        6. Cache result
+        Pipeline completo:
+        1. Verifica cache
+        2. Carrega e pré-processa imagem
+        3. Executa inferência YOLO
+        4. Converte para modelos de domínio
+        5. Analisa relacionamentos
+        6. Armazena em cache
 
         Args:
-            image_path: Path to image file (PNG/JPG/JPEG).
+            image_path: Caminho para o arquivo de imagem (PNG/JPG/JPEG).
 
         Returns:
-            ArchitectureGraph with components, flows, and boundaries.
+            ArchitectureGraph com componentes, flows e boundaries.
 
         Raises:
-            FileNotFoundError: If image file not found.
-            NoComponentsDetectedError: If no components detected.
+            FileNotFoundError: Se arquivo de imagem não encontrado.
+            NoComponentsDetectedError: Se nenhum componente detectado.
         """
         image_path = Path(image_path)
 
@@ -145,13 +145,13 @@ class ComponentDetectionService:
         return graph
 
     def _convert_detections(self, detections: list) -> list[DetectedComponent]:
-        """Convert YOLO detections to domain models.
+        """Converte detecções YOLO para modelos de domínio.
 
         Args:
-            detections: List of DetectionResult from YOLO.
+            detections: Lista de DetectionResult do YOLO.
 
         Returns:
-            List of DetectedComponent with generated IDs.
+            Lista de DetectedComponent com IDs gerados.
         """
         components = []
 
@@ -177,19 +177,19 @@ class ComponentDetectionService:
 
     @property
     def is_using_stub(self) -> bool:
-        """Check if using stub model (model not trained yet)."""
+        """Verifica se está usando modelo stub (modelo ainda não treinado)."""
         return self.model.is_stub
 
 
 class NoComponentsDetectedError(Exception):
-    """Raised when no components are detected in image."""
+    """Lançado quando nenhum componente é detectado na imagem."""
 
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
 
     def to_dict(self) -> dict:
-        """Convert error to API response format."""
+        """Converte erro para formato de resposta da API."""
         return {
             "error": "NO_COMPONENTS_DETECTED",
             "message": self.message,

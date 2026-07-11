@@ -14,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 class ImagePreprocessor:
-    """Preprocess images for YOLO component detection.
+    """Pré-processa imagens para detecção de componentes YOLO.
 
-    Performs the following transformations:
-    1. Load image from file
-    2. Convert to RGB
-    3. Resize to target size (múltiplo de 32)
-    4. Normalize pixels (0-255 -> 0-1)
+    Executa as seguintes transformações:
+    1. Carrega imagem do arquivo
+    2. Converte para RGB
+    3. Redimensiona para tamanho alvo (múltiplo de 32)
+    4. Normaliza pixels (0-255 -> 0-1)
     5. Binarização opcional (threshold adaptativo)
 
     Usage:
@@ -35,29 +35,29 @@ class ImagePreprocessor:
         normalize: bool = True,
         apply_threshold: bool = False,
     ):
-        """Initialize preprocessor.
+        """Inicializa o pré-processador.
 
         Args:
-            target_size: Target image size (múltiplo de 32 recomendado).
-            normalize: Whether to normalize pixels to 0-1 range.
-            apply_threshold: Whether to apply adaptive thresholding.
+            target_size: Tamanho alvo da imagem (múltiplo de 32 recomendado).
+            normalize: Se deve normalizar pixels para faixa 0-1.
+            apply_threshold: Se deve aplicar thresholding adaptativo.
         """
         self.target_size = target_size
         self.normalize = normalize
         self.apply_threshold = apply_threshold
 
     def preprocess(self, image_path: Union[str, Path]) -> np.ndarray:
-        """Preprocess image file for YOLO inference.
+        """Pré-processa arquivo de imagem para inferência YOLO.
 
         Args:
-            image_path: Path to image file (PNG, JPG, JPEG).
+            image_path: Caminho para o arquivo de imagem (PNG, JPG, JPEG).
 
         Returns:
-            np.ndarray: Preprocessed image array (HWC, RGB, float32).
+            np.ndarray: Array de imagem pré-processada (HWC, RGB, float32).
 
         Raises:
-            FileNotFoundError: If image file doesn't exist.
-            ValueError: If image cannot be loaded.
+            FileNotFoundError: Se arquivo de imagem não existir.
+            ValueError: Se imagem não puder ser carregada.
         """
         image_path = Path(image_path)
 
@@ -89,15 +89,15 @@ class ImagePreprocessor:
         return img
 
     def _resize(self, img: np.ndarray) -> np.ndarray:
-        """Resize image to target size while maintaining aspect ratio.
+        """Redimensiona imagem para tamanho alvo mantendo aspect ratio.
 
-        Uses letterbox technique to pad if necessary.
+        Usa técnica letterbox para preencher se necessário.
 
         Args:
-            img: Input image (HWC).
+            img: Imagem de entrada (HWC).
 
         Returns:
-            Resized image.
+            Imagem redimensionada.
         """
         h, w = img.shape[:2]
 
@@ -131,15 +131,15 @@ class ImagePreprocessor:
         return padded
 
     def _apply_threshold(self, img: np.ndarray) -> np.ndarray:
-        """Apply adaptive thresholding for diagram enhancement.
+        """Aplica thresholding adaptativo para melhoria de diagramas.
 
-        Useful for diagrams with varying backgrounds.
+        Útil para diagramas com fundos variados.
 
         Args:
-            img: Input image (HWC, RGB).
+            img: Imagem de entrada (HWC, RGB).
 
         Returns:
-            Thresholded image.
+            Imagem com threshold aplicado.
         """
         # Convert to grayscale
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
@@ -159,13 +159,13 @@ class ImagePreprocessor:
         return result
 
     def get_original_size(self, image_path: Union[str, Path]) -> tuple:
-        """Get original image dimensions without loading full image.
+        """Obtém dimensões originais da imagem sem carregar imagem completa.
 
         Args:
-            image_path: Path to image file.
+            image_path: Caminho para o arquivo de imagem.
 
         Returns:
-            Tuple of (height, width).
+            Tupla de (altura, largura).
         """
         image_path = Path(image_path)
         img = cv2.imread(str(image_path))
