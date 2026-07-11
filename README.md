@@ -174,7 +174,7 @@ docker-compose up --build
 - [x] SDD consolidado
 - [x] Scaffolding FastAPI + Docker
 - [ ] Dataset de diagramas sintéticos
-- [x] Treinamento YOLOv11n (base)
+- [ ] Treinamento YOLOv11n (base)
 - [x] Módulo de detecção de componentes
 - [ ] Motor STRIDE
 - [ ] Busca de vulnerabilidades e contramedidas
