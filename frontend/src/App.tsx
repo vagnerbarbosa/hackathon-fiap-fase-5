@@ -13,10 +13,13 @@ function App() {
         const response = await fetch('/api/version')
         if (response.ok) {
           const data = await response.json()
+          console.log('[Version] API version:', data.version)
           setSystemVersion(data.version)
+        } else {
+          console.error('[Version] API responded with status:', response.status)
         }
       } catch (error) {
-        console.error('Failed to fetch system version:', error)
+        console.error('[Version] Failed to fetch system version:', error)
       }
     }
     fetchVersion()
