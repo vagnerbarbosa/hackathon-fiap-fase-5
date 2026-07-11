@@ -67,7 +67,7 @@ Todas as specs estão em `specs/features/`:
 | # | Arquivo | Título | Responsabilidade | Status |
 |---|---------|--------|------------------|--------|
 | **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** | ✅ **Concluída** |
-| 001 | `001-api-core-scaffolding.md` | API Core + Scaffolding | FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP | ⏳ Pendente |
+| **001** | **`001-api-core-scaffolding.md`** | **API Core + Scaffolding** | **FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP** | ✅ **Concluída** |
 | 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo | ⏳ Pendente |
 | 003 | `003-component-detection-service.md` | Serviço de Detecção de Componentes | Inferência YOLO, pré-processamento, heurística espacial | ⏳ Pendente |
 | 004 | `004-stride-engine.md` | Motor STRIDE | Aplicação sistemática das 6 categorias STRIDE | ⏳ Pendente |
@@ -248,5 +248,5 @@ Todas as specs estão em `specs/features/`:
 
 ---
 
-*SDD consolidado em: 2026-07-09*
+*SDD consolidado em: 2026-07-11*
 *Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*

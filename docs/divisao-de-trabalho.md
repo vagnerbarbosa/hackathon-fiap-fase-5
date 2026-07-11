@@ -165,7 +165,7 @@ git push origin feature/004-stride-engine
 
 ## 🚀 Guia de Implementação em Paralelo
 
-> **✅ Spec 000 implementada! Todos podem começar AGORA.**
+> **✅ Specs 000 e 001 implementadas! Novas specs liberadas.**
 
 Este guia detalha como cada membro pode implementar suas specs usando **mocks** para desbloquear trabalho paralelo.
 
@@ -175,7 +175,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 | Membro | Spec | Status | Mock Necessário |
 |--------|------|--------|-----------------|
-| **Vagner** | 001 API Core | ✅ Livre | `fake_job` |
+| **Vagner** | 001 API Core | ✅ **CONCLUÍDA** | — |
 | **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
 | **Vagner** | 003 Detecção | ✅ Livre | `YOLOStub` |
 | **Adriel** | 004 STRIDE | ✅ Livre | `fake_architecture_graph` |
@@ -207,9 +207,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 ## 👤 Orientações por Membro
 
-### Vagner — Spec 001 (API Core) + 003 (Detecção)
-
-**Spec 001**: Implementar FastAPI + PostgreSQL usando `Job` dos contratos.
+### Vagner — Spec 003 (Detecção)
 
 **Spec 003**: Implementar serviço de detecção usando stub YOLO:
 
@@ -343,10 +341,9 @@ interface ReportViewerProps {
 ## 📋 Checklist de Início
 
 ```markdown
-### Vagner (001 + 003)
-- [ ] Branch `feature/001-api-core` criada
+### Vagner (003)
+- [x] ~~Branch `feature/001-api-core` criada~~ ✅ CONCLUÍDA
 - [ ] Branch `feature/003-component-detection` criada
-- [ ] FastAPI + PostgreSQL configurados
 - [ ] `YOLOStub` funciona
 
 ### Lucas (002 + 007)
@@ -407,4 +404,4 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-09*
+*Documento atualizado: 2026-07-11*
