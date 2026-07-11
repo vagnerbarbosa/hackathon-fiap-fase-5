@@ -33,7 +33,7 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState<number>(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Buscar versão do sistema
   useEffect(() => {
