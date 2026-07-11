@@ -404,4 +404,4 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-11 — Spec 003 marcada como CONCLUÍDA*
+*Documento atualizado: 2026-07-11*
