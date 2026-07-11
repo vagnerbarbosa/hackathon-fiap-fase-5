@@ -1,0 +1,74 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fiap-api
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fiap_stride
+      - REDIS_URL=redis://redis:6379/0
+      - STORAGE_PATH=/app/storage
+      - LOG_LEVEL=INFO
+      - API_RATE_LIMIT=60
+      - API_KEY=${API_KEY:-dev-api-key-change-in-production}
+      - DEBUG=true
+    volumes:
+      - ./storage:/app/storage
+      - ./logs:/app/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - fiap-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:17-alpine
+    container_name: fiap-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fiap_stride
+    tmpfs:
+      - /var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - fiap-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fiap_stride"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    image: redis:8-alpine
+    container_name: fiap-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - fiap-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fiap-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    networks:
+      - fiap-network
+    restart: unless-stopped
+
+networks:
+  fiap-network:
+    driver: bridge

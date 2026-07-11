@@ -69,6 +69,8 @@ Imagem de Arquitetura
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
 | ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
+| 💻 **Frontend** | React + TypeScript + Vite + Tailwind | Interface web com identidade FIAP |
+| 🎨 **UI** | Montserrat + Rosa FIAP (#ED145B) | Fonte e cores da marca FIAP |
 | 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
 
 ---
@@ -148,13 +150,14 @@ docker-compose up --build
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
-- [ ] Scaffolding FastAPI + Docker
+- [x] Scaffolding FastAPI + Docker
 - [ ] Dataset de diagramas sintéticos
-- [ ] Treinamento YOLOv11n
-- [ ] Módulo de detecção de componentes
+- [x] Treinamento YOLOv11n (base)
+- [x] Módulo de detecção de componentes
 - [ ] Motor STRIDE
 - [ ] Busca de vulnerabilidades e contramedidas
 - [ ] Gerador de relatórios
+- [x] Frontend React com identidade FIAP
 - [ ] CI/CD GitHub Actions
 - [ ] Vídeo de demonstração (15 min)
 

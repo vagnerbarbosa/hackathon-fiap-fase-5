@@ -34,7 +34,7 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
 | **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
-| **A Definir** | — | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **008** (Frontend React) | Interface web, upload, visualização de relatórios, identidade FIAP |
 
 ---
 
@@ -182,7 +182,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
-| **A Definir** | 008 Frontend | ⏳ Bloqueada | Aguardar API + Reports |
+| **Vagner** | 008 Frontend | ✅ Implementado | Layout completo, identidade FIAP, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
 ---
@@ -319,23 +319,47 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 
 ---
 
-### A Definir — Spec 008 (Frontend React)
+### Vagner — Spec 008 (Frontend React)
 
-**Spec 008**: ⏳ **AGUARDAR**. Desenvolver interface React quando Spec 001 (API) e Spec 006 (Reports) estiverem prontos.
+**Spec 008**: ✅ **IMPLEMENTADA**. Frontend React com identidade FIAP desenvolvido.
+
+**Tecnologias Frontend:**
+- **Framework**: React 18+ com TypeScript
+- **Build Tool**: Vite 5.x
+- **Styling**: Tailwind CSS 3.x
+- **Fonte**: Montserrat (FIAP) + Inter
+- **Ícones**: Lucide React
+- **State Management**: React Query
+- **HTTP Client**: Axios
+- **Container**: Nginx (multi-stage build)
+
+**Cores FIAP:**
+- Rosa FIAP: `#ED145B` (primária)
+- Rosa claro: `#F05A85` (hover)
+- Rosa escuro: `#C4124D`
+- Preto: `#1A1A1A`
+
+**Funcionalidades Implementadas:**
+- Layout responsivo com tema escuro
+- Explicação da metodologia STRIDE (6 categorias)
+- Seção "Sobre o Projeto" com integrantes do Grupo 27
+- Links para perfis GitHub dos membros
+- Link para repositório do projeto
+- Copyright e nota de privacidade
+- Dockerfile e nginx.conf configurados
+- Integração com docker-compose.yml
+
+**Portas:**
+- Frontend: http://localhost:5173
+- API: http://localhost:8001
 
 ```typescript
-// Interface principal
-interface ReportViewerProps {
-  jobId: string;
-  report: ReportData;
-  onExport: (format: ExportFormat) => void;
-}
-
 // Componentes principais
-- UploadZone: Drag-drop de imagens
-- LoadingState: Polling de status do job
-- ReportViewer: Visualização do relatório STRIDE
-- ExportButtons: JSON, Markdown, HTML, PDF, CSV
+- App.tsx: Componente principal com navegação
+- StrideCard: Cards explicativos das 6 categorias STRIDE
+- AboutSection: Sobre o projeto, integrantes, tecnologias
+- UploadZone: Área de upload (placeholder para integração futura)
+- TechBadge: Badges de tecnologias utilizadas
 ```
 
 ---
@@ -367,11 +391,17 @@ interface ReportViewerProps {
 - [ ] Templates iniciais criados
 - [ ] Todos os mocks importam corretamente
 
-### A Definir (008)
-- [ ] Branch `feature/008-frontend-react` criada
-- [ ] Vite + React + TypeScript configurado
-- [ ] Tailwind CSS instalado
-- [ ] React Query configurado
+### Vagner (008 Frontend)
+- [x] Branch `feature/008-frontend-react` criada
+- [x] Vite + React + TypeScript configurado
+- [x] Tailwind CSS instalado com cores FIAP
+- [x] React Query configurado
+- [x] Identidade visual FIAP (rosa #ED145B)
+- [x] Explicação STRIDE implementada
+- [x] Integrantes do Grupo 27 com links GitHub
+- [x] Copyright e nota de privacidade
+- [x] Dockerfile multi-stage configurado
+- [x] Integrado ao docker-compose.yml
 ```
 
 ---
@@ -407,4 +437,5 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-09*
+*Documento atualizado: 2026-07-11*
+*Frontend React implementado com identidade FIAP, cores #ED145B, fonte Montserrat*

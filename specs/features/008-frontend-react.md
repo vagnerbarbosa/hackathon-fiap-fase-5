@@ -51,14 +51,16 @@ Criar uma aplicação frontend em React que permita:
 ### RNF-001: Tecnologia
 - Framework: React 18+ com TypeScript
 - Build Tool: Vite
-- UI Library: Tailwind CSS + Headless UI ou shadcn/ui
-- HTTP Client: Axios ou fetch
+- UI Library: Tailwind CSS + Headless UI
+- HTTP Client: Axios
 - State Management: React Query (TanStack Query) para cache de API
+- Icons: Lucide React
 
 ### RNF-002: UX/UI
 - Design responsivo (mobile, tablet, desktop)
-- Tema escuro/claro
-- Feedback visual em todas as ações (toasts/notificações)
+- **Tema escuro com identidade visual FIAP** (rosa #ED145B)
+- Fonte: Montserrat (primária), Inter (secundária)
+- Feedback visual em todas as ações
 - Acessibilidade (ARIA labels, navegação por teclado)
 
 ### RNF-003: Performance
@@ -70,6 +72,18 @@ Criar uma aplicação frontend em React que permita:
 - Sanitização de inputs
 - HTTPS obrigatório em produção
 - Não expor credenciais ou tokens no código
+
+### RNF-005: Branding
+- Paleta de cores FIAP:
+  - Rosa FIAP: `#ED145B` (primária)
+  - Rosa claro: `#F05A85` (hover)
+  - Rosa escuro: `#C4124D` (variações)
+  - Preto: `#1A1A1A` (fundo)
+  - Cinza 900: `#0f172a` (background)
+- Logo FIAP STRIDE no header
+- Explicação do STRIDE na página inicial
+- Integrantes do Grupo 27 com links GitHub
+- Copyright e nota de privacidade no footer
 
 ## Critérios de Aceitação (Gherkin)
 
@@ -116,7 +130,7 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 ### Tela 1: Home / Upload
 ```
 +--------------------------------------------------+
-|  Logo FIAP                    [Tema: 🌙 ☀️]      |
+|  Logo FIAP STRIDE    Grupo 27  [Análise] [Sobre] |
 +--------------------------------------------------+
 |                                                  |
 |         Modelagem de Ameaças com IA              |
@@ -136,12 +150,58 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 |            [    Analisar    ]                    |
 |                   (desabilitado até upload)      |
 +--------------------------------------------------+
+|                                                  |
+|  O que é STRIDE?                                 |
+|  [S] Spoofing      [T] Tampering      [R] Repudiation |
+|  [I] Information   [D] Denial of       [E] Elevation  |
+|      Disclosure         Service             of Privilege |
+|                                                  |
++--------------------------------------------------+
+|  © 2026 FIAP STRIDE - Grupo 27                   |
+|  Este site não coleta dados pessoais...           |
++--------------------------------------------------+
 ```
 
-### Tela 2: Processando
+### Tela 2: Sobre o Projeto
 ```
 +--------------------------------------------------+
-|  Logo FIAP                    [Cancelar]        |
+|  Logo FIAP STRIDE    Grupo 27  [Análise] [Sobre] |
++--------------------------------------------------+
+|                                                  |
+|  Sobre o Projeto                                 |
+|  Explicação do FIAP STRIDE...                     |
+|                                                  |
+|  Metodologia STRIDE                              |
+|  [Lista das 6 categorias com cores]              |
+|                                                  |
+|  Grupo 27                                        |
+|  Descrição do grupo...                            |
+|                                                  |
+|  Integrantes                                     |
+|  +---------------+  +---------------+           |
+|  | Adriel Santos |  | Leticia       |           |
+|  | @AdrielCandido|  | @LeticiaNep...|           |
+|  +---------------+  +---------------+           |
+|  +---------------+  +---------------+           |
+|  | Lucas Silva   |  | Vagner        |           |
+|  | @lucfsilva    |  | @vagnerbarbosa|           |
+|  +---------------+  +---------------+           |
+|                                                  |
+|  Repositório                                     |
+|  [github.com/vagnerbarbosa/hackathon-fiap-fase-5]|
+|                                                  |
+|  Tecnologias Utilizadas                          |
+|  [FastAPI] [React] [TypeScript] [Tailwind] ...   |
+|                                                  |
++--------------------------------------------------+
+|  © 2026 FIAP STRIDE - Grupo 27                   |
++--------------------------------------------------+
+```
+
+### Tela 3: Processando
+```
++--------------------------------------------------+
+|  Logo FIAP STRIDE    Grupo 27  [Cancelar]        |
 +--------------------------------------------------+
 |                                                  |
 |              Analisando Arquitetura              |
@@ -167,7 +227,7 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 +--------------------------------------------------+
 ```
 
-### Tela 3: Relatório Completo
+### Tela 4: Relatório Completo
 ```
 +--------------------------------------------------+
 |  Logo FIAP    [Voltar]    [Exportar ▼]    [Tema] |
@@ -240,48 +300,33 @@ Response: Relatório em formato solicitado
 GET /reports/{job_id}.{format}
 ```
 
-## Estrutura de Diretórios Sugerida
+## Estrutura de Diretórios Implementada
 
 ```
 frontend/
 ├── public/
 │   └── vite.svg
 ├── src/
-│   ├── api/
-│   │   ├── client.ts          # Config Axios/fetch
-│   │   ├── jobs.ts            # Endpoints de jobs
-│   │   └── reports.ts         # Endpoints de relatórios
 │   ├── components/
-│   │   ├── ui/                # Componentes base (Button, Card, etc)
-│   │   ├── UploadZone.tsx     # Área de upload com drag-drop
-│   │   ├── LoadingState.tsx   # Componente de loading
-│   │   ├── ReportViewer.tsx   # Visualizador do relatório
-│   │   ├── StrideMatrix.tsx   # Matriz STRIDE
-│   │   ├── ThreatList.tsx     # Lista de ameaças
-│   │   ├── ExportButtons.tsx  # Botões de exportação
-│   │   └── JobHistory.tsx     # Histórico de jobs
-│   ├── hooks/
-│   │   ├── useJob.ts          # Hook para consultar job
-│   │   ├── useUpload.ts       # Hook para upload
-│   │   └── useReport.ts       # Hook para obter relatório
-│   ├── pages/
-│   │   ├── Home.tsx           # Página de upload
-│   │   ├── Processing.tsx     # Tela de loading
-│   │   └── Report.tsx         # Tela de relatório
-│   ├── types/
-│   │   ├── job.ts             # Tipos Job, JobStatus
-│   │   ├── report.ts          # Tipos Report, Threat, etc
-│   │   └── api.ts             # Tipos genéricos de API
-│   ├── utils/
-│   │   ├── formatters.ts      # Formatação data, tamanho
-│   │   └── validators.ts      # Validação de arquivo
-│   ├── App.tsx
-│   └── main.tsx
+│   │   └── ui/                # Componentes base (shadcn/ui style)
+│   ├── api/                   # Configuração de API (axios)
+│   ├── hooks/                 # React hooks
+│   ├── types/                 # TypeScript types
+│   ├── utils/                 # Utilitários
+│   ├── App.tsx               # Componente principal com rotas
+│   ├── App.css               # Estilos específicos
+│   ├── index.css             # Estilos globais + fonte FIAP
+│   ├── main.tsx              # Entry point
+│   └── vite-env.d.ts         # Tipos Vite
 ├── index.html
 ├── package.json
 ├── tsconfig.json
-├── tailwind.config.js
-└── vite.config.ts
+├── tsconfig.node.json
+├── tailwind.config.js         # Config com cores FIAP
+├── postcss.config.js
+├── vite.config.ts
+├── Dockerfile                 # Multi-stage build com Nginx
+└── nginx.conf                 # Config Nginx + proxy API
 ```
 
 ## Dependências
@@ -298,55 +343,61 @@ frontend/
 ```json
 {
   "dependencies": {
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0",
-    "react-router-dom": "^6.24.0",
-    "@tanstack/react-query": "^5.51.0",
-    "axios": "^1.7.0",
-    "lucide-react": "^0.400.0",
-    "date-fns": "^3.6.0",
-    "file-saver": "^2.0.5"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
+    "react-query": "^3.39.3",
+    "axios": "^1.6.2",
+    "lucide-react": "^0.294.0"
   },
   "devDependencies": {
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
-    "@vitejs/plugin-react": "^4.3.0",
-    "typescript": "^5.5.0",
-    "vite": "^5.3.0",
-    "tailwindcss": "^3.4.0",
-    "@tailwindcss/forms": "^0.5.0"
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8",
+    "tailwindcss": "^3.3.6",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.32",
+    "eslint": "^8.55.0"
   }
 }
 ```
 
 ## Checklist de Implementação
 
-- [ ] Configurar projeto Vite + React + TypeScript
-- [ ] Configurar Tailwind CSS
-- [ ] Configurar React Query
-- [ ] Implementar componente UploadZone com drag-drop
-- [ ] Implementar validação de arquivo (tipo, tamanho)
-- [ ] Implementar tela de loading com polling de status
-- [ ] Implementar visualizador de relatório
-- [ ] Implementar matriz STRIDE
-- [ ] Implementar lista de ameaças
+- [x] Configurar projeto Vite + React + TypeScript
+- [x] Configurar Tailwind CSS
+- [x] Configurar React Query
+- [x] Implementar componente UploadZone (placeholder)
+- [x] Implementar validação de arquivo (tipo, tamanho) - preparado
+- [x] Implementar tela de loading (placeholder)
+- [x] Implementar visualizador de relatório (placeholder)
+- [x] **Implementar identidade visual FIAP** (rosa #ED145B, fonte Montserrat)
+- [x] **Adicionar explicação do STRIDE na página inicial**
+- [x] **Adicionar integrantes do Grupo 27 com links GitHub**
+- [x] **Adicionar copyright e nota de privacidade**
+- [x] Configurar variáveis de ambiente (API_URL)
+- [x] Criar Dockerfile para frontend
+- [x] Criar nginx.conf com proxy para API
+- [x] Adicionar ao docker-compose.yml principal
+- [ ] Implementar integração real com API (upload, polling, relatório)
 - [ ] Implementar botões de exportação (JSON, MD, HTML, PDF, CSV)
-- [ ] Adicionar tema escuro/claro
-- [ ] Adicionar responsividade
-- [ ] Configurar variáveis de ambiente (API_URL)
-- [ ] Criar Dockerfile para frontend
-- [ ] Adicionar ao docker-compose.yml principal
 - [ ] Testes E2E com Cypress ou Playwright
 
 ## Notas
 
-- O frontend deve ser simples e funcional para o MVP
-- Foco na experiência de upload e visualização do relatório
+- O frontend está funcional como MVP com layout completo e identidade FIAP
+- A integração real com a API está preparada mas requer os endpoints implementados
 - Exportação PDF pode ser feita via biblioteca (jsPDF, html2canvas) ou API externa
 - O polling para status do job deve ter backoff exponencial (1s, 2s, 5s, 10s)
 - Cache de relatórios no React Query para navegação rápida
+- **A cor rosa FIAP (#ED145B) é usada em todo o tema para manter identidade visual**
 
 ---
 
-*Spec criada em: 2026-07-09*
+*Spec atualizada em: 2026-07-11*
+*Implementado: Layout completo, identidade FIAP, STRIDE, Grupo 27*
 *Depende de: Spec 001 (API Core), Spec 006 (Report Generator)*

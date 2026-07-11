@@ -74,7 +74,7 @@ Todas as specs estão em `specs/features/`:
 | 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP | ⏳ Pendente |
 | 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
 | 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build | ⏳ Pendente |
-| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ⏳ Pendente |
+| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web com identidade FIAP (rosa #ED145B), STRIDE explicado, Grupo 27** | ✅ **Implementado (MVP)** |
 | 009 | `009-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
 
 ---
@@ -85,39 +85,39 @@ Todas as specs estão em `specs/features/`:
 
 ```
 +------------------+       +------------------+
-|     Client       |       |   Admin/DEV      |
-| (curl/frontend)  |       | (monitoramento)  |
+|  Navegador       |       |   Admin/DEV      |
+|  (Chrome/Firefox)|       | (monitoramento)  |
 +--------+---------+       +--------+---------+
          |                          |
          v                          v
-+--------------------------------------------------------+
-|                    FastAPI API (Port 8000)             |
-|  +----------------+  +----------------+  +--------+  |
-|  | Upload Route   |  | Report Route   |  | Health |  |
-|  | (RF-01)        |  | (RF-06)        |  | Check  |  |
-|  +--------+-------+  +--------+-------+  +--------+  |
-|           |                 |                        |
-|  +--------v-------+  +--------v-------+                |
-|  | Component      |  | Report         |                |
-|  | Detection      |  | Generator      |                |
-|  | Service        |  | (Jinja2)       |                |
-|  | (Spec 003)     |  | (Spec 006)     |                |
-|  +--------+-------+  +--------+-------+                |
-|           |                 |                        |
-|  +--------v-------+  +--------v-------+                |
-|  | STRIDE Engine  |  | Vulnerability  |                |
-|  | (Spec 004)     |  | Service        |                |
-|  +--------+-------+  | (Spec 005)     |                |
-|           |          +--------+-------+                |
-|           |                 |                          |
-+--------------------------------------------------------+
-            |                 |
-            v                 v
-+-----------+----+    +-----+--------+
-|  PostgreSQL    |    |    Redis     |
-|  (Jobs,        |    |  (Cache,     |
-|   Reports)     |    |   Rate Limit)|
-+----------------+    +--------------+
++------------------+      +--------------------------------------------------------+
+| React Frontend   |      |                    FastAPI API (Port 8000)             |
+| (Port 5173)      |      |  +----------------+  +----------------+  +--------+  |
+| - Upload UI      |      |  | Upload Route   |  | Report Route   |  | Health |  |
+| - STRIDE Cards   |      |  | (RF-01)        |  | (RF-06)        |  | Check  |  |
+| - Grupo 27 Info  |      |  +--------+-------+  +--------+-------+  +--------+  |
+| - Identidade FIAP|      |           |                 |                        |
++--------+---------+      |  +--------v-------+  +--------v-------+                |
+         |                |  | Component      |  | Report         |                |
+         |                |  | Detection      |  | Generator      |                |
+         +--------------->|  | Service        |  | (Jinja2)       |                |
+           (Proxy API)     |  | (Spec 003)     |  | (Spec 006)     |                |
+                          |  +--------+-------+  +--------+-------+                |
+                          |           |                 |                        |
+                          |  +--------v-------+  +--------v-------+                |
+                          |  | STRIDE Engine  |  | Vulnerability  |                |
+                          |  | (Spec 004)     |  | Service        |                |
+                          |  +--------+-------+  | (Spec 005)     |                |
+                          |           |          +--------+-------+                |
+                          |           |                 |                          |
+                          +--------------------------------------------------------+
+                                      |                 |
+                                      v                 v
+                          +-----------+----+    +-----+--------+
+                          |  PostgreSQL    |    |    Redis     |
+                          |  (Jobs,        |    |  (Cache,     |
+                          |   Reports)     |    |   Rate Limit)|
+                          +----------------+    +--------------+
 ```
 
 ### 3.2 Fluxo de Dados (End-to-End)
@@ -167,6 +167,8 @@ Todas as specs estão em `specs/features/`:
 | ADR-006 | Relatórios | Markdown primário, HTML/PDF secundário | Universal, versionável, sem deps pesadas |
 | ADR-007 | Dataset | Sintético + Real | Controle de variabilidade, acelera MVP |
 | ADR-008 | Heurística de Relacionamentos | Proximidade espacial | Anotar setas é trabalhoso; heurística cobre 80% |
+| ADR-009 | Frontend | React + TypeScript + Vite + Tailwind | DX moderna, build rápido, ecossistema maduro, fácil manutenção |
+| ADR-010 | Branding FIAP | Cor rosa (#ED145B) + Montserrat | Manter identidade visual da instituição |
 
 ---
 
@@ -242,11 +244,12 @@ Todas as specs estão em `specs/features/`:
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
 | Documentação do fluxo | Em progresso (este SDD + specs) | Equipe |
-| Frontend React | Pendente (Spec 008) | Equipe |
+| **Frontend React** | **✅ Implementado** - Identidade FIAP, STRIDE, Grupo 27 | Equipe |
 | Vídeo de até 15 min | Planejado (Spec 009) | Equipe |
-| Link do GitHub | Pendente criação do repo | Equipe |
+| Link do GitHub | ✅ Criado: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
 
 ---
 
-*SDD consolidado em: 2026-07-09*
+*SDD consolidado em: 2026-07-11*
 *Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*
+*Frontend implementado: React + TypeScript + Vite + Tailwind CSS com identidade FIAP*
