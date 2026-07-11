@@ -167,7 +167,7 @@ Todas as specs estão em `specs/features/`:
 | ADR-006 | Relatórios | Markdown primário, HTML/PDF secundário | Universal, versionável, sem deps pesadas |
 | ADR-007 | Dataset | Sintético + Real | Controle de variabilidade, acelera MVP |
 | ADR-008 | Heurística de Relacionamentos | Proximidade espacial | Anotar setas é trabalhoso; heurística cobre 80% |
-| ADR-009 | Frontend | React + TypeScript + Vite + Tailwind | DX moderna, build rápido,生态 maduro, fácil manutenção |
+| ADR-009 | Frontend | React + TypeScript + Vite + Tailwind | DX moderna, build rápido, ecossistema maduro, fácil manutenção |
 
 ---
 
