@@ -34,7 +34,7 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
 | **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
-| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **008** (Frontend React) | Interface web, upload, visualização de relatórios, identidade FIAP |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
 
 ---
 
@@ -182,7 +182,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
-| **Vagner** | 008 Frontend | ✅ Implementado | Layout completo, identidade FIAP, STRIDE, Grupo 27 |
+| **Vagner** | 008 Frontend | ✅ Implementado | Layout completo, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
 ---
@@ -321,23 +321,22 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 
 ### Vagner — Spec 008 (Frontend React)
 
-**Spec 008**: ✅ **IMPLEMENTADA**. Frontend React com identidade FIAP desenvolvido.
+**Spec 008**: ✅ **IMPLEMENTADA**. Frontend React desenvolvido.
 
 **Tecnologias Frontend:**
 - **Framework**: React 18+ com TypeScript
 - **Build Tool**: Vite 5.x
 - **Styling**: Tailwind CSS 3.x
-- **Fonte**: Montserrat (FIAP) + Inter
+- **Fonte**: Inter (system-ui fallback)
 - **Ícones**: Lucide React
 - **State Management**: React Query
 - **HTTP Client**: Axios
 - **Container**: Nginx (multi-stage build)
 
-**Cores FIAP:**
-- Rosa FIAP: `#ED145B` (primária)
-- Rosa claro: `#F05A85` (hover)
-- Rosa escuro: `#C4124D`
-- Preto: `#1A1A1A`
+**Cores:**
+- Primária: `#10B981` (emerald)
+- Secundária: `#3B82F6` (blue)
+- Fundo escuro: `#0f172a` (slate-900)
 
 **Funcionalidades Implementadas:**
 - Layout responsivo com tema escuro
@@ -394,9 +393,9 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 ### Vagner (008 Frontend)
 - [x] Branch `feature/008-frontend-react` criada
 - [x] Vite + React + TypeScript configurado
-- [x] Tailwind CSS instalado com cores FIAP
+- [x] Tailwind CSS instalado
 - [x] React Query configurado
-- [x] Identidade visual FIAP (rosa #ED145B)
+- [x] Design system implementado
 - [x] Explicação STRIDE implementada
 - [x] Integrantes do Grupo 27 com links GitHub
 - [x] Copyright e nota de privacidade
@@ -438,4 +437,4 @@ git push origin feature/00X-sua-spec
 ---
 
 *Documento atualizado: 2026-07-11*
-*Frontend React implementado com identidade FIAP, cores #ED145B, fonte Montserrat*
+*Frontend React implementado*

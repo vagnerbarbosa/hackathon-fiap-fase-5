@@ -58,8 +58,8 @@ Criar uma aplicação frontend em React que permita:
 
 ### RNF-002: UX/UI
 - Design responsivo (mobile, tablet, desktop)
-- **Tema escuro com identidade visual FIAP** (rosa #ED145B)
-- Fonte: Montserrat (primária), Inter (secundária)
+- **Tema escuro moderno**
+- Fonte: Inter (primária), system-ui (fallback)
 - Feedback visual em todas as ações
 - Acessibilidade (ARIA labels, navegação por teclado)
 
@@ -73,14 +73,13 @@ Criar uma aplicação frontend em React que permita:
 - HTTPS obrigatório em produção
 - Não expor credenciais ou tokens no código
 
-### RNF-005: Branding
-- Paleta de cores FIAP:
-  - Rosa FIAP: `#ED145B` (primária)
-  - Rosa claro: `#F05A85` (hover)
-  - Rosa escuro: `#C4124D` (variações)
-  - Preto: `#1A1A1A` (fundo)
-  - Cinza 900: `#0f172a` (background)
-- Logo FIAP STRIDE no header
+### RNF-005: Design
+- Paleta de cores moderna:
+  - Primária: `#10B981` (emerald)
+  - Secundária: `#3B82F6` (blue)
+  - Alertas: `#F59E0B` (amber), `#EF4444` (red)
+  - Fundo escuro: `#0f172a` (slate-900)
+- Logo STRIDE no header
 - Explicação do STRIDE na página inicial
 - Integrantes do Grupo 27 com links GitHub
 - Copyright e nota de privacidade no footer
@@ -130,7 +129,7 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 ### Tela 1: Home / Upload
 ```
 +--------------------------------------------------+
-|  Logo FIAP STRIDE    Grupo 27  [Análise] [Sobre] |
+|  Logo STRIDE    Grupo 27  [Análise] [Sobre] |
 +--------------------------------------------------+
 |                                                  |
 |         Modelagem de Ameaças com IA              |
@@ -157,7 +156,7 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 |      Disclosure         Service             of Privilege |
 |                                                  |
 +--------------------------------------------------+
-|  © 2026 FIAP STRIDE - Grupo 27                   |
+|  © 2026 STRIDE - Grupo 27                   |
 |  Este site não coleta dados pessoais...           |
 +--------------------------------------------------+
 ```
@@ -165,11 +164,11 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 ### Tela 2: Sobre o Projeto
 ```
 +--------------------------------------------------+
-|  Logo FIAP STRIDE    Grupo 27  [Análise] [Sobre] |
+|  Logo STRIDE    Grupo 27  [Análise] [Sobre] |
 +--------------------------------------------------+
 |                                                  |
 |  Sobre o Projeto                                 |
-|  Explicação do FIAP STRIDE...                     |
+|  Explicação do STRIDE...                     |
 |                                                  |
 |  Metodologia STRIDE                              |
 |  [Lista das 6 categorias com cores]              |
@@ -194,14 +193,14 @@ Então o download do arquivo "relatorio-job-123.pdf" inicia
 |  [FastAPI] [React] [TypeScript] [Tailwind] ...   |
 |                                                  |
 +--------------------------------------------------+
-|  © 2026 FIAP STRIDE - Grupo 27                   |
+|  © 2026 STRIDE - Grupo 27                   |
 +--------------------------------------------------+
 ```
 
 ### Tela 3: Processando
 ```
 +--------------------------------------------------+
-|  Logo FIAP STRIDE    Grupo 27  [Cancelar]        |
+|  Logo STRIDE    Grupo 27  [Cancelar]        |
 +--------------------------------------------------+
 |                                                  |
 |              Analisando Arquitetura              |
@@ -315,14 +314,14 @@ frontend/
 │   ├── utils/                 # Utilitários
 │   ├── App.tsx               # Componente principal com rotas
 │   ├── App.css               # Estilos específicos
-│   ├── index.css             # Estilos globais + fonte FIAP
+│   ├── index.css             # Estilos globais + fonte
 │   ├── main.tsx              # Entry point
 │   └── vite-env.d.ts         # Tipos Vite
 ├── index.html
 ├── package.json
 ├── tsconfig.json
 ├── tsconfig.node.json
-├── tailwind.config.js         # Config com cores FIAP
+├── tailwind.config.js         # Config Tailwind
 ├── postcss.config.js
 ├── vite.config.ts
 ├── Dockerfile                 # Multi-stage build com Nginx
@@ -375,7 +374,7 @@ frontend/
 - [x] Implementar validação de arquivo (tipo, tamanho) - preparado
 - [x] Implementar tela de loading (placeholder)
 - [x] Implementar visualizador de relatório (placeholder)
-- [x] **Implementar identidade visual FIAP** (rosa #ED145B, fonte Montserrat)
+- [x] **Implementar identidade visual** (rosa , fonte Montserrat)
 - [x] **Adicionar explicação do STRIDE na página inicial**
 - [x] **Adicionar integrantes do Grupo 27 com links GitHub**
 - [x] **Adicionar copyright e nota de privacidade**

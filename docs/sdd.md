@@ -74,7 +74,7 @@ Todas as specs estão em `specs/features/`:
 | 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP | ⏳ Pendente |
 | 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
 | 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build | ⏳ Pendente |
-| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web com identidade FIAP (rosa #ED145B), STRIDE explicado, Grupo 27** | ✅ **Implementado (MVP)** |
+| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ✅ **Implementado (MVP)** |
 | 009 | `009-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
 
 ---
@@ -168,7 +168,6 @@ Todas as specs estão em `specs/features/`:
 | ADR-007 | Dataset | Sintético + Real | Controle de variabilidade, acelera MVP |
 | ADR-008 | Heurística de Relacionamentos | Proximidade espacial | Anotar setas é trabalhoso; heurística cobre 80% |
 | ADR-009 | Frontend | React + TypeScript + Vite + Tailwind | DX moderna, build rápido, ecossistema maduro, fácil manutenção |
-| ADR-010 | Branding FIAP | Cor rosa (#ED145B) + Montserrat | Manter identidade visual da instituição |
 
 ---
 
@@ -244,7 +243,7 @@ Todas as specs estão em `specs/features/`:
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
 | Documentação do fluxo | Em progresso (este SDD + specs) | Equipe |
-| **Frontend React** | **✅ Implementado** - Identidade FIAP, STRIDE, Grupo 27 | Equipe |
+| **Frontend React** | **✅ Implementado** - Layout completo com STRIDE e Grupo 27 | Equipe |
 | Vídeo de até 15 min | Planejado (Spec 009) | Equipe |
 | Link do GitHub | ✅ Criado: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
 

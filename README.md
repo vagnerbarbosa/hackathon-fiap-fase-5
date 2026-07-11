@@ -69,8 +69,8 @@ Imagem de Arquitetura
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
 | ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
-| 💻 **Frontend** | React + TypeScript + Vite + Tailwind | Interface web com identidade FIAP |
-| 🎨 **UI** | Montserrat + Rosa FIAP (#ED145B) | Fonte e cores da marca FIAP |
+| 💻 **Frontend** | React + TypeScript + Vite + Tailwind | Interface web moderna e responsiva |
+| 🎨 **UI** | Tailwind CSS + Lucide Icons | Design system customizado |
 | 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
 
 ---
@@ -157,7 +157,7 @@ docker-compose up --build
 - [ ] Motor STRIDE
 - [ ] Busca de vulnerabilidades e contramedidas
 - [ ] Gerador de relatórios
-- [x] Frontend React com identidade FIAP
+- [x] Frontend React
 - [ ] CI/CD GitHub Actions
 - [ ] Vídeo de demonstração (15 min)
 
