@@ -40,10 +40,13 @@ class TestHealthCheck:
     async def test_health_without_api_key(self, async_client: AsyncClient):
         """Health check should be accessible without API key."""
         # Create client without API key
-        from httpx import AsyncClient as HttpxAsyncClient
+        from httpx import ASGITransport, AsyncClient as HttpxAsyncClient
         from src.api.main import app
 
-        async with HttpxAsyncClient(app=app, base_url="http://test") as client:
+        async with HttpxAsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test"
+        ) as client:
             response = await client.get("/health")
             assert response.status_code == 200
 

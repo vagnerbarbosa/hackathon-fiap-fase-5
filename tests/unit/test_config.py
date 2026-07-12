@@ -14,13 +14,19 @@ class TestSettings:
 
     def test_settings_required_database_url(self):
         """Settings should require DATABASE_URL."""
+        from pydantic_settings import SettingsConfigDict
+
+        # Create a test settings class that ignores env file
+        class TestSettingsRequired(Settings):
+            model_config = SettingsConfigDict(env_file=None)
+
         # Remove DATABASE_URL from environment
         env_vars = os.environ.copy()
         env_vars.pop("DATABASE_URL", None)
 
         with patch.dict(os.environ, env_vars, clear=True):
             with pytest.raises(ValidationError) as exc_info:
-                Settings()
+                TestSettingsRequired()
 
             assert "database_url" in str(exc_info.value)
 

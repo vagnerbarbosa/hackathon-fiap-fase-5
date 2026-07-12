@@ -42,17 +42,18 @@ class JobRepository:
         logger.info(f"Job created: {job.id}")
         return job
 
-    async def get_by_id(self, job_id: UUID) -> Job | None:
+    async def get_by_id(self, job_id: UUID | str) -> Job | None:
         """Busca um Job pelo ID.
 
         Args:
-            job_id: UUID do job.
+            job_id: UUID ou string do job.
 
         Returns:
             Job | None: Job encontrado ou None.
         """
+        job_id_str = str(job_id)
         result = await self.session.execute(
-            select(Job).where(Job.id == str(job_id))
+            select(Job).where(Job.id == job_id_str)
         )
         return result.scalar_one_or_none()
 
