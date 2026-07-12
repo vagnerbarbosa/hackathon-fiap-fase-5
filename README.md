@@ -342,15 +342,15 @@ make help
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
-- [x] **Spec 000**: Contratos de Domínio (Pydantic Models)
-- [x] **Spec 001**: API Core + Scaffolding (FastAPI, Docker, PostgreSQL)
+- [x] **Spec 000**: Contratos de Domínio (Pydantic Models) (✅ Concluída)
+- [x] **Spec 001**: API Core + Scaffolding (FastAPI, Docker, PostgreSQL) (✅ Concluída)
 - [ ] **Spec 002**: Dataset e Treinamento YOLO (em desenvolvimento)
-- [x] **Spec 003**: Serviço de Detecção de Componentes
+- [x] **Spec 003**: Serviço de Detecção de Componentes (✅ Concluída)
 - [ ] **Spec 004**: Motor STRIDE (pendente)
 - [ ] **Spec 005**: Vulnerabilidades e Contramedidas (pendente)
 - [ ] **Spec 006**: Gerador de Relatórios (pendente)
 - [ ] **Spec 007**: CI/CD GitHub Actions (pendente)
-- [x] **Spec 008**: Frontend React (implementado, aguardando merge)
+- [x] **Spec 008**: Frontend React (✅ Concluída)
 - [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
 
 ---
