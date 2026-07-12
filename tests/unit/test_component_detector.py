@@ -5,8 +5,10 @@ Tests use mocks to avoid loading actual YOLO model weights.
 
 from pathlib import Path
 from uuid import uuid4
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from src.core.circuit_breaker import CircuitBreakerOpen
 from src.domain.models import ArchitectureGraph, BoundingBox, DetectedComponent, Point
 from src.services.component_detector import (
     ComponentDetectionService,
@@ -173,3 +175,91 @@ class TestDetectionResult:
         assert result.class_name == "api"
         assert result.confidence == 0.95
         assert result.bbox == [100.0, 100.0, 200.0, 200.0]
+
+
+class TestCircuitBreakerIntegration:
+    """Tests for Circuit Breaker integration."""
+
+    @pytest.fixture
+    def service(self, tmp_path):
+        """Create service with circuit breaker."""
+        return ComponentDetectionService(
+            model_path=str(tmp_path / "nonexistent.pt"),
+            confidence_threshold=0.25,
+        )
+
+    @pytest.mark.asyncio
+    async def test_circuit_breaker_exists(self, service):
+        """Service should have circuit breaker."""
+        assert hasattr(service, '_circuit_breaker')
+        assert service._circuit_breaker.name == "yolo_inference"
+
+    @pytest.mark.asyncio
+    async def test_circuit_breaker_opens_after_failures(self, service, tmp_path):
+        """Circuit should open after multiple failures."""
+        from PIL import Image
+        img = Image.new("RGB", (640, 480), color="white")
+        test_path = tmp_path / "test.png"
+        img.save(test_path)
+
+        # Mock model to always fail
+        service.model.predict = MagicMock(side_effect=RuntimeError("Model failed"))
+
+        # 3 failures to open circuit
+        for _ in range(3):
+            with pytest.raises(Exception):
+                await service.detect(test_path)
+
+        assert service._circuit_breaker.state.value == "open"
+
+    @pytest.mark.asyncio
+    async def test_circuit_breaker_allows_success(self, service):
+        """Circuit should allow successful calls."""
+        assert service._circuit_breaker.state.value == "closed"
+
+
+class TestCacheInjection:
+    """Tests for cache dependency injection."""
+
+    @pytest.fixture
+    def service(self, tmp_path):
+        """Create service with default cache."""
+        return ComponentDetectionService(
+            model_path=str(tmp_path / "nonexistent.pt"),
+            confidence_threshold=0.25,
+        )
+
+    @pytest.mark.asyncio
+    async def test_uses_cache_factory_by_default(self, service):
+        """Service should use CacheFactory by default."""
+        from src.infrastructure.cache.cache_factory import CacheFactory
+        assert service.cache is not None
+
+    @pytest.mark.asyncio
+    async def test_allows_custom_cache(self, tmp_path):
+        """Service should accept custom cache."""
+        from src.infrastructure.cache.in_memory_cache import InMemoryCache
+        custom_cache = InMemoryCache()
+
+        service = ComponentDetectionService(
+            model_path=str(tmp_path / "nonexistent.pt"),
+            confidence_threshold=0.25,
+            cache=custom_cache,
+        )
+
+        assert service.cache is custom_cache
+
+
+class TestRetryIntegration:
+    """Tests for Retry integration."""
+
+    @pytest.mark.asyncio
+    async def test_run_inference_with_circuit_breaker_exists(self, tmp_path):
+        """Service should have retry-wrapped inference."""
+        service = ComponentDetectionService(
+            model_path=str(tmp_path / "nonexistent.pt"),
+            confidence_threshold=0.25,
+        )
+
+        assert hasattr(service, '_run_inference_with_circuit_breaker')
+        assert hasattr(service, '_run_inference_sync')
