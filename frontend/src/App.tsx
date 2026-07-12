@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Shield, Upload, Info, AlertTriangle, Github, FileImage, Loader2, CheckCircle, XCircle, RefreshCw } from 'lucide-react'
+import { Shield, Upload, Info, AlertTriangle, Github, FileImage, Loader2, XCircle } from 'lucide-react'
 import StrideCard from './components/StrideCard'
 import TechBadge from './components/TechBadge'
+import ThreatReport from './components/ThreatReport'
 import './App.css'
 
 // Configuração da API
@@ -46,7 +47,7 @@ function App() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle')
   const [jobId, setJobId] = useState<string>('')
-  const [jobStatus, setJobStatus] = useState<JobStatusResponse | null>(null)
+  const [, setJobStatus] = useState<JobStatusResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [uploadProgress, setUploadProgress] = useState<number>(0)
 
@@ -235,11 +236,7 @@ function App() {
     }
   }
 
-  const downloadReport = () => {
-    if (jobId) {
-      window.open(`/api/v1/threat-model/${jobId}/report?format=md`, '_blank')
-    }
-  }
+  // Note: download functionality is now handled by ThreatReport component
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fiap-gray-900 via-fiap-black to-fiap-gray-900">
@@ -443,36 +440,12 @@ function App() {
               )}
 
               {/* Upload concluído */}
-              {uploadStatus === 'completed' && (
-                <div className="text-center py-12" data-testid="completed">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 rounded-full mb-6">
-                    <CheckCircle className="w-10 h-10 text-emerald-500" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    Análise Concluída!
-                  </h3>
-                  <p className="text-slate-400 mb-6 max-w-md mx-auto">
-                    {jobStatus?.result?.threats_count
-                      ? `Foram identificadas ${jobStatus.result.threats_count} potenciais ameaças no diagrama.`
-                      : 'A análise STRIDE foi concluída com sucesso.'}
-                  </p>
-                  <div className="flex justify-center space-x-4">
-                    <button
-                      onClick={downloadReport}
-                      className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
-                      data-testid="download-report"
-                    >
-                      Baixar Relatório
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors flex items-center space-x-2"
-                      data-testid="new-analysis"
-                    >
-                      <RefreshCw className="w-4 h-4" />
-                      <span>Nova Análise</span>
-                    </button>
-                  </div>
+              {uploadStatus === 'completed' && jobId && (
+                <div data-testid="completed">
+                  <ThreatReport
+                    jobId={jobId}
+                    onNewAnalysis={handleReset}
+                  />
                 </div>
               )}
 
