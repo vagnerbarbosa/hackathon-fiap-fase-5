@@ -119,8 +119,32 @@ if ($Foreground) {
 # Wait for services to be ready
 Write-Host ""
 Write-Host "${Blue}Waiting for services to be ready...${NC}"
-Start-Sleep -Seconds 5
 
+# Health check com timeout de 60 segundos
+$HealthCheckUrl = "http://localhost:8001/health"
+$MaxRetries = 30
+$RetryCount = 0
+$ApiHealthy = $false
+
+while ($RetryCount -lt $MaxRetries) {
+    try {
+        $response = Invoke-WebRequest -Uri $HealthCheckUrl -Method GET -TimeoutSec 2 -ErrorAction Stop
+        if ($response.StatusCode -eq 200) {
+            $ApiHealthy = $true
+            Write-Host "${Green}✓ API is ready!${NC}"
+            break
+        }
+    } catch {
+        # Continuar tentando
+    }
+    $RetryCount++
+    if ($RetryCount -eq $MaxRetries) {
+        Write-Host "${Red}✗ API failed to start within expected time${NC}"
+        Write-Host "Check logs with: ${ComposeCmd} logs api"
+        exit 1
+    }
+    Write-Host -NoNewline "."
+    Start-Sleep -Seconds 2
 }
 
 if (-not $ApiHealthy) {

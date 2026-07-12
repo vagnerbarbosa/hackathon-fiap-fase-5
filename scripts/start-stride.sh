@@ -128,12 +128,26 @@ fi
 # Wait for services to be ready
 echo ""
 echo -e "${BLUE}Waiting for services to be ready...${NC}"
-sleep 5
 
-    echo -e "${RED}✗ API failed to start within expected time${NC}"
-    echo "Check logs with: $COMPOSE_CMD logs api"
-    exit 1
-fi
+# Health check com timeout de 60 segundos
+HEALTH_CHECK_URL="http://localhost:8001/health"
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if curl -sf "$HEALTH_CHECK_URL" > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ API is ready!${NC}"
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo -e "${RED}✗ API failed to start within expected time${NC}"
+        echo "Check logs with: $COMPOSE_CMD logs api"
+        exit 1
+    fi
+    echo -n "."
+    sleep 2
+done
 
 # Run migrations if requested
 if [ "$RUN_MIGRATIONS" = true ]; then

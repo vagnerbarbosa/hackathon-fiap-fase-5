@@ -15,6 +15,11 @@ import sys
 import time
 from pathlib import Path
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 
 def get_project_dir() -> Path:
     """Get project root directory."""
@@ -159,6 +164,41 @@ def main() -> None:
             print("\n👋 Stopped by user")
         return
 
+    # Wait for services to be ready
+    print("")
+    print("⏳ Waiting for services to be ready...")
+
+    # Health check com timeout de 60 segundos
+    health_check_url = "http://localhost:8001/health"
+    max_retries = 30
+    retry_count = 0
+    api_healthy = False
+
+    if requests is None:
+        print("⚠️  requests module not available, skipping health check...")
+        time.sleep(5)
+        api_healthy = True
+    else:
+        while retry_count < max_retries:
+            try:
+                response = requests.get(health_check_url, timeout=2)
+                if response.status_code == 200:
+                    api_healthy = True
+                    print("✅ API is ready!")
+                    break
+            except requests.RequestException:
+                pass
+
+            retry_count += 1
+            if retry_count == max_retries:
+                print(f"❌ API failed to start within expected time")
+                print(f"Check logs with: {compose_cmd} logs api")
+                sys.exit(1)
+            print(".", end="", flush=True)
+            time.sleep(2)
+
+    if not api_healthy:
+        print(f"❌ API failed to start within expected time")
         print(f"Check logs with: {compose_cmd} logs api")
         sys.exit(1)
 
