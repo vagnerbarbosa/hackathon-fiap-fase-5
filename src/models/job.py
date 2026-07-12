@@ -5,7 +5,6 @@ from enum import Enum as PyEnum
 from uuid import uuid4
 
 from sqlalchemy import DateTime, String
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.models.base import Base
@@ -29,9 +28,9 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id: Mapped[str] = mapped_column(
-        UUID(as_uuid=True),
+        String(36),
         primary_key=True,
-        default=uuid4,
+        default=lambda: str(uuid4()),
     )
     status: Mapped[str] = mapped_column(
         String(20),

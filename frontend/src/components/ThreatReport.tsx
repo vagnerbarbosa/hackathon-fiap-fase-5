@@ -183,7 +183,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
           <div>
             <div className="flex items-center gap-3 mb-2">
               <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-              <h2 className="text-2xl font-bold text-white">Análise Concluída</h2>
+              <h2 className="text-2xl font-bold text-white">Análise Concluída!</h2>
             </div>
             <p className="text-slate-400">
               Job ID: <span className="text-slate-300 font-mono text-sm">{jobId}</span>
@@ -225,6 +225,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
             </div>
 
             <button
+              data-testid="new-analysis"
               onClick={onNewAnalysis}
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
             >

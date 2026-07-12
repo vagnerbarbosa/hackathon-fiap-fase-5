@@ -59,7 +59,7 @@ class JobRepository:
 
     async def update_status(
         self,
-        job_id: UUID,
+        job_id: UUID | str,
         status: JobStatus,
         output_report_path: str | None = None,
         error_message: str | None = None,
@@ -67,7 +67,7 @@ class JobRepository:
         """Atualiza o status de um Job.
 
         Args:
-            job_id: UUID do job.
+            job_id: UUID ou string do job.
             status: Novo status.
             output_report_path: Caminho do relatório gerado (opcional).
             error_message: Mensagem de erro (opcional).
