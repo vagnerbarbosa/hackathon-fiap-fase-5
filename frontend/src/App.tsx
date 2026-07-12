@@ -4,6 +4,21 @@ import StrideCard from './components/StrideCard'
 import TechBadge from './components/TechBadge'
 import './App.css'
 
+// Configuração da API
+const API_KEY = import.meta.env.VITE_API_KEY as string | undefined
+
+// Helper para criar headers com API Key quando configurada
+const createHeaders = (contentType?: string): HeadersInit => {
+  const headers: HeadersInit = {}
+  if (contentType) {
+    headers['Content-Type'] = contentType
+  }
+  if (API_KEY) {
+    headers['X-API-Key'] = API_KEY
+  }
+  return headers
+}
+
 // Tipos para a resposta da API
 interface UploadResponse {
   job_id: string
@@ -41,7 +56,9 @@ function App() {
   useEffect(() => {
     const fetchVersion = async () => {
       try {
-        const response = await fetch('/version')
+        const response = await fetch('/version', {
+          headers: createHeaders(),
+        })
         if (response.ok) {
           const data = await response.json()
           console.log('[Version] API version (proxy):', data.version)
@@ -53,7 +70,9 @@ function App() {
       }
 
       try {
-        const response = await fetch('http://localhost:8001/version')
+        const response = await fetch('http://localhost:8001/version', {
+          headers: createHeaders(),
+        })
         if (response.ok) {
           const data = await response.json()
           console.log('[Version] API version (direct):', data.version)
@@ -72,7 +91,9 @@ function App() {
     if (jobId && uploadStatus === 'processing') {
       pollingIntervalRef.current = setInterval(async () => {
         try {
-          const response = await fetch(`/api/v1/threat-model/${jobId}`)
+          const response = await fetch(`/api/v1/threat-model/${jobId}`, {
+            headers: createHeaders(),
+          })
           if (response.ok) {
             const data: JobStatusResponse = await response.json()
             setJobStatus(data)
@@ -165,6 +186,7 @@ function App() {
 
       const response = await fetch('/api/v1/threat-model/analyze', {
         method: 'POST',
+        headers: createHeaders(),
         body: formData,
       })
 
