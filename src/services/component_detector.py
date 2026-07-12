@@ -3,7 +3,7 @@
 Orquestra o pipeline completo de detecção:
 1. Verifica cache
 2. Pré-processa imagem
-3. Executa inferência YOLO
+3. Executa inferência YOLO (com circuit breaker e retry)
 4. Analisa relacionamentos
 5. Armazena resultado em cache
 """
@@ -13,7 +13,9 @@ from pathlib import Path
 from typing import Union
 from uuid import uuid4
 
+from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpen
 from src.core.config import settings
+from src.core.retry import retry, RETRY_AI_SERVICE
 from src.domain.models import (
     ArchitectureGraph,
     BoundingBox,
@@ -21,7 +23,8 @@ from src.domain.models import (
     DetectedComponent,
     Point,
 )
-from src.infrastructure.cache.detection_cache import DetectionCache
+from src.infrastructure.cache.cache_factory import CacheFactory
+from src.infrastructure.cache.cache_interface import CacheInterface
 from src.infrastructure.ml.yolo_model import YOLOModel
 from src.services.image_preprocessor import ImagePreprocessor
 from src.services.relationship_analyzer import RelationshipAnalyzer
@@ -51,12 +54,14 @@ class ComponentDetectionService:
         self,
         model_path: str = "models/best.pt",
         confidence_threshold: float = 0.25,
+        cache: CacheInterface = None,
     ):
         """Inicializa o serviço de detecção.
 
         Args:
             model_path: Caminho para o arquivo do modelo YOLO.
             confidence_threshold: Confiança mínima para detecções.
+            cache: Instância de cache (usa CacheFactory se None).
         """
         self.model = YOLOModel(model_path)
         self.preprocessor = ImagePreprocessor(target_size=640)
@@ -64,8 +69,17 @@ class ComponentDetectionService:
             proximity_threshold=150.0,
             alignment_tolerance=50.0,
         )
-        self.cache = DetectionCache()
+        # Usa injeção de dependência para cache (desacoplado)
+        self.cache = cache or CacheFactory.create_cache()
         self.confidence_threshold = confidence_threshold
+
+        # Circuit breaker para proteção contra falhas do modelo
+        self._circuit_breaker = CircuitBreaker(
+            name="yolo_inference",
+            failure_threshold=3,
+            recovery_timeout=30.0,
+            expected_exception=(RuntimeError, ConnectionError, TimeoutError),
+        )
 
         logger.info(
             f"Initialized ComponentDetectionService",
@@ -73,6 +87,7 @@ class ComponentDetectionService:
                 "model_path": str(model_path),
                 "using_stub": self.model.is_stub,
                 "confidence_threshold": confidence_threshold,
+                "cache_type": type(self.cache).__name__,
             },
         )
 
@@ -105,16 +120,31 @@ class ComponentDetectionService:
             logger.info(f"Returning cached result for {image_path.name}")
             return cached
 
-        # Step 2: Preprocess
+        # Step 2: Preprocess (com validação rigorosa)
         logger.debug(f"Preprocessing {image_path.name}")
-        preprocessed = self.preprocessor.preprocess(image_path)
+        try:
+            preprocessed = self.preprocessor.preprocess(image_path)
+        except ValueError as e:
+            logger.error(f"Invalid image: {e}")
+            raise
 
-        # Step 3: Run inference
+        # Step 3: Run inference (com circuit breaker e retry)
         logger.info(f"Running inference on {image_path.name}")
-        detections = self.model.predict(
-            image_path,
-            conf=self.confidence_threshold,
-        )
+        try:
+            detections = await retry(
+                self._run_inference_with_circuit_breaker,
+                image_path,
+                config=RETRY_AI_SERVICE,
+            )
+        except Exception as e:
+            logger.error(f"Inference failed after retries: {e}")
+            # Se circuit breaker abriu, retorna erro amigável
+            if isinstance(e, CircuitBreakerOpen):
+                raise CircuitBreakerOpen(
+                    "Serviço de IA temporariamente indisponível. "
+                    "Tente novamente em alguns minutos."
+                )
+            raise
 
         # Step 4: Convert to domain models
         components = self._convert_detections(detections)
@@ -174,6 +204,38 @@ class ComponentDetectionService:
             components.append(component)
 
         return components
+
+    async def _run_inference_with_circuit_breaker(self, image_path: Path) -> list:
+        """Executa inferência protegida por circuit breaker.
+
+        Args:
+            image_path: Caminho para a imagem.
+
+        Returns:
+            Lista de detecções do modelo.
+
+        Raises:
+            CircuitBreakerOpen: Se circuito está aberto.
+            Exception: Falhas na inferência.
+        """
+        return await self._circuit_breaker.call(
+            self._run_inference_sync,
+            image_path,
+        )
+
+    def _run_inference_sync(self, image_path: Path) -> list:
+        """Wrapper síncrono para inferência.
+
+        Args:
+            image_path: Caminho para a imagem.
+
+        Returns:
+            Lista de detecções.
+        """
+        return self.model.predict(
+            image_path,
+            conf=self.confidence_threshold,
+        )
 
     @property
     def is_using_stub(self) -> bool:

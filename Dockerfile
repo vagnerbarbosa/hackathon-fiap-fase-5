@@ -26,18 +26,17 @@ FROM python:3.11-slim-bookworm as runtime
 
 WORKDIR /app
 
-# Install runtime dependencies
+# Install runtime dependencies (otimizado para OpenCV headless)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     libmagic1 \
     curl \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
     libgomp1 \
-    libgl1-mesa-glx \
     && rm -rf /var/lib/apt/lists/*
+
+# Nota: Removidas libs de GUI (libsm6, libxext6, libxrender-dev, libgl1-mesa-glx)
+# O OpenCV headless não requer essas dependências visuais
 
 # Create non-root user
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
