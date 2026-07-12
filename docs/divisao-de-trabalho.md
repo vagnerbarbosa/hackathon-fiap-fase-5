@@ -383,10 +383,10 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 
 ```markdown
 ### Vagner (001 + 003)
-- [ ] Branch `feature/001-api-core` criada
-- [ ] Branch `feature/003-component-detection` criada
-- [ ] FastAPI + PostgreSQL configurados
-- [ ] `YOLOStub` funciona
+- [x] Branch `feature/001-api-core` criada ✅ **Implementada e mergeada**
+- [x] Branch `feature/003-component-detection` criada ✅ **PR #11 aberta**
+- [x] FastAPI + PostgreSQL configurados
+- [x] `YOLOStub` funciona
 
 ### Lucas (002 + 007)
 - [ ] Branch `feature/002-dataset-yolo` criada
