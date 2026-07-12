@@ -43,6 +43,7 @@ function App() {
 
   // Estados do upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle')
   const [jobId, setJobId] = useState<string>('')
   const [jobStatus, setJobStatus] = useState<JobStatusResponse | null>(null)
@@ -148,6 +149,13 @@ function App() {
     setSelectedFile(file)
     setErrorMessage('')
     setUploadStatus('idle')
+
+    // Gerar preview da imagem
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
   }
 
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
@@ -216,6 +224,7 @@ function App() {
 
   const handleReset = () => {
     setSelectedFile(null)
+    setPreviewUrl(null)
     setUploadStatus('idle')
     setJobId('')
     setJobStatus(null)
@@ -342,8 +351,19 @@ function App() {
               {/* Arquivo selecionado, aguardando upload */}
               {uploadStatus === 'idle' && selectedFile && (
                 <div className="text-center py-12" data-testid="file-selected">
-                  <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
-                    <FileImage className="w-10 h-10 text-fiap-pink" />
+                  <div className="mb-6">
+                    {previewUrl ? (
+                      <img
+                        src={previewUrl}
+                        alt="Preview"
+                        className="max-h-48 max-w-full mx-auto rounded-lg shadow-lg border-2 border-fiap-pink/30"
+                        data-testid="image-preview"
+                      />
+                    ) : (
+                      <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full">
+                        <FileImage className="w-10 h-10 text-fiap-pink" />
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Arquivo Selecionado
