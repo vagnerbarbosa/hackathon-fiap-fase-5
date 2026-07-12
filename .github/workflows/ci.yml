@@ -70,3 +70,106 @@ jobs:
             --exit-zero
           # --exit-zero: report findings but don't fail CI yet.
           # Remove --exit-zero once the team has addressed existing findings.
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Tests with Coverage
+  # ---------------------------------------------------------------------------
+  test:
+    name: Tests (coverage ≥ 70%)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: fiap_stride_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d fiap_stride_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/fiap_stride_test
+      REDIS_URL: redis://localhost:6379/0
+      STORAGE_PATH: /tmp/fiap-storage
+      LOG_LEVEL: WARNING
+      API_KEY: test-api-key-ci
+      API_RATE_LIMIT: "9999"
+      DEBUG: "false"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.7.1"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        id: cache-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Create storage directory
+        run: mkdir -p /tmp/fiap-storage
+
+      - name: Run database migrations
+        run: poetry run alembic upgrade head
+
+      - name: Run tests with coverage
+        run: >
+          poetry run pytest tests/
+          --cov=src
+          --cov-report=xml
+          --cov-report=term-missing
+          --cov-fail-under=70
+          -v
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 7
+
+      # Opcional: enviar para Codecov se o token estiver configurado
+      - name: Upload to Codecov
+        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false

@@ -1,0 +1,22 @@
+# docker-compose.ci.yml — CI override for GitHub Actions
+#
+# Merged on top of docker-compose.yml to strip local-only volume mounts
+# and provide CI-safe defaults.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+#
+# What this file does:
+#   - Removes ./storage and ./logs bind mounts (paths that don't exist on CI runners)
+#   - Uses tmpfs for the DB data directory (faster, no leftover state between runs)
+#   - Keeps named volumes for Redis (already safe)
+
+services:
+  api:
+    volumes: []  # strip ./storage and ./logs bind mounts from docker-compose.yml
+
+  db:
+    # Override the tmpfs directive from docker-compose.yml.
+    # The base file already uses tmpfs, but we make it explicit here for clarity.
+    tmpfs:
+      - /var/lib/postgresql/data
