@@ -143,8 +143,12 @@ cd hackathon-fiap-fase-5
 
 ```bash
 cp .env.example .env
-# Edite .env e defina DATABASE_URL, REDIS_URL, API_KEY
 ```
+
+> **Nota:** Para rodar localmente com Docker, os valores padrão em `.env` já estão configurados e funcionam sem alterações. Você só precisa editar o arquivo se:
+> - Quiser personalizar as credenciais do banco de dados
+> - Estiver rodando em ambiente de produção
+> - Precisar configurar uma API Key específica
 
 ### 3. Inicie a API (escolha seu método)
 
