@@ -76,6 +76,32 @@ describe('ThreatReport', () => {
       expect(screen.getByText('Ameaças Críticas')).toBeInTheDocument()
       expect(screen.getByText('Ameaças Altas')).toBeInTheDocument()
     })
+
+    it('deve mostrar aviso de dados mockados quando reportData não é fornecido', () => {
+      render(
+        <ThreatReport
+          jobId={mockJobId}
+          onNewAnalysis={mockOnNewAnalysis}
+        />
+      )
+
+      // Verificar banner de aviso
+      expect(screen.getByText('Relatório de Demonstração')).toBeInTheDocument()
+      expect(screen.getByText(/Os dados exibidos são simulados/)).toBeInTheDocument()
+    })
+
+    it('deve esconder aviso de dados mockados quando reportData é fornecido', () => {
+      render(
+        <ThreatReport
+          jobId={mockJobId}
+          reportData={mockReportData}
+          onNewAnalysis={mockOnNewAnalysis}
+        />
+      )
+
+      // Verificar que o banner de aviso NÃO está presente
+      expect(screen.queryByText('Relatório de Demonstração')).not.toBeInTheDocument()
+    })
   })
 
   describe('Exportação - Fallback', () => {

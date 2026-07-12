@@ -206,6 +206,24 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
 
   return (
     <div className="space-y-6">
+      {/* Alerta de dados mockados */}
+      {!reportData && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-amber-200 font-medium text-sm">
+                Relatório de Demonstração
+              </p>
+              <p className="text-amber-200/70 text-sm mt-1">
+                Os dados exibidos são simulados para fins de desenvolvimento.
+                O relatório real será gerado pela Spec 006 (em progresso).
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header com informações do relatório */}
       <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
