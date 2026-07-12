@@ -290,7 +290,7 @@ make help
 - [ ] **Spec 004**: Motor STRIDE (pendente)
 - [ ] **Spec 005**: Vulnerabilidades e Contramedidas (pendente)
 - [ ] **Spec 006**: Gerador de Relatórios (pendente)
-- [ ] **Spec 007**: CI/CD GitHub Actions (em desenvolvimento)
+- [ ] **Spec 007**: CI/CD GitHub Actions (pendente)
 - [x] **Spec 008**: Frontend React (implementado, aguardando merge)
 - [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
 
