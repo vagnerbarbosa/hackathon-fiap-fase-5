@@ -1,4 +1,4 @@
-"""Create jobs table
+"""Cria tabela de jobs
 
 Revision ID: 001
 Revises:
@@ -31,10 +31,10 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     )
 
-    # Create index on status for faster queries
+    # Cria índice no status para queries mais rápidas
     op.create_index("ix_jobs_status", "jobs", ["status"])
 
-    # Create index on created_at for sorting
+    # Cria índice no created_at para ordenação
     op.create_index("ix_jobs_created_at", "jobs", ["created_at"])
 
 
