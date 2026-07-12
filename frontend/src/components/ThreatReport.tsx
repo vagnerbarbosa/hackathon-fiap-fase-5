@@ -11,7 +11,8 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle2,
-  XCircle
+  XCircle,
+  AlertCircle
 } from 'lucide-react'
 
 interface Threat {
@@ -158,6 +159,8 @@ const getMockReportData = (jobId: string): ReportData => ({
 export default function ThreatReport({ jobId, reportData, onNewAnalysis }: ThreatReportProps) {
   const [expandedThreat, setExpandedThreat] = useState<string | null>(null)
   const [exportMenuOpen, setExportMenuOpen] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [isExporting, setIsExporting] = useState(false)
 
   const data = reportData || getMockReportData(jobId)
   const threatsByCategory = Object.keys(STRIDE_CATEGORIES).map(cat => ({
@@ -171,10 +174,35 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
   const mediumCount = data.threats.filter(t => t.severity === 'medium').length
   const lowCount = data.threats.filter(t => t.severity === 'low' || t.severity === 'info').length
 
-  const handleExport = (format: string) => {
-    window.open(`/api/v1/threat-model/${jobId}/report?format=${format}`, '_blank')
-    setExportMenuOpen(false)
+  const handleExport = async (format: string) => {
+    setIsExporting(true)
+    setExportError(null)
+
+    try {
+      // Verificar se o endpoint está disponível antes de abrir
+      const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=${format}`, {
+        method: 'HEAD',
+        headers: { 'Accept': 'application/json' }
+      })
+
+      if (response.status === 404 || response.status === 501) {
+        setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
+        setExportMenuOpen(false)
+      } else {
+        // Endpoint existe, abrir em nova aba
+        window.open(`/api/v1/threat-model/${jobId}/report?format=${format}`, '_blank')
+        setExportMenuOpen(false)
+      }
+    } catch (error) {
+      // Erro de conexão ou CORS, tentar abrir mesmo assim
+      window.open(`/api/v1/threat-model/${jobId}/report?format=${format}`, '_blank')
+      setExportMenuOpen(false)
+    } finally {
+      setIsExporting(false)
+    }
   }
+
+  const clearExportError = () => setExportError(null)
 
   return (
     <div className="space-y-6">
@@ -196,32 +224,79 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
 
           {/* Botões de ação */}
           <div className="flex flex-wrap gap-3">
+            {/* Alerta de erro de exportação */}
+            {exportError && (
+              <div className="absolute top-full right-0 mt-2 w-80 bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 shadow-lg z-20">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-amber-200 text-sm">{exportError}</p>
+                    <button
+                      onClick={clearExportError}
+                      className="text-amber-400 text-xs hover:text-amber-300 mt-2 underline"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Menu de exportação */}
             <div className="relative">
               <button
                 onClick={() => setExportMenuOpen(!exportMenuOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                disabled={isExporting}
+                className="flex items-center gap-2 px-4 py-2 bg-fiap-pink hover:bg-fiap-pink/80 disabled:bg-fiap-pink/50 text-white rounded-lg font-medium transition-colors"
               >
-                <Download className="w-4 h-4" />
-                Exportar
-                {exportMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                {isExporting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Exportar
+                    {exportMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </>
+                )}
               </button>
 
               {exportMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-10">
-                  <button onClick={() => handleExport('json')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button
+                    disabled={isExporting}
+                    onClick={() => handleExport('json')}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     <FileJson className="w-4 h-4 text-blue-400" /> JSON
                   </button>
-                  <button onClick={() => handleExport('md')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button
+                    disabled={isExporting}
+                    onClick={() => handleExport('md')}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     <FileText className="w-4 h-4 text-slate-400" /> Markdown
                   </button>
-                  <button onClick={() => handleExport('html')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button
+                    disabled={isExporting}
+                    onClick={() => handleExport('html')}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     <FileCode className="w-4 h-4 text-orange-400" /> HTML
                   </button>
-                  <button onClick={() => handleExport('csv')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button
+                    disabled={isExporting}
+                    onClick={() => handleExport('csv')}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     <FileSpreadsheet className="w-4 h-4 text-green-400" /> CSV
                   </button>
-                  <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                  <button
+                    disabled={isExporting}
+                    onClick={() => handleExport('pdf')}
+                    className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
                     <FileType className="w-4 h-4 text-red-400" /> PDF
                   </button>
                 </div>
