@@ -193,6 +193,46 @@ temp/
 # Notebooks outputs
 notebooks/*.nbconvert.ipynb
 
+# -------------------------------
+# Frontend (Node.js / React / Vite)
+# -------------------------------
+
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Build output
+frontend/dist/
+frontend/dist-ssr/
+
+# Local env files
+frontend/.env.local
+frontend/.env.*.local
+
+# Logs
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+
+# Editor directories and files
+frontend/.vscode/*
+!frontend/.vscode/extensions.json
+frontend/.idea
+frontend/*.suo
+frontend/*.ntvs*
+frontend/*.njsproj
+frontend/*.sln
+frontend/*.sw?
+
+# Test coverage
+frontend/coverage/
+
+# TypeScript
+frontend/*.tsbuildinfo
+
 # Ignore large data files
 *.h5
 *.hdf5
