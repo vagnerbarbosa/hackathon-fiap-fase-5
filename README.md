@@ -212,6 +212,63 @@ curl -H "X-API-Key: sua-api-key" \
   http://localhost:8001/api/v1/threat-model/analyze
 ```
 
+### 6. Inicie o Frontend (opcional)
+
+O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados.
+
+#### 🚀 Opção 1: Via Docker Compose (Recomendado)
+
+O frontend já está incluído no `docker-compose.yml` e será iniciado junto com a API:
+
+```bash
+# O frontend sobe automaticamente na porta 5173
+docker compose up frontend -d
+
+# Ou para rebuildar após alterações
+docker compose build frontend --no-cache
+docker compose up frontend -d
+```
+
+Acesse: http://localhost:5173
+
+#### 💻 Opção 2: Desenvolvimento Local (Node.js)
+
+Para desenvolvimento com hot-reload:
+
+```bash
+cd frontend
+
+# Instalar dependências
+npm install
+
+# Criar .env.local (opcional)
+cp .env.example .env
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+```
+
+Acesse: http://localhost:5173
+
+**Requisitos:**
+- Node.js 18+
+- npm 9+
+
+#### 🧪 Executar Testes do Frontend
+
+```bash
+cd frontend
+
+# Executar todos os testes
+npm test
+
+# Executar com cobertura
+npm run test:coverage
+
+# Modo watch (durante desenvolvimento)
+npm run test:watch
+```
+
 ### Endpoints disponíveis
 
 | Endpoint | Método | Auth | Descrição |
