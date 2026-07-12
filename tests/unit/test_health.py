@@ -35,7 +35,7 @@ class TestHealthCheck:
         response = await async_client.get("/health")
         data = response.json()
 
-        assert data["version"] == "0.1.0"
+        assert data["version"] == "0.2.0"
 
     async def test_health_without_api_key(self, async_client: AsyncClient):
         """Health check should be accessible without API key."""

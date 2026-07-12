@@ -42,7 +42,7 @@ class TestSettings:
         )
 
         assert settings.app_name == "FIAP STRIDE API"
-        assert settings.app_version == "0.1.0"
+        assert settings.app_version == "0.2.0"
         assert settings.debug is False
         assert settings.api_rate_limit == 60
         assert settings.log_level == "INFO"
