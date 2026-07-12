@@ -182,7 +182,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
     const API_KEY = import.meta.env.VITE_API_KEY as string | undefined
 
     try {
-      // Verificar se o endpoint está disponível antes de abrir
+      // Fazer download via fetch (permite enviar headers)
       const headers: HeadersInit = {
         'Accept': 'application/json'
       }
@@ -191,30 +191,46 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
       }
 
       const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=${format}`, {
-        method: 'HEAD',
+        method: 'GET',
         headers
       })
 
-      // Tratar erros de autenticação como recurso indisponível
+      // Tratar erros de autenticação ou endpoint não implementado
       if (response.status === 404 || response.status === 501 || response.status === 401 || response.status === 403) {
         setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
         setExportMenuOpen(false)
-      } else {
-        // Endpoint existe, abrir em nova aba com a API key na URL
-        const exportUrl = new URL(`/api/v1/threat-model/${jobId}/report?format=${format}`, window.location.origin)
-        if (API_KEY) {
-          exportUrl.searchParams.set('api_key', API_KEY)
-        }
-        window.open(exportUrl.toString(), '_blank')
+        return
+      }
+
+      if (!response.ok) {
+        setExportError(`Erro ao exportar em ${format.toUpperCase()}: ${response.statusText}`)
         setExportMenuOpen(false)
+        return
       }
+
+      // Obter o blob da resposta
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+
+      // Criar link temporário para download
+      const link = document.createElement('a')
+      link.href = url
+
+      // Definir nome do arquivo baseado no formato
+      const filename = `relatorio-${jobId}.${format === 'md' ? 'md' : format}`
+      link.download = filename
+
+      // Trigger do download
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      // Limpar URL
+      window.URL.revokeObjectURL(url)
+      setExportMenuOpen(false)
     } catch (error) {
-      // Erro de conexão ou CORS, tentar abrir mesmo assim
-      const exportUrl = new URL(`/api/v1/threat-model/${jobId}/report?format=${format}`, window.location.origin)
-      if (API_KEY) {
-        exportUrl.searchParams.set('api_key', API_KEY)
-      }
-      window.open(exportUrl.toString(), '_blank')
+      // Erro de conexão ou CORS
+      setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
       setExportMenuOpen(false)
     } finally {
       setIsExporting(false)

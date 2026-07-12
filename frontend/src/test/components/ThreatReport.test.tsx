@@ -116,12 +116,23 @@ describe('ThreatReport', () => {
 
   describe('Exportação - Fallback', () => {
 
-    it('deve abrir download quando endpoint estiver disponível', async () => {
-      // Mock fetch retornando sucesso (200)
+    it('deve fazer download quando endpoint estiver disponível', async () => {
+      // Mock do blob e URL.createObjectURL
+      const mockBlob = new Blob(['test content'], { type: 'application/json' })
+      const mockUrl = 'blob:mock-url'
+
+      // Mock fetch retornando sucesso (200) com blob
       vi.mocked(fetch).mockResolvedValueOnce({
         status: 200,
         ok: true,
-      } as Response)
+        blob: () => Promise.resolve(mockBlob),
+      } as unknown as Response)
+
+      // Mock URL.createObjectURL e revokeObjectURL
+      const createObjectURLMock = vi.fn().mockReturnValue(mockUrl)
+      const revokeObjectURLMock = vi.fn()
+      window.URL.createObjectURL = createObjectURLMock
+      window.URL.revokeObjectURL = revokeObjectURLMock
 
       render(
         <ThreatReport
@@ -142,11 +153,17 @@ describe('ThreatReport', () => {
       // Clicar em JSON
       fireEvent.click(screen.getByText('JSON'))
 
-      // Verificar se window.open foi chamado com a URL correta
+      // Verificar se fetch foi chamado com método GET e headers corretos
       await waitFor(() => {
-        expect(window.open).toHaveBeenCalled()
-        const callUrl = (window.open as vi.Mock).mock.calls[0][0] as string
-        expect(callUrl).toContain(`/api/v1/threat-model/${mockJobId}/report?format=json`)
+        expect(fetch).toHaveBeenCalledWith(
+          `/api/v1/threat-model/${mockJobId}/report?format=json`,
+          expect.objectContaining({
+            method: 'GET',
+            headers: expect.objectContaining({
+              'Accept': 'application/json',
+            }),
+          })
+        )
       })
     })
 
@@ -252,7 +269,7 @@ describe('ThreatReport', () => {
       })
     })
 
-    it('deve tentar abrir download mesmo com erro de conexão (fallback)', async () => {
+    it('deve mostrar mensagem amigável com erro de conexão', async () => {
       // Mock fetch lançando erro (ex: CORS, network error)
       vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'))
 
@@ -275,12 +292,13 @@ describe('ThreatReport', () => {
       // Clicar em Markdown
       fireEvent.click(screen.getByText('Markdown'))
 
-      // Verificar se window.open foi chamado mesmo com erro (fallback)
+      // Verificar se mensagem amigável aparece
       await waitFor(() => {
-        expect(window.open).toHaveBeenCalled()
-        const callUrl = (window.open as vi.Mock).mock.calls[0][0] as string
-        expect(callUrl).toContain(`/api/v1/threat-model/${mockJobId}/report?format=md`)
+        expect(screen.getByText(/Exportação em MD ainda não está disponível/)).toBeInTheDocument()
       })
+
+      // Verificar que window.open NÃO foi chamado (download via blob)
+      expect(window.open).not.toHaveBeenCalled()
     })
 
     it('deve fechar mensagem de erro ao clicar em Fechar', async () => {
