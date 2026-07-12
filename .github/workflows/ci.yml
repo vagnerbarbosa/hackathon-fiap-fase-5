@@ -173,3 +173,185 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           fail_ci_if_error: false
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Dataset & Model Validation
+  # ---------------------------------------------------------------------------
+  dataset-validation:
+    name: Dataset & Model Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.7.1"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        id: cache-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Check dataset/data.yaml exists and is valid
+        run: |
+          echo "→ Checking dataset/data.yaml..."
+          if [ ! -f "dataset/data.yaml" ]; then
+            echo "ERROR: dataset/data.yaml not found"
+            exit 1
+          fi
+          echo "  ✓ dataset/data.yaml exists"
+
+          # Use the project's own Poetry environment so PyYAML is guaranteed available
+          poetry run python -c "
+          import yaml, sys
+          with open('dataset/data.yaml') as f:
+              data = yaml.safe_load(f)
+          required_keys = ['nc', 'names']
+          missing = [k for k in required_keys if k not in data]
+          if missing:
+              print(f'ERROR: dataset/data.yaml missing keys: {missing}')
+              sys.exit(1)
+          print(f'  ✓ data.yaml is valid (nc={data[\"nc\"]}, classes={data[\"names\"]})')
+          "
+
+      - name: Check training images (≥ 70)
+        run: |
+          echo "→ Checking dataset/train/images/..."
+          if [ ! -d "dataset/train/images" ]; then
+            echo "ERROR: dataset/train/images/ directory not found"
+            exit 1
+          fi
+          COUNT=$(find dataset/train/images -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l)
+          echo "  Found $COUNT training images"
+          if [ "$COUNT" -lt 70 ]; then
+            echo "ERROR: Need ≥ 70 training images, found $COUNT"
+            exit 1
+          fi
+          echo "  ✓ Training images: $COUNT (≥ 70)"
+
+      - name: Check validation images (≥ 20)
+        run: |
+          echo "→ Checking dataset/val/images/..."
+          if [ ! -d "dataset/val/images" ]; then
+            echo "ERROR: dataset/val/images/ directory not found"
+            exit 1
+          fi
+          COUNT=$(find dataset/val/images -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l)
+          echo "  Found $COUNT validation images"
+          if [ "$COUNT" -lt 20 ]; then
+            echo "ERROR: Need ≥ 20 validation images, found $COUNT"
+            exit 1
+          fi
+          echo "  ✓ Validation images: $COUNT (≥ 20)"
+
+      - name: Check test images (informational)
+        run: |
+          echo "→ Checking dataset/test/images/..."
+          if [ -d "dataset/test/images" ]; then
+            COUNT=$(find dataset/test/images -maxdepth 1 -type f \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | wc -l)
+            echo "  ℹ Test images: $COUNT"
+          else
+            echo "  ℹ dataset/test/images/ not found (optional)"
+          fi
+
+      - name: Check model file (models/best.pt)
+        run: |
+          echo "→ Checking models/best.pt..."
+          if [ ! -f "models/best.pt" ]; then
+            echo "  ⚠ WARNING: models/best.pt not found (expected after training - Spec 002)"
+            echo "  ℹ The system will fall back to the YOLO stub in development mode."
+          else
+            SIZE=$(du -sh models/best.pt | cut -f1)
+            echo "  ✓ models/best.pt exists ($SIZE)"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Docker Build (optional gate)
+  # ---------------------------------------------------------------------------
+  docker-build:
+    name: Docker Build & Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Only run on push to main or when explicitly triggered (not on every PR to save minutes)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          load: true
+          tags: fiap-stride:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Start services with Docker Compose
+        # Use the CI override to strip local-only volume mounts (./storage, ./logs)
+        # that don't exist on the runner and would cause docker compose to fail.
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d db redis
+          echo "Waiting for DB to be healthy..."
+          timeout 60 bash -c 'until docker compose -f docker-compose.yml -f docker-compose.ci.yml exec -T db pg_isready -U postgres -d fiap_stride; do sleep 2; done'
+
+      - name: Start API container
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d api
+          echo "Waiting for API to start..."
+          sleep 10
+
+      - name: Check /health endpoint
+        run: |
+          echo "→ Probing http://localhost:8001/health ..."
+          MAX_RETRIES=10
+          RETRY=0
+          until curl -sf http://localhost:8001/health | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('status') == 'healthy', f'status={d}'" 2>/dev/null; do
+            RETRY=$((RETRY+1))
+            if [ "$RETRY" -ge "$MAX_RETRIES" ]; then
+              echo "ERROR: /health did not return healthy after $MAX_RETRIES attempts"
+              docker compose -f docker-compose.yml -f docker-compose.ci.yml logs api
+              exit 1
+            fi
+            echo "  Attempt $RETRY/$MAX_RETRIES failed, retrying..."
+            sleep 5
+          done
+          echo "  ✓ /health responded with status=healthy"
+
+      - name: Print service logs on failure
+        if: failure()
+        run: |
+          echo "=== api logs ==="
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs api
+          echo "=== db logs ==="
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs db
+          echo "=== redis logs ==="
+          docker compose -f docker-compose.yml -f docker-compose.ci.yml logs redis
+
+      - name: Stop services
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml down -v
