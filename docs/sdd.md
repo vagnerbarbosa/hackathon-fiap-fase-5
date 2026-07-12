@@ -84,41 +84,36 @@ Todas as specs estão em `specs/features/`:
 ### 3.1 Diagrama de Componentes
 
 ```
-+------------------+       +------------------+
-|  Navegador       |       |   Admin/DEV      |
-|  (Chrome/Firefox)|       | (monitoramento)  |
-+--------+---------+       +--------+---------+
-         |                          |
-         v                          v
 +------------------+      +--------------------------------------------------------+
-| React Frontend   |      |                    FastAPI API (Port 8000)             |
-| (Port 5173)      |      |  +----------------+  +----------------+  +--------+  |
-| - Upload UI      |      |  | Upload Route   |  | Report Route   |  | Health |  |
-| - STRIDE Cards   |      |  | (RF-01)        |  | (RF-06)        |  | Check  |  |
-| - Grupo 27 Info  |      |  +--------+-------+  +--------+-------+  +--------+  |
+|  Navegador       |      |                    FastAPI API (Port 8000)             |
+|  (Chrome/Firefox)|      |  +----------------+  +----------------+  +--------+  |
++--------+---------+      |  | Upload Route   |  | Report Route   |  | Health |  |
+         |                |  | (RF-01)        |  | (RF-06)        |  | Check  |  |
+         |                |  +--------+-------+  +--------+-------+  +--------+  |
+         v                |           |                 |                        |
++------------------+      |  +--------v-------+  +--------v-------+                |
+| React Frontend   |      |  | Component      |  | Report         |                |
+| (Port 5173)      |      |  | Detection      |  | Generator      |                |
+| - Upload UI      |      |  | Service        |  | (Jinja2)       |                |
+| - STRIDE Cards   |      |  | (Spec 003)     |  | (Spec 006)     |                |
+| - Grupo 27 Info  |      |  +--------+-------+  +--------+-------+                |
 | - Identidade FIAP|      |           |                 |                        |
 +--------+---------+      |  +--------v-------+  +--------v-------+                |
-         |                |  | Component      |  | Report         |                |
-         |                |  | Detection      |  | Generator      |                |
-         +--------------->|  | Service        |  | (Jinja2)       |                |
-           (Proxy API)     |  | (Spec 003)     |  | (Spec 006)     |                |
-                          |  +--------+-------+  +--------+-------+                |
-                          |           |                 |                        |
-                          |  +--------v-------+  +--------v-------+                |
-                          |  | STRIDE Engine  |  | Vulnerability  |                |
-                          |  | (Spec 004)     |  | Service        |                |
-                          |  +--------+-------+  | (Spec 005)     |                |
-                          |           |          +--------+-------+                |
-                          |           |                 |                          |
-                          +--------------------------------------------------------+
-                                      |                 |
-                                      v                 v
-                          +-----------+----+    +-----+--------+
-                          |  PostgreSQL    |    |    Redis     |
-                          |  (Jobs,        |    |  (Cache,     |
-                          |   Reports)     |    |   Rate Limit)|
-                          +----------------+    +--------------+
+         |                |  | STRIDE Engine  |  | Vulnerability  |                |
+         |                |  | (Spec 004)     |  | Service        |                |
+         +--------------->|  +--------+-------+  | (Spec 005)     |                |
+           (Proxy API)      |           |          +--------+-------+                |
+                           |           |                 |                          |
+                           +--------------------------------------------------------+
+                                       |                 |                          
+                                       v                 v                          
+                           +-----------+----+    +-----+--------+                   
+                           |  PostgreSQL    |    |    Redis     |                   
+                           |  (Jobs,        |    |  (Cache,     |                   
+                           |   Reports)     |    |   Rate Limit)|                   
+                           +----------------+    +--------------+                    
 ```
+
 
 ### 3.2 Fluxo de Dados (End-to-End)
 
