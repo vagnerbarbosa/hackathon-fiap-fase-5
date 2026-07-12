@@ -253,3 +253,6 @@ storage/*
 # CodeRabbit Skills (agent plugins)
 # -------------------------------
 .agents/
+skills-lock.json
+.claude/skills/autofix
+.claude/skills/code-review
