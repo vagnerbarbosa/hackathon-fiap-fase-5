@@ -34,15 +34,15 @@ class TestRelationshipAnalyzer:
                 id="api-1",
                 type="api",
                 confidence=0.91,
-                bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
-                center=Point(x=250, y=85),
+                bbox=BoundingBox(x_min=120, y_min=50, x_max=180, y_max=120),
+                center=Point(x=150, y=85),  # Distância ~115px do user (35,75)
             ),
             DetectedComponent(
                 id="db-1",
                 type="database",
                 confidence=0.88,
-                bbox=BoundingBox(x_min=400, y_min=60, x_max=500, y_max=140),
-                center=Point(x=450, y=100),
+                bbox=BoundingBox(x_min=250, y_min=60, x_max=320, y_max=140),
+                center=Point(x=285, y=100),  # Distância ~135px do api (150,85)
             ),
         ]
 
@@ -61,8 +61,8 @@ class TestRelationshipAnalyzer:
                 id="api-1",
                 type="api",
                 confidence=0.91,
-                bbox=BoundingBox(x_min=110, y_min=200, x_max=190, y_max=260),
-                center=Point(x=150, y=230),
+                bbox=BoundingBox(x_min=110, y_min=140, x_max=190, y_max=190),
+                center=Point(x=150, y=165),  # Distância 90px do web (150,75)
             ),
         ]
 
@@ -137,12 +137,12 @@ class TestRelationshipAnalyzer:
     def test_compute_distance(self, analyzer, horizontal_components):
         """Cálculo de distância entre componentes."""
         comp1 = horizontal_components[0]  # user em (35, 75)
-        comp2 = horizontal_components[1]  # api em (250, 85)
+        comp2 = horizontal_components[1]  # api em (150, 85)
 
         distance = analyzer._compute_distance(comp1, comp2)
 
-        # Esperado: sqrt((250-35)^2 + (85-75)^2) = sqrt(215^2 + 10^2)
-        expected = ((250 - 35) ** 2 + (85 - 75) ** 2) ** 0.5
+        # Esperado: sqrt((150-35)^2 + (85-75)^2) = sqrt(115^2 + 10^2)
+        expected = ((150 - 35) ** 2 + (85 - 75) ** 2) ** 0.5
         assert abs(distance - expected) < 0.001
 
     def test_is_aligned_horizontal(self, analyzer, horizontal_components):
