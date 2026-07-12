@@ -355,17 +355,6 @@ make help
 
 ---
 
-## 👥 Integrantes Grupo 27
-
-| Membro | GitHub |
-|--------|--------|
-| **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) |
-| **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) |
-| **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) |
-| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) |
-
----
-
 ## 🤝 Contribuição
 
 Este projeto segue o fluxo de **Pull Requests** rigoroso:
