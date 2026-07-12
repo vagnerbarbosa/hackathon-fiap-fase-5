@@ -1,4 +1,4 @@
-"""Tests for ComponentDetectionService."""
+"""Testes para ComponentDetectionService."""
 
 import pytest
 from pathlib import Path
@@ -9,16 +9,16 @@ from src.domain.models import ArchitectureGraph, DetectedComponent
 
 
 class TestComponentDetectionService:
-    """Test ComponentDetectionService operations."""
+    """Testes para operações do ComponentDetectionService."""
 
     @pytest.fixture
     def service(self):
-        """Create a service instance in mock mode."""
+        """Cria uma instância do serviço em modo mock."""
         return ComponentDetectionService(model_path=None)
 
     async def test_detect_mock_mode(self, service, tmp_path):
-        """Should detect components in mock mode."""
-        # Create a dummy image file
+        """Deve detectar componentes em modo mock."""
+        # Cria um arquivo de imagem dummy
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 
@@ -30,7 +30,7 @@ class TestComponentDetectionService:
         assert len(result.trust_boundaries) == 3
 
     async def test_detect_components_types(self, service, tmp_path):
-        """Should detect user, api, and database components."""
+        """Deve detectar componentes user, api e database."""
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 
@@ -42,30 +42,30 @@ class TestComponentDetectionService:
         assert "database" in types
 
     async def test_detect_component_structure(self, service, tmp_path):
-        """Should return components with valid structure."""
+        """Deve retornar componentes com estrutura válida."""
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 
         result = await service.detect(image_path)
 
         for component in result.components:
-            # Check UUID format
-            UUID(component.id)  # Should not raise
+            # Verifica formato UUID
+            UUID(component.id)  # Não deve lançar exceção
 
-            # Check confidence range
+            # Verifica range de confiança
             assert 0.0 <= component.confidence <= 1.0
             assert component.confidence >= 0.25
 
-            # Check bounding box
+            # Verifica bounding box
             assert component.bbox.x_min < component.bbox.x_max
             assert component.bbox.y_min < component.bbox.y_max
 
-            # Check center point
+            # Verifica ponto central
             assert component.center.x == (component.bbox.x_min + component.bbox.x_max) // 2
             assert component.center.y == (component.bbox.y_min + component.bbox.y_max) // 2
 
     async def test_detect_data_flows(self, service, tmp_path):
-        """Should infer data flows between components."""
+        """Deve inferir fluxos de dados entre componentes."""
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 
@@ -74,20 +74,20 @@ class TestComponentDetectionService:
         assert len(result.data_flows) > 0
 
         for flow in result.data_flows:
-            # Check flow has valid source and target
+            # Verifica se o fluxo tem source e target válidos
             assert flow.source_id in [c.id for c in result.components]
             assert flow.target_id in [c.id for c in result.components]
             assert flow.direction in ["unidirectional", "bidirectional"]
             assert flow.inferred is True
 
     async def test_detect_trust_boundaries(self, service, tmp_path):
-        """Should assign components to trust boundaries."""
+        """Deve atribuir componentes a trust boundaries."""
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 
         result = await service.detect(image_path)
 
-        # All components should be in some trust boundary
+        # Todos os componentes devem estar em algum trust boundary
         all_boundary_components = []
         for boundary in result.trust_boundaries:
             all_boundary_components.extend(boundary)
@@ -97,27 +97,27 @@ class TestComponentDetectionService:
             assert comp_id in all_boundary_components
 
     async def test_detect_file_not_found(self, service):
-        """Should raise FileNotFoundError for non-existent file."""
+        """Deve lançar FileNotFoundError para arquivo inexistente."""
         with pytest.raises(FileNotFoundError):
             await service.detect("/non/existent/file.png")
 
     def test_is_mock_mode(self, service):
-        """Should report mock mode when no model is loaded."""
+        """Deve reportar modo mock quando nenhum modelo está carregado."""
         assert service.is_mock_mode() is True
 
     def test_service_initializes_without_model(self):
-        """Should initialize without a model file."""
+        """Deve inicializar sem um arquivo de modelo."""
         service = ComponentDetectionService(model_path="/non/existent/model.pt")
         assert service.model is None
         assert service.is_mock_mode() is True
 
     def test_service_with_invalid_model_path(self):
-        """Should handle invalid model path gracefully."""
+        """Deve tratar caminho de modelo inválido com graça."""
         service = ComponentDetectionService(model_path="/invalid/path.pt")
         assert service.is_mock_mode() is True
 
     async def test_detect_returns_architecture_graph(self, service, tmp_path):
-        """Should return ArchitectureGraph type."""
+        """Deve retornar tipo ArchitectureGraph."""
         image_path = tmp_path / "test.png"
         image_path.write_bytes(b"fake image content")
 

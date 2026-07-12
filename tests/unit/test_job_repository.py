@@ -1,4 +1,4 @@
-"""Tests for JobRepository."""
+"""Testes para JobRepository."""
 
 import pytest
 from uuid import uuid4
@@ -8,10 +8,10 @@ from src.models.job import Job, JobStatus
 
 
 class TestJobRepository:
-    """Test JobRepository operations."""
+    """Testes para operações do JobRepository."""
 
     async def test_create_job(self, db_session):
-        """Should create a new job in the database."""
+        """Deve criar um novo job no banco de dados."""
         repo = JobRepository(db_session)
         job = await repo.create(input_image_path="/tmp/test.png")
 
@@ -22,7 +22,7 @@ class TestJobRepository:
         assert job.updated_at is not None
 
     async def test_create_job_returns_job_object(self, db_session):
-        """Should return Job object with all fields."""
+        """Deve retornar objeto Job com todos os campos."""
         repo = JobRepository(db_session)
         job = await repo.create(input_image_path="/tmp/diagram.png")
 
@@ -31,48 +31,48 @@ class TestJobRepository:
         assert job.error_message is None
 
     async def test_list_recent_jobs_empty(self, db_session):
-        """Should return empty list when no jobs."""
+        """Deve retornar lista vazia quando não há jobs."""
         repo = JobRepository(db_session)
         recent = await repo.list_recent(limit=10)
 
         assert recent == []
 
     async def test_list_recent_jobs(self, db_session):
-        """Should return recently created jobs."""
+        """Deve retornar jobs criados recentemente."""
         repo = JobRepository(db_session)
 
-        # Create jobs
+        # Cria jobs
         job1 = await repo.create(input_image_path="/tmp/1.png")
         job2 = await repo.create(input_image_path="/tmp/2.png")
 
-        # List should return them
+        # Lista deve retorná-los
         recent = await repo.list_recent(limit=10)
 
         assert len(recent) == 2
-        # Most recent first
+        # Mais recentes primeiro
         paths = [j.input_image_path for j in recent]
         assert "/tmp/2.png" in paths
         assert "/tmp/1.png" in paths
 
     async def test_list_recent_respects_limit(self, db_session):
-        """Should respect the limit parameter."""
+        """Deve respeitar o parâmetro de limite."""
         repo = JobRepository(db_session)
 
-        # Create 5 jobs
+        # Cria 5 jobs
         for i in range(5):
             await repo.create(input_image_path=f"/tmp/{i}.png")
 
-        # Request only 2
+        # Solicita apenas 2
         recent = await repo.list_recent(limit=2)
 
         assert len(recent) == 2
 
     async def test_update_status_changes_status(self, db_session):
-        """Should update job status."""
+        """Deve atualizar o status do job."""
         repo = JobRepository(db_session)
         job = await repo.create(input_image_path="/tmp/test.png")
 
-        # Update to processing
+        # Atualiza para processing
         updated = await repo.update_status(
             job_id=job.id,
             status=JobStatus.PROCESSING,
@@ -82,7 +82,7 @@ class TestJobRepository:
         assert updated.status == JobStatus.PROCESSING.value
 
     async def test_update_status_to_completed(self, db_session):
-        """Should update job status to completed with report."""
+        """Deve atualizar o status do job para completed com relatório."""
         repo = JobRepository(db_session)
         job = await repo.create(input_image_path="/tmp/test.png")
 
@@ -96,7 +96,7 @@ class TestJobRepository:
         assert updated.output_report_path == "reports/123.md"
 
     async def test_update_status_to_failed(self, db_session):
-        """Should update job status to failed with error."""
+        """Deve atualizar o status do job para failed com erro."""
         repo = JobRepository(db_session)
         job = await repo.create(input_image_path="/tmp/test.png")
 

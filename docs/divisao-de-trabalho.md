@@ -194,8 +194,8 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Vagner** | 001 API Core | ✅ **Concluída** | `fake_job` |
 | **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
 | **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
-| **Adriel** | 004 STRIDE | ✅ Livre | `fake_architecture_graph` |
-| **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
+| **Adriel** | 004 STRIDE | ⏳ Em Progresso | `fake_architecture_graph` |
+| **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
 | **Vagner** | 008 Frontend | ✅ **Concluída** | Layout completo, STRIDE, Grupo 27 |

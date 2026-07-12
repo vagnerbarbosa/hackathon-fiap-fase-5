@@ -1,6 +1,6 @@
-"""Unit tests for RelationshipAnalyzer.
+"""Testes unitários para RelationshipAnalyzer.
 
-Tests spatial heuristics for inferring data flows and trust boundaries.
+Testa heurísticas espaciais para inferir data flows e trust boundaries.
 """
 
 import pytest
@@ -9,11 +9,11 @@ from src.services.relationship_analyzer import RelationshipAnalyzer
 
 
 class TestRelationshipAnalyzer:
-    """Tests for RelationshipAnalyzer."""
+    """Testes para RelationshipAnalyzer."""
 
     @pytest.fixture
     def analyzer(self):
-        """Create analyzer with default settings."""
+        """Cria analyzer com configurações padrão."""
         return RelationshipAnalyzer(
             proximity_threshold=150.0,
             alignment_tolerance=50.0,
@@ -21,7 +21,7 @@ class TestRelationshipAnalyzer:
 
     @pytest.fixture
     def horizontal_components(self):
-        """Components aligned horizontally (side by side)."""
+        """Componentes alinhados horizontalmente (lado a lado)."""
         return [
             DetectedComponent(
                 id="user-1",
@@ -48,7 +48,7 @@ class TestRelationshipAnalyzer:
 
     @pytest.fixture
     def vertical_components(self):
-        """Components aligned vertically (stacked)."""
+        """Componentes alinhados verticalmente (empilhados)."""
         return [
             DetectedComponent(
                 id="web-1",
@@ -68,7 +68,7 @@ class TestRelationshipAnalyzer:
 
     @pytest.fixture
     def isolated_components(self):
-        """Components too far apart for flows."""
+        """Componentes muito distantes para flows."""
         return [
             DetectedComponent(
                 id="user-1",
@@ -87,12 +87,12 @@ class TestRelationshipAnalyzer:
         ]
 
     def test_empty_components_returns_empty(self, analyzer):
-        """No components should return no flows."""
+        """Sem componentes deve retornar sem flows."""
         flows = analyzer.infer_data_flows([])
         assert flows == []
 
     def test_single_component_returns_empty(self, analyzer):
-        """Single component should have no flows."""
+        """Componente único não deve ter flows."""
         comp = DetectedComponent(
             id="user-1",
             type="user",
@@ -104,22 +104,22 @@ class TestRelationshipAnalyzer:
         assert flows == []
 
     def test_horizontal_alignment_creates_flows(self, analyzer, horizontal_components):
-        """Horizontally aligned components should create flows."""
+        """Componentes alinhados horizontalmente devem criar flows."""
         flows = analyzer.infer_data_flows(horizontal_components)
 
-        # Should create flows between adjacent components
+        # Deve criar flows entre componentes adjacentes
         assert len(flows) == 2
 
-        # Check flow directions
+        # Verifica direções dos flows
         source_ids = [f.source_id for f in flows]
         assert "user-1" in source_ids
         assert "api-1" in source_ids
 
-        # All flows should be marked as inferred
+        # Todos os flows devem ser marcados como inferred
         assert all(f.inferred for f in flows)
 
     def test_vertical_alignment_creates_flows(self, analyzer, vertical_components):
-        """Vertically aligned components should create flows."""
+        """Componentes alinhados verticalmente devem criar flows."""
         flows = analyzer.infer_data_flows(vertical_components)
 
         assert len(flows) == 1
@@ -128,39 +128,39 @@ class TestRelationshipAnalyzer:
         assert flows[0].inferred is True
 
     def test_isolated_components_no_flows(self, analyzer, isolated_components):
-        """Components too far apart should not create flows."""
+        """Componentes muito distantes não devem criar flows."""
         flows = analyzer.infer_data_flows(isolated_components)
 
-        # Distance is too large (> proximity_threshold)
+        # Distância é muito grande (> proximity_threshold)
         assert len(flows) == 0
 
     def test_compute_distance(self, analyzer, horizontal_components):
-        """Distance calculation between components."""
-        comp1 = horizontal_components[0]  # user at (35, 75)
-        comp2 = horizontal_components[1]  # api at (250, 85)
+        """Cálculo de distância entre componentes."""
+        comp1 = horizontal_components[0]  # user em (35, 75)
+        comp2 = horizontal_components[1]  # api em (250, 85)
 
         distance = analyzer._compute_distance(comp1, comp2)
 
-        # Expected: sqrt((250-35)^2 + (85-75)^2) = sqrt(215^2 + 10^2)
+        # Esperado: sqrt((250-35)^2 + (85-75)^2) = sqrt(215^2 + 10^2)
         expected = ((250 - 35) ** 2 + (85 - 75) ** 2) ** 0.5
         assert abs(distance - expected) < 0.001
 
     def test_is_aligned_horizontal(self, analyzer, horizontal_components):
-        """Components with similar Y are horizontally aligned."""
+        """Componentes com Y similar são alinhados horizontalmente."""
         comp1 = horizontal_components[0]  # Y = 75
         comp2 = horizontal_components[1]  # Y = 85
 
         assert analyzer._is_aligned(comp1, comp2) is True
 
     def test_is_aligned_vertical(self, analyzer, vertical_components):
-        """Components with similar X are vertically aligned."""
+        """Componentes com X similar são alinhados verticalmente."""
         comp1 = vertical_components[0]  # X = 150
         comp2 = vertical_components[1]  # X = 150
 
         assert analyzer._is_aligned(comp1, comp2) is True
 
     def test_not_aligned(self, analyzer, isolated_components):
-        """Components far apart in both X and Y are not aligned."""
+        """Componentes distantes em X e Y não estão alinhados."""
         comp1 = isolated_components[0]
         comp2 = isolated_components[1]
 
@@ -168,16 +168,16 @@ class TestRelationshipAnalyzer:
 
 
 class TestTrustBoundaries:
-    """Tests for trust boundary inference."""
+    """Testes para inferência de trust boundaries."""
 
     @pytest.fixture
     def analyzer(self):
-        """Create analyzer."""
+        """Cria analyzer."""
         return RelationshipAnalyzer()
 
     @pytest.fixture
     def mixed_components(self):
-        """Components of different types."""
+        """Componentes de diferentes tipos."""
         return [
             DetectedComponent(
                 id="user-1",
@@ -217,10 +217,10 @@ class TestTrustBoundaries:
         ]
 
     def test_user_in_public_zone(self, analyzer, mixed_components):
-        """User components should be in public zone."""
+        """Componentes user devem estar em zona pública."""
         boundaries = analyzer.infer_trust_boundaries(mixed_components)
 
-        # Find boundary containing user
+        # Encontra boundary contendo user
         user_boundary = None
         for boundary in boundaries:
             if "user-1" in boundary:
@@ -231,10 +231,10 @@ class TestTrustBoundaries:
         assert "user-1" in user_boundary
 
     def test_database_in_private_zone(self, analyzer, mixed_components):
-        """Database components should be in private zone."""
+        """Componentes database devem estar em zona privada."""
         boundaries = analyzer.infer_trust_boundaries(mixed_components)
 
-        # Find boundary containing database and cache (data layer)
+        # Encontra boundary contendo database e cache (camada de dados)
         data_boundary = None
         for boundary in boundaries:
             if "db-1" in boundary:
@@ -245,10 +245,10 @@ class TestTrustBoundaries:
         assert "db-1" in data_boundary
 
     def test_external_in_separate_zone(self, analyzer, mixed_components):
-        """External services should be in their own zone."""
+        """External services devem estar em sua própria zona."""
         boundaries = analyzer.infer_trust_boundaries(mixed_components)
 
-        # Find boundary containing external service
+        # Encontra boundary contendo external service
         ext_boundary = None
         for boundary in boundaries:
             if "ext-1" in boundary:
@@ -256,23 +256,23 @@ class TestTrustBoundaries:
                 break
 
         assert ext_boundary is not None
-        assert len(ext_boundary) == 1  # Isolated
+        assert len(ext_boundary) == 1  # Isolado
 
     def test_empty_components_no_boundaries(self, analyzer):
-        """No components should result in no boundaries."""
+        """Sem componentes deve resultar em sem boundaries."""
         boundaries = analyzer.infer_trust_boundaries([])
         assert boundaries == []
 
 
 class TestFlowDirection:
-    """Tests for flow direction inference."""
+    """Testes para inferência de direção de flow."""
 
     @pytest.fixture
     def analyzer(self):
         return RelationshipAnalyzer()
 
     def test_user_to_api_is_unidirectional(self, analyzer):
-        """Flow from user to API is typically unidirectional (request)."""
+        """Flow de user para API é tipicamente unidirecional (request)."""
         from src.domain.models import DataFlow
 
         user = DetectedComponent(
@@ -290,7 +290,7 @@ class TestFlowDirection:
         assert direction == "unidirectional"
 
     def test_api_to_database_is_bidirectional(self, analyzer):
-        """Flow between API and database is typically bidirectional."""
+        """Flow entre API e database é tipicamente bidirecional."""
         api = DetectedComponent(
             id="api-1", type="api", confidence=0.91,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
@@ -306,7 +306,7 @@ class TestFlowDirection:
         assert direction == "bidirectional"
 
     def test_api_to_cache_is_bidirectional(self, analyzer):
-        """Flow between API and cache is bidirectional."""
+        """Flow entre API e cache é bidirecional."""
         api = DetectedComponent(
             id="api-1", type="api", confidence=0.91,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),

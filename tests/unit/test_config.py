@@ -1,4 +1,4 @@
-"""Tests for configuration module."""
+"""Testes para módulo de configuração."""
 
 import os
 from unittest.mock import patch
@@ -10,17 +10,17 @@ from src.core.config import Settings, get_settings
 
 
 class TestSettings:
-    """Test Settings configuration."""
+    """Testes para configuração Settings."""
 
     def test_settings_required_database_url(self):
-        """Settings should require DATABASE_URL."""
+        """Settings deve requerer DATABASE_URL."""
         from pydantic_settings import SettingsConfigDict
 
-        # Create a test settings class that ignores env file
+        # Cria classe de teste que ignora arquivo env
         class TestSettingsRequired(Settings):
             model_config = SettingsConfigDict(env_file=None)
 
-        # Remove DATABASE_URL from environment
+        # Remove DATABASE_URL do ambiente
         env_vars = os.environ.copy()
         env_vars.pop("DATABASE_URL", None)
 
@@ -31,7 +31,7 @@ class TestSettings:
             assert "database_url" in str(exc_info.value)
 
     def test_settings_with_required_values(self):
-        """Settings should work with required values."""
+        """Settings deve funcionar com valores obrigatórios."""
         settings = Settings(
             database_url="postgresql+asyncpg://user:pass@localhost/db",
             api_key="test-key",
@@ -41,7 +41,7 @@ class TestSettings:
         assert settings.api_key == "test-key"
 
     def test_settings_defaults(self):
-        """Settings should have correct defaults."""
+        """Settings deve ter defaults corretos."""
         settings = Settings(
             database_url="postgresql+asyncpg://user:pass@localhost/db",
             api_key="test-key",
@@ -54,7 +54,7 @@ class TestSettings:
         assert settings.log_level == "INFO"
 
     def test_settings_api_rate_limit_validation(self):
-        """API rate limit should be at least 1."""
+        """Limite de rate da API deve ser pelo menos 1."""
         with pytest.raises(ValidationError):
             Settings(
                 database_url="postgresql+asyncpg://user:pass@localhost/db",
@@ -63,7 +63,7 @@ class TestSettings:
             )
 
     def test_settings_log_level_validation(self):
-        """Log level should be one of allowed values."""
+        """Nível de log deve ser um dos valores permitidos."""
         with pytest.raises(ValidationError):
             Settings(
                 database_url="postgresql+asyncpg://user:pass@localhost/db",
@@ -72,14 +72,14 @@ class TestSettings:
             )
 
     def test_get_settings_caches_result(self):
-        """get_settings should cache the result."""
+        """get_settings deve cachear o resultado."""
         settings1 = get_settings()
         settings2 = get_settings()
 
         assert settings1 is settings2
 
     def test_cors_origins_parsing(self):
-        """CORS origins should be parsed from comma-separated string."""
+        """CORS origins deve ser parseado de string separada por vírgulas."""
         settings = Settings(
             database_url="postgresql+asyncpg://user:pass@localhost/db",
             api_key="test-key",
@@ -89,7 +89,7 @@ class TestSettings:
         assert settings.cors_origins == ["http://localhost:3000", "http://localhost:8080"]
 
     def test_cors_origins_empty(self):
-        """CORS origins should default to empty list."""
+        """CORS origins deve ter lista vazia como default."""
         settings = Settings(
             database_url="postgresql+asyncpg://user:pass@localhost/db",
             api_key="test-key",

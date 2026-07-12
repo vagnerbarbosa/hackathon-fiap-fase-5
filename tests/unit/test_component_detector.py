@@ -1,6 +1,6 @@
-"""Unit tests for ComponentDetectionService.
+"""Testes unitários para ComponentDetectionService.
 
-Tests use mocks to avoid loading actual YOLO model weights.
+Testes usam mocks para evitar carregar pesos reais do modelo YOLO.
 """
 
 from pathlib import Path
@@ -18,12 +18,12 @@ from src.infrastructure.ml.yolo_model import DetectionResult
 
 
 class TestComponentDetectionService:
-    """Tests for ComponentDetectionService."""
+    """Testes para ComponentDetectionService."""
 
     @pytest.fixture
     def service(self, tmp_path):
-        """Create service instance with temporary storage."""
-        # Service will use YOLOStub since no model file exists
+        """Cria instância do service com storage temporário."""
+        # Service usará YOLOStub já que arquivo de modelo não existe
         return ComponentDetectionService(
             model_path=str(tmp_path / "nonexistent.pt"),
             confidence_threshold=0.25,
@@ -31,7 +31,7 @@ class TestComponentDetectionService:
 
     @pytest.fixture
     def mock_detections(self):
-        """Create mock detection results."""
+        """Cria resultados de detecção mockados."""
         return [
             DetectionResult(
                 class_name="user",
@@ -51,11 +51,11 @@ class TestComponentDetectionService:
         ]
 
     def test_service_uses_stub_when_no_model(self, service):
-        """Service should use stub when model file doesn't exist."""
+        """Service deve usar stub quando arquivo de modelo não existe."""
         assert service.is_using_stub is True
 
     def test_convert_detections_creates_components(self, service, mock_detections):
-        """Convert YOLO detections to domain components."""
+        """Converte detecções YOLO para componentes de domínio."""
         components = service._convert_detections(mock_detections)
 
         assert len(components) == 3
@@ -65,35 +65,35 @@ class TestComponentDetectionService:
         assert components[2].type == "database"
 
     def test_convert_detections_calculates_centers(self, service, mock_detections):
-        """Convert should calculate center points from bboxes."""
+        """Conversão deve calcular pontos centrais a partir de bboxes."""
         components = service._convert_detections(mock_detections)
 
-        # First component: bbox [10, 50, 60, 100]
-        # Center should be (35, 75)
+        # Primeiro componente: bbox [10, 50, 60, 100]
+        # Centro deve ser (35, 75)
         assert components[0].center.x == 35
         assert components[0].center.y == 75
 
-        # Second component: bbox [200, 50, 300, 120]
-        # Center should be (250, 85)
+        # Segundo componente: bbox [200, 50, 300, 120]
+        # Centro deve ser (250, 85)
         assert components[1].center.x == 250
         assert components[1].center.y == 85
 
     def test_convert_detections_generates_uuids(self, service, mock_detections):
-        """Convert should generate unique UUIDs for each component."""
+        """Conversão deve gerar UUIDs únicos para cada componente."""
         components = service._convert_detections(mock_detections)
 
         ids = [c.id for c in components]
-        assert len(ids) == len(set(ids))  # All unique
+        assert len(ids) == len(set(ids))  # Todos únicos
 
     def test_convert_empty_detections(self, service):
-        """Convert empty detections should return empty list."""
+        """Converter detecções vazias deve retornar lista vazia."""
         components = service._convert_detections([])
         assert components == []
 
     @pytest.mark.asyncio
     async def test_detect_returns_architecture_graph(self, service, tmp_path):
-        """Detect should return ArchitectureGraph with all fields."""
-        # Create a dummy image file
+        """Detect deve retornar ArchitectureGraph com todos os campos."""
+        # Cria arquivo de imagem dummy
         from PIL import Image
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
@@ -108,48 +108,48 @@ class TestComponentDetectionService:
 
     @pytest.mark.asyncio
     async def test_detect_filters_by_confidence(self, service, tmp_path):
-        """Detect should filter components below confidence threshold."""
+        """Detect deve filtrar componentes abaixo do threshold de confiança."""
         from PIL import Image
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
 
-        # Use high confidence threshold
+        # Usa threshold de confiança alto
         service.confidence_threshold = 0.90
         graph = await service.detect(test_path)
 
-        # Should only return components with confidence >= 0.90
+        # Deve retornar apenas componentes com confiança >= 0.90
         for comp in graph.components:
             assert comp.confidence >= 0.90
 
     @pytest.mark.asyncio
     async def test_detect_caches_results(self, service, tmp_path):
-        """Detect should cache results for same image."""
+        """Detect deve cachear resultados para mesma imagem."""
         from PIL import Image
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
 
-        # First detection
+        # Primeira detecção
         graph1 = await service.detect(test_path)
 
-        # Second detection should use cache
+        # Segunda detecção deve usar cache
         graph2 = await service.detect(test_path)
 
-        # Results should be identical
+        # Resultados devem ser idênticos
         assert len(graph1.components) == len(graph2.components)
 
 
 class TestNoComponentsDetectedError:
-    """Tests for NoComponentsDetectedError."""
+    """Testes para NoComponentsDetectedError."""
 
     def test_error_message(self):
-        """Error should contain helpful message."""
+        """Erro deve conter mensagem útil."""
         error = NoComponentsDetectedError("No components found")
         assert "No components found" in error.message
 
     def test_error_to_dict(self):
-        """Error should convert to API response format."""
+        """Erro deve converter para formato de resposta da API."""
         error = NoComponentsDetectedError("Test message")
         result = error.to_dict()
 
@@ -162,10 +162,10 @@ class TestNoComponentsDetectedError:
 
 
 class TestDetectionResult:
-    """Tests for DetectionResult data class."""
+    """Testes para data class DetectionResult."""
 
     def test_detection_result_creation(self):
-        """Create DetectionResult with all fields."""
+        """Cria DetectionResult com todos os campos."""
         result = DetectionResult(
             class_name="api",
             confidence=0.95,
@@ -178,11 +178,11 @@ class TestDetectionResult:
 
 
 class TestCircuitBreakerIntegration:
-    """Tests for Circuit Breaker integration."""
+    """Testes para integração com Circuit Breaker."""
 
     @pytest.fixture
     def service(self, tmp_path):
-        """Create service with circuit breaker."""
+        """Cria service com circuit breaker."""
         return ComponentDetectionService(
             model_path=str(tmp_path / "nonexistent.pt"),
             confidence_threshold=0.25,
@@ -190,22 +190,22 @@ class TestCircuitBreakerIntegration:
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_exists(self, service):
-        """Service should have circuit breaker."""
+        """Service deve ter circuit breaker."""
         assert hasattr(service, '_circuit_breaker')
         assert service._circuit_breaker.name == "yolo_inference"
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_opens_after_failures(self, service, tmp_path):
-        """Circuit should open after multiple failures."""
+        """Circuito deve abrir após múltiplas falhas."""
         from PIL import Image
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
 
-        # Mock model to always fail
+        # Mock do modelo para sempre falhar
         service.model.predict = MagicMock(side_effect=RuntimeError("Model failed"))
 
-        # 3 failures to open circuit
+        # 3 falhas para abrir circuito
         for _ in range(3):
             with pytest.raises(Exception):
                 await service.detect(test_path)
@@ -214,16 +214,16 @@ class TestCircuitBreakerIntegration:
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_allows_success(self, service):
-        """Circuit should allow successful calls."""
+        """Circuito deve permitir chamadas bem-sucedidas."""
         assert service._circuit_breaker.state.value == "closed"
 
 
 class TestCacheInjection:
-    """Tests for cache dependency injection."""
+    """Testes para injeção de dependência de cache."""
 
     @pytest.fixture
     def service(self, tmp_path):
-        """Create service with default cache."""
+        """Cria service com cache padrão."""
         return ComponentDetectionService(
             model_path=str(tmp_path / "nonexistent.pt"),
             confidence_threshold=0.25,
@@ -231,13 +231,13 @@ class TestCacheInjection:
 
     @pytest.mark.asyncio
     async def test_uses_cache_factory_by_default(self, service):
-        """Service should use CacheFactory by default."""
+        """Service deve usar CacheFactory por padrão."""
         from src.infrastructure.cache.cache_factory import CacheFactory
         assert service.cache is not None
 
     @pytest.mark.asyncio
     async def test_allows_custom_cache(self, tmp_path):
-        """Service should accept custom cache."""
+        """Service deve aceitar cache customizado."""
         from src.infrastructure.cache.in_memory_cache import InMemoryCache
         custom_cache = InMemoryCache()
 
@@ -251,11 +251,11 @@ class TestCacheInjection:
 
 
 class TestRetryIntegration:
-    """Tests for Retry integration."""
+    """Testes para integração com Retry."""
 
     @pytest.mark.asyncio
     async def test_run_inference_with_circuit_breaker_exists(self, tmp_path):
-        """Service should have retry-wrapped inference."""
+        """Service deve ter inferência wrapada com retry."""
         service = ComponentDetectionService(
             model_path=str(tmp_path / "nonexistent.pt"),
             confidence_threshold=0.25,
