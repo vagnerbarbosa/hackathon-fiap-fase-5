@@ -96,7 +96,8 @@ class TestAPIKeyAuth:
 
     async def test_valid_api_key_allows_access(self, async_client):
         """Request with valid API key should succeed on health endpoint."""
-        # Health endpoint doesn't require API key and should succeed
+        # Health endpoint doesn't require API key but async_client includes it
+        # This verifies the client is configured correctly with valid API key
         response = await async_client.get("/health")
-        # Should not be 401
+        # Should not be 401 (health endpoint is accessible)
         assert response.status_code != 401

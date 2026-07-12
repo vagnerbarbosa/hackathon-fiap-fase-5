@@ -97,6 +97,7 @@ describe('API Authentication', () => {
       call[0]?.includes?.('/version')
     )
 
+    expect(versionCalls.length).toBeGreaterThan(0)
     versionCalls.forEach((call) => {
       expect(call[1]?.headers).toBeDefined()
     })
