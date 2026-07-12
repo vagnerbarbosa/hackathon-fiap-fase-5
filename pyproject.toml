@@ -24,7 +24,7 @@ orjson = "^3.10.0"
 redis = "^5.2.0"
 python-magic = "^0.4.27"
 numpy = "^2.0.0"
-opencv-python-headless = "^4.10.0"  # Versão headless (sem GUI) para Docker
+opencv-python-headless = "^4.10.0.84"  # Versão headless (sem GUI) para Docker
 onnxruntime = "^1.18.0"
 
 [tool.poetry.group.dev.dependencies]
