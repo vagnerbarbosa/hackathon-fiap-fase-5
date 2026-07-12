@@ -110,3 +110,20 @@ class TestComponentDetectionService:
         service = ComponentDetectionService(model_path="/non/existent/model.pt")
         assert service.model is None
         assert service.is_mock_mode() is True
+
+    def test_service_with_invalid_model_path(self):
+        """Should handle invalid model path gracefully."""
+        service = ComponentDetectionService(model_path="/invalid/path.pt")
+        assert service.is_mock_mode() is True
+
+    async def test_detect_returns_architecture_graph(self, service, tmp_path):
+        """Should return ArchitectureGraph type."""
+        image_path = tmp_path / "test.png"
+        image_path.write_bytes(b"fake image content")
+
+        result = await service.detect(image_path)
+
+        assert isinstance(result, ArchitectureGraph)
+        assert hasattr(result, 'components')
+        assert hasattr(result, 'data_flows')
+        assert hasattr(result, 'trust_boundaries')
