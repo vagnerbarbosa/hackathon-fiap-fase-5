@@ -178,7 +178,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Vagner** | 001 API Core | ✅ **Concluída** | `fake_job` |
 | **Lucas** | 002 Dataset YOLO | ⏳ Em Progresso | Nenhum |
 | **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
-| **Adriel** | 004 STRIDE | ⏳ Em Progresso | `fake_architecture_graph` |
+| **Adriel** | 004 STRIDE | ⏳ Em Progresso | Componente real da Spec 003 |
 | **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
 | **Leticia** | 006 Relatórios | ⏳ Em Progresso | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ⏳ Em Progresso | Todos os mocks |
@@ -248,13 +248,16 @@ jobs:
 
 ### Adriel — Spec 004 (STRIDE) + 005 (Vulnerabilidades)
 
-**Spec 004**: Usar `fake_architecture_graph` para desenvolver motor STRIDE:
+**Spec 004**: Usar o serviço real de detecção da Spec 003:
 
 ```python
-from tests.mocks.fake_architecture_graph import fake_graph
 from domain.models import ArchitectureGraph, Threat, Severity
+from services.component_detection import ComponentDetectionService
 
 class StrideEngine:
+    def __init__(self, detection_service: ComponentDetectionService):
+        self.detection_service = detection_service
+
     def analyze(self, graph: ArchitectureGraph) -> list[Threat]:
         threats = []
         for component in graph.components:
@@ -269,9 +272,11 @@ class StrideEngine:
                 ))
         return threats
 
-# Testa com mock
-engine = StrideEngine()
-threats = engine.analyze(fake_graph)  # ✅ Funciona sem Spec 003
+# Usa componente real da Spec 003
+detection_service = ComponentDetectionService()
+graph = detection_service.detect(image_bytes)  # ✅ Spec 003 concluída
+engine = StrideEngine(detection_service)
+threats = engine.analyze(graph)
 ```
 
 **Spec 005**: Usar `fake_threats` para desenvolver lookup de CWEs:
@@ -381,7 +386,7 @@ report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/
 ### Adriel (004 + 005)
 - [ ] Branch `feature/004-stride-engine` criada
 - [ ] Branch `feature/005-vulnerability-lookup` criada
-- [ ] `fake_graph` funciona
+- [x] Componente real da Spec 003 disponível
 - [ ] `data/cwes.yaml` criado
 
 ### Leticia (006 + 009)
