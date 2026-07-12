@@ -1,0 +1,43 @@
+# Absolute path to the dataset root — Ultralytics resolves train/val/test relative to this.
+# Update this path if the repository is moved to a different location.
+path: C:/Users/lucfs/Documents/Pos-Graduacao/Fase-5/Projeto/dataset
+train: train/images
+val: val/images
+test: test/images
+
+# Number of classes (nc) — must match len(names)
+nc: 32
+
+names:
+  0: actor_user
+  1: actor_admin
+  2: edge_ddos_protection
+  3: edge_cdn
+  4: edge_waf
+  5: edge_gateway
+  6: edge_portal
+  7: external_entry_point
+  8: integration_orchestrator
+  9: integration_messaging
+  10: compute_load_balancer
+  11: compute_service
+  12: compute_worker
+  13: data_database
+  14: data_cache
+  15: data_storage
+  16: security_identity_provider
+  17: security_key_management
+  18: obs_monitoring
+  19: obs_audit
+  20: external_backend_service
+  21: external_saas_service
+  22: external_web_service
+  23: communication_service
+  24: backup_service
+  25: boundary_cloud
+  26: boundary_region
+  27: boundary_resource_group
+  28: boundary_vpc_or_vnet
+  29: boundary_subnet_public
+  30: boundary_subnet_private
+  31: boundary_autoscaling_group
