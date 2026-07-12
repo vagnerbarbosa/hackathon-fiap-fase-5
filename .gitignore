@@ -256,3 +256,9 @@ storage/*
 skills-lock.json
 .claude/skills/autofix
 .claude/skills/code-review
+
+# -------------------------------
+# Arquivos temporários/inválidos
+# -------------------------------
+ENDOFFILE
+EOF
