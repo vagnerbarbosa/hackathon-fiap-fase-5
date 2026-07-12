@@ -180,7 +180,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
 | **Adriel** | 004 STRIDE | ⏳ Em Progresso | Componente real da Spec 003 |
 | **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
-| **Leticia** | 006 Relatórios | ⏳ Em Progresso | `fake_enriched`, `fake_job` |
+| **Leticia** | 006 Relatórios | ⏳ Em Progresso | `Job` real (Spec 001 ✅), `fake_enriched` (aguardando Spec 005) |
 | **Lucas** | 007 CI/CD | ⏳ Em Progresso | Todos os mocks |
 | **Vagner** | 008 Frontend | ✅ **Concluída** | Layout completo, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
@@ -303,21 +303,25 @@ enriched = [service.enrich(t) for t in fake_threats]  # ✅ Funciona sem Spec 00
 
 ### Leticia — Spec 006 (Relatórios) + 009 (Vídeo)
 
-**Spec 006**: Usar múltiplos mocks para desenvolver gerador de relatórios:
+**Spec 006**: Usar `Job` real da Spec 001 e `fake_enriched` até Spec 005 estar pronta:
 
 ```python
 from tests.mocks.fake_enriched_threats import fake_enriched
-from tests.mocks.fake_job import fake_job
+from domain.models import Job
+from repositories.job_repository import JobRepository
 from jinja2 import Template
 
 class ReportGenerator:
-    def generate_md(self, threats, job) -> str:
+    def generate_md(self, threats, job: Job) -> str:
         template = Template(open("templates/report.md.j2").read())
         return template.render(threats=threats, job=job)
 
-# Testa com mocks
-gen = ReportGenerator()
-report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/005
+# Job real da Spec 001 ✅
+job_repo = JobRepository()
+real_job = job_repo.get(job_id)  # ✅ Spec 001 concluída
+
+# Enriched mock até Spec 005 estar pronta
+report = gen.generate_md(fake_enriched, real_job)  # 🔄 Aguardando Spec 005
 ```
 
 **Spec 009**: ⏳ **AGUARDAR**. Só comece quando todas as specs 001-008 estiverem integradas.
