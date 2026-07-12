@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Start API script - Cross-platform (Linux, macOS, Windows)
+Start STRIDE System script - Cross-platform (Linux, macOS, Windows)
 Universal fallback that works on any OS with Python 3.
 
-Usage: python scripts/start-api.py [options]
+Usage: python scripts/start-stride.py [options]
 """
 
 import argparse
@@ -99,7 +99,8 @@ def run_command(cmd: str, cwd: Path | None = None, check: bool = True) -> subpro
 def main() -> None:
     """Main function."""
     parser = argparse.ArgumentParser(
-"""
+        description="Start the complete STRIDE Threat Modeling System (API + Frontend + Database)",
+        prog="start-stride.py"
     )
 
     parser.add_argument(

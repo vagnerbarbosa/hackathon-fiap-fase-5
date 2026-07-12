@@ -109,9 +109,9 @@ Imagem de Arquitetura
 │   ├── vite.config.ts            # Config Vite
 │   └── tsconfig.json             # Config TypeScript
 ├── scripts/                      # Scripts de automação
-│   ├── start-api.sh              # Start Linux/macOS
-│   ├── start-api.ps1             # Start Windows (PowerShell)
-│   └── start-api.py              # Start Python (cross-platform)
+│   ├── start-stride.sh           # Start Linux/macOS
+│   ├── start-stride.ps1          # Start Windows (PowerShell)
+│   └── start-stride.py            # Start Python (cross-platform)
 ├── specs/                        # Especificações SpeckIt
 │   └── features/                 # Specs de features
 ├── docs/                         # Documentação
@@ -161,18 +161,18 @@ cp .env.example .env
 
 **Linux/macOS:**
 ```bash
-./scripts/start-api.sh
+./scripts/start-stride.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\start-api.ps1
+.\scripts\start-stride.ps1
 ```
 
 **Python (Cross-platform):**
 ```bash
 # Funciona em qualquer sistema com Python 3
-python scripts/start-api.py
+python scripts/start-stride.py
 ```
 
 **Makefile (Linux/macOS):**
@@ -194,13 +194,13 @@ docker-compose exec api alembic upgrade head
 
 ```bash
 # Modo rápido (sem rebuild)
-./scripts/start-api.sh --no-build
+./scripts/start-stride.sh --no-build
 
 # Modo foreground (ver logs em tempo real)
-./scripts/start-api.sh --foreground
+./scripts/start-stride.sh --foreground
 
 # Sem migrações automáticas
-./scripts/start-api.sh --no-migrations
+./scripts/start-stride.sh --no-migrations
 ```
 
 ### 5. Teste a API

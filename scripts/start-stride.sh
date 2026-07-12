@@ -1,6 +1,6 @@
 #!/bin/bash
-# Start API script for Linux/macOS
-# Usage: ./scripts/start-api.sh [options]
+# Start STRIDE System script for Linux/macOS
+# Usage: ./scripts/start-stride.sh [options]
 
 set -e
 
@@ -22,8 +22,9 @@ RUN_MIGRATIONS=true
 
 # Help function
 show_help() {
-    echo "Usage: ./scripts/start-api.sh [OPTIONS]"
+    echo "Usage: ./scripts/start-stride.sh [OPTIONS]"
     echo ""
+    echo "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     echo ""
     echo "Options:"
     echo "  -h, --help          Show this help message"
@@ -32,6 +33,8 @@ show_help() {
     echo "  --no-migrations     Skip database migrations"
     echo ""
     echo "Examples:"
+    echo "  ./scripts/start-stride.sh              # Start all services"
+    echo "  ./scripts/start-stride.sh --no-build   # Use existing images"
 }
 
 # Parse arguments

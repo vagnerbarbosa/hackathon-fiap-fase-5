@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-# Start API script for Windows (PowerShell)
-# Usage: .\scripts\start-api.ps1 [options]
+# Start STRIDE System script for Windows (PowerShell)
+# Usage: .\scripts\start-stride.ps1 [options]
 
 param(
     [switch]$Help,
@@ -22,8 +22,9 @@ $ProjectDir = Split-Path -Parent $ScriptDir
 
 # Help function
 function Show-Help {
-    Write-Host "Usage: .\scripts\start-api.ps1 [OPTIONS]"
+    Write-Host "Usage: .\scripts\start-stride.ps1 [OPTIONS]"
     Write-Host ""
+    Write-Host "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Help              Show this help message"
@@ -32,6 +33,8 @@ function Show-Help {
     Write-Host "  -NoMigrations      Skip database migrations"
     Write-Host ""
     Write-Host "Examples:"
+    Write-Host "  .\scripts\start-stride.ps1              # Start all services"
+    Write-Host "  .\scripts\start-stride.ps1 -NoBuild      # Use existing images"
 }
 
 # Show help if requested
