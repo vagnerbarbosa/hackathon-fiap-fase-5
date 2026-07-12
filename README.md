@@ -368,6 +368,15 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 
 ---
 
+## 👥 Integrantes Grupo 27
+
+- **Adriel Santos** — [@AdrielCandido](https://github.com/AdrielCandido)
+- **Leticia Nepomucena** — [@LeticiaNepomucena](https://github.com/LeticiaNepomucena)
+- **Lucas Silva** — [@lucfsilva](https://github.com/lucfsilva)
+- **Vagner Barbosa** — [@vagnerbarbosa](https://github.com/vagnerbarbosa)
+
+---
+
 ## 📄 Licença
 
 Este projeto está licenciado sob a [MIT License](LICENSE).
