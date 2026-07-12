@@ -176,12 +176,12 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | Membro | Spec | Status | Mock Necessário |
 |--------|------|--------|-----------------|
 | **Vagner** | 001 API Core | ✅ **Concluída** | `fake_job` |
-| **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
+| **Lucas** | 002 Dataset YOLO | ⏳ Em Progresso | Nenhum |
 | **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
 | **Adriel** | 004 STRIDE | ⏳ Em Progresso | `fake_architecture_graph` |
 | **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
-| **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
-| **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
+| **Leticia** | 006 Relatórios | ⏳ Em Progresso | `fake_enriched`, `fake_job` |
+| **Lucas** | 007 CI/CD | ⏳ Em Progresso | Todos os mocks |
 | **Vagner** | 008 Frontend | ✅ **Concluída** | Layout completo, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
