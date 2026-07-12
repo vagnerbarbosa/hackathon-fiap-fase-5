@@ -240,3 +240,10 @@ frontend/*.tsbuildinfo
 *.pickle
 *.npy
 *.npz
+
+# -------------------------------
+# Storage (uploaded files)
+# -------------------------------
+# Ignore all files in storage except .gitkeep
+storage/*
+!storage/.gitkeep
