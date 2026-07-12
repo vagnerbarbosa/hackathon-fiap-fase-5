@@ -25,6 +25,16 @@ export default defineConfig({
           });
         },
       },
+      '/version': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
+      '/health': {
+        target: 'http://localhost:8001',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {
