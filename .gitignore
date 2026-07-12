@@ -248,3 +248,8 @@ frontend/*.tsbuildinfo
 # Ignore all files in storage except .gitkeep
 storage/*
 !storage/.gitkeep
+
+# -------------------------------
+# CodeRabbit Skills (agent plugins)
+# -------------------------------
+.agents/
