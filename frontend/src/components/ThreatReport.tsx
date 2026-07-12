@@ -178,24 +178,43 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
     setIsExporting(true)
     setExportError(null)
 
+    // Obter API key das variáveis de ambiente
+    const API_KEY = import.meta.env.VITE_API_KEY as string | undefined
+
     try {
       // Verificar se o endpoint está disponível antes de abrir
+      const headers: HeadersInit = {
+        'Accept': 'application/json'
+      }
+      if (API_KEY) {
+        headers['X-API-Key'] = API_KEY
+      }
+
       const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=${format}`, {
         method: 'HEAD',
-        headers: { 'Accept': 'application/json' }
+        headers
       })
 
-      if (response.status === 404 || response.status === 501) {
+      // Tratar erros de autenticação como recurso indisponível
+      if (response.status === 404 || response.status === 501 || response.status === 401 || response.status === 403) {
         setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
         setExportMenuOpen(false)
       } else {
-        // Endpoint existe, abrir em nova aba
-        window.open(`/api/v1/threat-model/${jobId}/report?format=${format}`, '_blank')
+        // Endpoint existe, abrir em nova aba com a API key na URL
+        const exportUrl = new URL(`/api/v1/threat-model/${jobId}/report?format=${format}`, window.location.origin)
+        if (API_KEY) {
+          exportUrl.searchParams.set('api_key', API_KEY)
+        }
+        window.open(exportUrl.toString(), '_blank')
         setExportMenuOpen(false)
       }
     } catch (error) {
       // Erro de conexão ou CORS, tentar abrir mesmo assim
-      window.open(`/api/v1/threat-model/${jobId}/report?format=${format}`, '_blank')
+      const exportUrl = new URL(`/api/v1/threat-model/${jobId}/report?format=${format}`, window.location.origin)
+      if (API_KEY) {
+        exportUrl.searchParams.set('api_key', API_KEY)
+      }
+      window.open(exportUrl.toString(), '_blank')
       setExportMenuOpen(false)
     } finally {
       setIsExporting(false)

@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+
+// Mock do import.meta.env antes de importar o componente
+vi.stubGlobal('import', {
+  meta: {
+    env: {
+      VITE_API_KEY: 'test-api-key'
+    }
+  }
+})
+
 import ThreatReport from '../../components/ThreatReport'
 
 // Mock do fetch global
@@ -105,6 +115,7 @@ describe('ThreatReport', () => {
   })
 
   describe('Exportação - Fallback', () => {
+
     it('deve abrir download quando endpoint estiver disponível', async () => {
       // Mock fetch retornando sucesso (200)
       vi.mocked(fetch).mockResolvedValueOnce({
@@ -131,12 +142,11 @@ describe('ThreatReport', () => {
       // Clicar em JSON
       fireEvent.click(screen.getByText('JSON'))
 
-      // Verificar se window.open foi chamado
+      // Verificar se window.open foi chamado com a URL correta
       await waitFor(() => {
-        expect(window.open).toHaveBeenCalledWith(
-          `/api/v1/threat-model/${mockJobId}/report?format=json`,
-          '_blank'
-        )
+        expect(window.open).toHaveBeenCalled()
+        const callUrl = (window.open as vi.Mock).mock.calls[0][0] as string
+        expect(callUrl).toContain(`/api/v1/threat-model/${mockJobId}/report?format=json`)
       })
     })
 
@@ -169,6 +179,41 @@ describe('ThreatReport', () => {
       // Verificar se mensagem de erro aparece
       await waitFor(() => {
         expect(screen.getByText(/Exportação em JSON ainda não está disponível/)).toBeInTheDocument()
+      })
+
+      // Verificar que window.open NÃO foi chamado
+      expect(window.open).not.toHaveBeenCalled()
+    })
+
+    it('deve mostrar mensagem amigável quando endpoint retornar 401 (sem autenticação)', async () => {
+      // Mock fetch retornando 401 Unauthorized
+      vi.mocked(fetch).mockResolvedValueOnce({
+        status: 401,
+        ok: false,
+      } as Response)
+
+      render(
+        <ThreatReport
+          jobId={mockJobId}
+          reportData={mockReportData}
+          onNewAnalysis={mockOnNewAnalysis}
+        />
+      )
+
+      // Clicar no botão Exportar
+      fireEvent.click(screen.getByText('Exportar'))
+
+      // Aguardar menu aparecer
+      await waitFor(() => {
+        expect(screen.getByText('CSV')).toBeInTheDocument()
+      })
+
+      // Clicar em CSV
+      fireEvent.click(screen.getByText('CSV'))
+
+      // Verificar se mensagem de erro amigável aparece (não o erro de autenticação)
+      await waitFor(() => {
+        expect(screen.getByText(/Exportação em CSV ainda não está disponível/)).toBeInTheDocument()
       })
 
       // Verificar que window.open NÃO foi chamado
@@ -232,10 +277,9 @@ describe('ThreatReport', () => {
 
       // Verificar se window.open foi chamado mesmo com erro (fallback)
       await waitFor(() => {
-        expect(window.open).toHaveBeenCalledWith(
-          `/api/v1/threat-model/${mockJobId}/report?format=md`,
-          '_blank'
-        )
+        expect(window.open).toHaveBeenCalled()
+        const callUrl = (window.open as vi.Mock).mock.calls[0][0] as string
+        expect(callUrl).toContain(`/api/v1/threat-model/${mockJobId}/report?format=md`)
       })
     })
 
