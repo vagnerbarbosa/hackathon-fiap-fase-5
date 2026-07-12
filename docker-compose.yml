@@ -60,6 +60,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8001
+        - VITE_API_KEY=${API_KEY:-dev-api-key-change-in-production}
     container_name: fiap-frontend
     ports:
       - "5173:80"
