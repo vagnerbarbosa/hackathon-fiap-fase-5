@@ -1,6 +1,3 @@
-# CI/CD Pipeline - Placeholder for Spec 007
-# This file is a placeholder. Full implementation in Spec 007.
-
 name: CI
 
 on:
@@ -9,19 +6,67 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  placeholder:
+  # ---------------------------------------------------------------------------
+  # Job 1: Lint & Type Check
+  # ---------------------------------------------------------------------------
+  lint:
+    name: Lint & Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Placeholder
-        run: echo "Full CI/CD implementation in Spec 007"
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-# TODO: Spec 007 will implement:
-# - Lint with ruff
-# - Type check with mypy
-# - Test with pytest (coverage >= 70%)
-# - Docker build
-# - Security scan
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: "1.7.1"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Cache Poetry virtualenv
+        id: cache-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-ansi
+
+      - name: Run Ruff lint
+        run: poetry run ruff check src/
+
+      - name: Run Ruff format check
+        run: poetry run ruff format --check src/
+
+      - name: Run mypy type check
+        run: poetry run mypy src/
+
+      - name: Run Bandit security scan
+        run: |
+          # bandit is not in pyproject.toml dev deps, install it directly.
+          # Ruff already covers flake8-bandit rules (S*) for quick checks;
+          # bandit gives a richer HTML/JSON report for the security-focused project.
+          pip install --quiet bandit[toml]==1.8.3
+          bandit -r src/ \
+            --severity-level medium \
+            --confidence-level medium \
+            --format txt \
+            --exit-zero
+          # --exit-zero: report findings but don't fail CI yet.
+          # Remove --exit-zero once the team has addressed existing findings.
