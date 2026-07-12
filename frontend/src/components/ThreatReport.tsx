@@ -7,6 +7,7 @@ import {
   FileText,
   FileCode,
   FileSpreadsheet,
+  FileType,
   ChevronDown,
   ChevronUp,
   CheckCircle2,
@@ -219,6 +220,9 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
                   </button>
                   <button onClick={() => handleExport('csv')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
                     <FileSpreadsheet className="w-4 h-4 text-green-400" /> CSV
+                  </button>
+                  <button onClick={() => handleExport('pdf')} className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 transition-colors">
+                    <FileType className="w-4 h-4 text-red-400" /> PDF
                   </button>
                 </div>
               )}
