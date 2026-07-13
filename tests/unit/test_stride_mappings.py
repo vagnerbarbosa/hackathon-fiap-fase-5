@@ -42,13 +42,37 @@ components:
     threats:
       - category: "X"
         description: "Invalid category."
+        justification: "Invalid category still needs a justification."
 data_flows:
   threats:
     - category: "T"
       description: "Valid data flow threat."
+      justification: "Valid data flow threat needs a justification."
 """.strip(),
         encoding="utf-8",
     )
 
     with pytest.raises(StrideMappingError, match="Invalid STRIDE categories: X"):
+        StrideMappings.from_file(invalid_file)
+
+
+def test_missing_justification_fails_with_clear_error(tmp_path: Path) -> None:
+    invalid_file = tmp_path / "stride_mappings.yaml"
+    invalid_file.write_text(
+        """
+components:
+  api:
+    threats:
+      - category: "S"
+        description: "Missing justification."
+data_flows:
+  threats:
+    - category: "T"
+      description: "Valid data flow threat."
+      justification: "Data in transit needs integrity."
+""".strip(),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(StrideMappingError, match="justification"):
         StrideMappings.from_file(invalid_file)

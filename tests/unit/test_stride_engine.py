@@ -1,4 +1,6 @@
 import asyncio
+import json
+import logging
 
 import pytest
 
@@ -62,6 +64,21 @@ def test_api_generates_all_stride_categories(engine: StrideEngine) -> None:
     assert {threat.category for threat in threats} == {"S", "T", "R", "I", "D", "E"}
 
 
+def test_threats_include_category_name_and_justification(engine: StrideEngine) -> None:
+    graph = ArchitectureGraph(
+        components=[component("api-1", "api")],
+        data_flows=[],
+        trust_boundaries=[["api-1"]],
+    )
+
+    threats = analyze(engine, graph)
+    spoofing = next(threat for threat in threats if threat.category == "S")
+
+    assert spoofing.category_name == "Spoofing"
+    assert spoofing.justification
+    assert "token" in spoofing.description.lower()
+
+
 def test_data_flow_generates_threats_with_affected_flow(
     engine: StrideEngine,
 ) -> None:
@@ -114,6 +131,14 @@ def test_trust_boundary_crossing_increases_flow_severity(
     flow_threats = [threat for threat in threats if threat.component_type == "data_flow"]
 
     assert flow_threats
+    assert {threat.category for threat in flow_threats} == {
+        "S",
+        "T",
+        "R",
+        "I",
+        "D",
+        "E",
+    }
     assert all(
         threat.severity in {Severity.HIGH, Severity.CRITICAL}
         for threat in flow_threats
@@ -148,14 +173,25 @@ def test_cache_denial_of_service_is_low(engine: StrideEngine) -> None:
     assert cache_d.severity == Severity.LOW
 
 
-def test_unknown_component_does_not_break_engine(engine: StrideEngine) -> None:
+def test_unknown_component_does_not_break_engine(
+    engine: StrideEngine,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     graph = ArchitectureGraph(
         components=[component("custom-1", "custom_component")],
         data_flows=[],
         trust_boundaries=[["custom-1"]],
     )
 
+    caplog.set_level(logging.WARNING, logger="services.stride_engine")
+
     assert analyze(engine, graph) == []
+    payload = json.loads(caplog.records[0].message)
+    assert payload["level"] == "warning"
+    assert payload["module"] == "services.stride_engine"
+    assert payload["message"] == "Unknown component type in STRIDE analysis."
+    assert payload["component_id"] == "custom-1"
+    assert payload["component_type"] == "custom_component"
 
 
 def test_analysis_is_deterministic(engine: StrideEngine) -> None:

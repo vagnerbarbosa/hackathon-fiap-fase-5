@@ -1,4 +1,4 @@
-"""Severity and ordering rules for STRIDE analysis."""
+"""Regras de severidade e ordenacao para analise STRIDE."""
 
 from domain.models import Severity
 
@@ -11,6 +11,15 @@ SEVERITY_ORDER = {
     Severity.INFO: 4,
 }
 
+STRIDE_CATEGORY_NAMES = {
+    "S": "Spoofing",
+    "T": "Tampering",
+    "R": "Repudiation",
+    "I": "Information Disclosure",
+    "D": "Denial of Service",
+    "E": "Elevation of Privilege",
+}
+
 
 def calculate_severity(
     component_type: str,
@@ -18,7 +27,7 @@ def calculate_severity(
     *,
     crosses_trust_boundary: bool = False,
 ) -> Severity:
-    """Return deterministic severity for a STRIDE finding."""
+    """Retorna a severidade deterministica de uma ameaca STRIDE."""
     normalized_type = component_type.lower()
 
     if normalized_type in {"database", "storage"} and category in {"I", "T"}:
@@ -43,5 +52,10 @@ def calculate_severity(
 
 
 def severity_sort_rank(severity: Severity) -> int:
-    """Map severity to ascending sort rank."""
+    """Mapeia severidade para ordenacao ascendente."""
     return SEVERITY_ORDER[severity]
+
+
+def category_name(category: str) -> str:
+    """Retorna o nome canonico de uma categoria STRIDE."""
+    return STRIDE_CATEGORY_NAMES[category]

@@ -1,5 +1,6 @@
-"""STRIDE mapping loader and validation."""
+"""Carregamento e validacao dos mapeamentos STRIDE."""
 
+import os
 from pathlib import Path
 
 import yaml
@@ -7,21 +8,22 @@ from pydantic import BaseModel, ValidationError
 
 
 VALID_STRIDE_CATEGORIES = {"S", "T", "R", "I", "D", "E"}
+STRIDE_MAPPINGS_PATH_ENV = "STRIDE_MAPPINGS_PATH"
 DEFAULT_STRIDE_MAPPINGS_PATH = (
     Path(__file__).resolve().parents[2] / "config" / "stride_mappings.yaml"
 )
 
 
 class StrideMappingError(ValueError):
-    """Raised when the STRIDE mapping file is missing or invalid."""
+    """Erro para arquivo de mapeamento ausente ou invalido."""
 
 
 class MappingThreat(BaseModel):
-    """Internal threat definition loaded from YAML."""
+    """Definicao interna de ameaca carregada do YAML."""
 
     category: str
     description: str
-    justification: str | None = None
+    justification: str
 
 
 class _ComponentMapping(BaseModel):
@@ -38,14 +40,14 @@ class _StrideMappingDocument(BaseModel):
 
 
 class StrideMappings:
-    """Access component and data-flow STRIDE mappings."""
+    """Acesso aos mapeamentos STRIDE de componentes e fluxos."""
 
     def __init__(self, document: _StrideMappingDocument) -> None:
         self._document = document
 
     @classmethod
     def from_file(cls, path: Path = DEFAULT_STRIDE_MAPPINGS_PATH) -> "StrideMappings":
-        """Load and validate mappings from a YAML file."""
+        """Carrega e valida mapeamentos a partir de YAML."""
         try:
             raw_content = path.read_text(encoding="utf-8")
         except OSError as exc:
@@ -68,14 +70,18 @@ class StrideMappings:
         return cls(document)
 
     def get_component_threats(self, component_type: str) -> list[MappingThreat]:
-        """Return configured threats for a component type, or an empty list."""
+        """Retorna ameacas configuradas para um tipo de componente."""
         component = self._document.components.get(component_type.lower())
         if component is None:
             return []
         return list(component.threats)
 
+    def has_component_type(self, component_type: str) -> bool:
+        """Indica se o tipo de componente existe no mapeamento."""
+        return component_type.lower() in self._document.components
+
     def get_data_flow_threats(self) -> list[MappingThreat]:
-        """Return configured threats for data flows."""
+        """Retorna ameacas configuradas para fluxos de dados."""
         return list(self._document.data_flows.threats)
 
     @staticmethod
@@ -94,3 +100,11 @@ class StrideMappings:
         if invalid_categories:
             categories = ", ".join(sorted(set(invalid_categories)))
             raise StrideMappingError(f"Invalid STRIDE categories: {categories}")
+
+
+def default_stride_mappings_path() -> Path:
+    """Resolve o caminho padrao, permitindo override por ambiente."""
+    configured_path = os.environ.get(STRIDE_MAPPINGS_PATH_ENV)
+    if configured_path:
+        return Path(configured_path)
+    return DEFAULT_STRIDE_MAPPINGS_PATH

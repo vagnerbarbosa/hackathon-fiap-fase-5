@@ -72,15 +72,17 @@ class Severity(str, Enum):
 
 
 class Threat(BaseModel):
-    """Single STRIDE threat identified."""
+    """Ameaca STRIDE identificada."""
 
     id: str
     category: str  # "S","T","R","I","D","E"
+    category_name: str  # "Spoofing", "Tampering", ...
     component_id: str
     component_type: str
     description: str
+    justification: str
     severity: Severity
-    affected_data_flows: list[str] = []
+    affected_data_flows: list[str] = Field(default_factory=list)
 
 
 # ── Vulnerabilidades (Spec 005 produz) ───────────────────
@@ -95,13 +97,15 @@ class Countermeasure(BaseModel):
 
 
 class EnrichedThreat(BaseModel):
-    """Threat with vulnerability data."""
+    """Ameaca enriquecida com dados de vulnerabilidade."""
 
     id: str
     category: str  # "S","T","R","I","D","E"
+    category_name: str
     component_id: str
     component_type: str
     description: str
+    justification: str
     severity: Severity
     cwe_id: str | None = None
     cwe_name: str | None = None
