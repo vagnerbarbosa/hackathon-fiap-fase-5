@@ -33,7 +33,7 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 | **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **000** (Contratos) + **001** (API Core) + **003** (Detecção) | Contratos de domínio, scaffolding, integração CV→API |
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
-| **Leticia Nepomuceno** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
+| **Leticia Nepomucena** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
 | **A Definir** | — | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
 
 ---
@@ -165,7 +165,7 @@ git push origin feature/004-stride-engine
 
 ## 🚀 Guia de Implementação em Paralelo
 
-> **✅ Spec 000 implementada! Todos podem começar AGORA.**
+> **✅ Specs 000 e 001 implementadas! Novas specs liberadas.**
 
 Este guia detalha como cada membro pode implementar suas specs usando **mocks** para desbloquear trabalho paralelo.
 
@@ -175,10 +175,10 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 | Membro | Spec | Status | Mock Necessário |
 |--------|------|--------|-----------------|
-| **Vagner** | 001 API Core | ✅ Livre | `fake_job` |
+| **Vagner** | 001 API Core | ✅ **CONCLUÍDA** | — |
 | **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
-| **Vagner** | 003 Detecção | ✅ Livre | `YOLOStub` |
-| **Adriel** | 004 STRIDE | ✅ Livre | `fake_architecture_graph` |
+| **Vagner** | 003 Detecção | ✅ **CONCLUÍDA** | — |
+| **Adriel** | 004 STRIDE | ✅ Livre | Usa `ArchitectureGraph` da Spec 003 |
 | **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
 | **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
 | **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
@@ -207,9 +207,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 ## 👤 Orientações por Membro
 
-### Vagner — Spec 001 (API Core) + 003 (Detecção)
-
-**Spec 001**: Implementar FastAPI + PostgreSQL usando `Job` dos contratos.
+### Vagner — Spec 003 (Detecção)
 
 **Spec 003**: Implementar serviço de detecção usando stub YOLO:
 
@@ -343,11 +341,10 @@ interface ReportViewerProps {
 ## 📋 Checklist de Início
 
 ```markdown
-### Vagner (001 + 003)
-- [ ] Branch `feature/001-api-core` criada
-- [ ] Branch `feature/003-component-detection` criada
-- [ ] FastAPI + PostgreSQL configurados
-- [ ] `YOLOStub` funciona
+### Vagner (003)
+- [x] ~~Branch `feature/001-api-core` criada~~ ✅ CONCLUÍDA
+- [x] ~~Branch `feature/003-component-detection` criada~~ ✅ CONCLUÍDA
+- [x] ~~`YOLOStub` funciona~~ ✅ CONCLUÍDO
 
 ### Lucas (002 + 007)
 - [ ] Branch `feature/002-dataset-yolo` criada
@@ -407,4 +404,4 @@ git push origin feature/00X-sua-spec
 
 ---
 
-*Documento atualizado: 2026-07-09*
+*Documento atualizado: 2026-07-11*

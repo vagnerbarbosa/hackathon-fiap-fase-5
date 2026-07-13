@@ -5,6 +5,10 @@
 [![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?style=flat-square&logo=pydantic&logoColor=white)](https://docs.pydantic.dev/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.11+-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![YOLOv11](https://img.shields.io/badge/YOLOv11-Ultralytics-111F68?style=flat-square)](https://ultralytics.com/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4+-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-SDD-2ea44f?style=flat-square)](https://github.com/github/spec-kit)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-ff6b35?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/code)
@@ -69,6 +73,8 @@ Imagem de Arquitetura
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
 | ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
+| ⚛️ **Frontend** | React + TypeScript + Vite | Interface web para upload e visualização |
+| 🎨 **UI** | Tailwind CSS + React Query | Estilização e gerenciamento de estado |
 | 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
 
 ---
@@ -255,7 +261,7 @@ make help
 - [x] SDD consolidado
 - [x] **Spec 001**: API Core + Scaffolding (✅ Concluída)
 - [ ] Spec 002: Dataset + Treinamento YOLOv11n
-- [ ] Spec 003: Módulo de detecção de componentes
+- [x] **Spec 003**: Módulo de detecção de componentes (✅ Concluída)
 - [ ] Spec 004: Motor STRIDE
 - [ ] Spec 005: Busca de vulnerabilidades e contramedidas
 - [ ] Spec 006: Gerador de relatórios
@@ -274,6 +280,15 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 4. Aguarde review e CI passando antes do merge
 
 > ⚠️ **Nunca commitar diretamente na `main`.**
+
+---
+
+## 👥 Integrantes Grupo 27
+
+- **Adriel Santos** — [@AdrielCandido](https://github.com/AdrielCandido)
+- **Leticia Nepomucena** — [@LeticiaNepomucena](https://github.com/LeticiaNepomucena)
+- **Lucas Silva** — [@lucfsilva](https://github.com/lucfsilva)
+- **Vagner Barbosa** — [@vagnerbarbosa](https://github.com/vagnerbarbosa)
 
 ---
 

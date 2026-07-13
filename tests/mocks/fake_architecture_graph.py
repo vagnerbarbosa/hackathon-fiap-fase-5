@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from domain.models import (
+from src.domain.models import (
     ArchitectureGraph,
     BoundingBox,
     DataFlow,
