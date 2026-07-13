@@ -233,7 +233,7 @@ jobs:
           print(f'  ✓ data.yaml is valid (nc={data[\"nc\"]}, classes={data[\"names\"]})')
           "
 
-      - name: Check training images (≥ 70)
+      - name: Check training images — directory exists and count (≥ 70)
         run: |
           echo "→ Checking dataset/train/images/..."
           if [ ! -d "dataset/train/images" ]; then
@@ -291,8 +291,13 @@ jobs:
     name: Docker Build & Health Check
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # Only run on push to main or when explicitly triggered (not on every PR to save minutes)
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Runs on push to main (always) or on PRs labelled 'test-docker' (opt-in).
+    # This avoids burning runner minutes on every PR while still catching
+    # Dockerfile regressions before they land on main.
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'pull_request' &&
+       contains(github.event.pull_request.labels.*.name, 'test-docker'))
 
     steps:
       - name: Checkout code
