@@ -4,9 +4,16 @@
 # Core YOLO framework
 ultralytics==8.3.157
 
-# Deep learning backend
-torch==2.5.1
-torchvision==0.20.1
+# Deep learning backend (original)
+# torch==2.5.1
+# torchvision==0.20.1
+
+# Deep learning backend (precisam ser instalados separadamente com o índice )
+# correto para CUDA (ver instruções abaixo)
+# GPU NVIDIA Blackwell (RTX 50xx) → CUDA 12.8:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+# CPU only:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
 
 # Computer vision
 opencv-python==4.10.0.84
@@ -19,6 +26,12 @@ Pillow==11.0.0
 # Visualization / reporting
 matplotlib==3.9.4
 seaborn==0.13.2
+
+# ONNX export dependencies (required by torch.onnx in PyTorch 2.11+)
+onnx==1.17.0
+onnxscript==0.7.1
+onnxslim==0.1.94
+onnxruntime-gpu==1.27.0
 
 # Utilities
 tqdm==4.67.1

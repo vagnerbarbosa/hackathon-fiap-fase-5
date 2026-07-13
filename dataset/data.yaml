@@ -1,7 +1,8 @@
-# Path to dataset root, relative to this file's location.
-# Ultralytics resolves train/val/test paths relative to 'path'.
-# Using '.' means the root IS the directory containing data.yaml (dataset/).
-path: .
+# Ultralytics resolves 'path' relative to the working directory — not this file.
+# The absolute path is injected at runtime by scripts/train_yolo.py and
+# notebooks/01_train_yolo.ipynb, so this field is intentionally left as a
+# placeholder. Do not rely on it for manual yolo CLI calls.
+path: TO_BE_SET_AT_RUNTIME
 train: train/images
 val: val/images
 test: test/images

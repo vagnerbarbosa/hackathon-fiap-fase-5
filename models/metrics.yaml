@@ -1,0 +1,63 @@
+# Métricas do modelo treinado — gerado após treino de 12/07/2026
+# Spec 002 — RF-06 / RNF-03
+
+model: yolo11n
+dataset: dataset/data.yaml
+nc: 30
+
+training:
+  epochs_run: 46          # early stopping disparou na epoch 46 (melhor: 26)
+  best_epoch: 26
+  imgsz: 640
+  batch: 16
+  device: "NVIDIA GeForce RTX 5080"
+  seed: 42
+  duration_hours: 0.102
+
+metrics_val:
+  mAP50: 0.838            # target > 0.75 ✅
+  mAP50_95: 0.660         # target > 0.50 ✅
+  precision: 0.759
+  recall: 0.817
+
+metrics_per_class:
+  actor_user:                  {mAP50: 0.987, precision: 0.950, recall: 0.947}
+  edge_ddos_protection:        {mAP50: 0.859, precision: 1.000, recall: 0.663}
+  edge_cdn:                    {mAP50: 0.988, precision: 1.000, recall: 0.708}
+  edge_waf:                    {mAP50: 0.988, precision: 1.000, recall: 0.882}
+  edge_gateway:                {mAP50: 0.598, precision: 1.000, recall: 0.470}
+  integration_orchestrator:    {mAP50: 0.995, precision: 0.971, recall: 1.000}
+  compute_load_balancer:       {mAP50: 0.965, precision: 0.929, recall: 0.912}
+  compute_service:             {mAP50: 0.900, precision: 0.776, recall: 0.935}
+  data_database:               {mAP50: 0.995, precision: 0.988, recall: 1.000}
+  data_cache:                  {mAP50: 0.956, precision: 1.000, recall: 0.764}
+  data_storage:                {mAP50: 0.879, precision: 0.748, recall: 0.738}
+  security_identity_provider:  {mAP50: 0.050, precision: 0.000, recall: 0.000}  # apenas 10 instâncias no val
+  security_key_management:     {mAP50: 0.995, precision: 0.914, recall: 1.000}
+  obs_monitoring:              {mAP50: 0.995, precision: 0.929, recall: 1.000}
+  obs_audit:                   {mAP50: 0.995, precision: 0.790, recall: 1.000}
+  external_backend_service:    {mAP50: 0.978, precision: 0.487, recall: 1.000}
+  external_saas_service:       {mAP50: null, precision: null, recall: null}     # 0 instâncias no val
+  external_web_service:        {mAP50: 0.995, precision: 0.945, recall: 1.000}
+  communication_service:       {mAP50: null, precision: null, recall: null}     # 0 instâncias no val
+  backup_service:              {mAP50: 0.720, precision: 0.794, recall: 0.675}
+  boundary_cloud:              {mAP50: 0.723, precision: 0.209, recall: 1.000}
+  boundary_region:             {mAP50: 0.788, precision: 0.584, recall: 0.867}
+  boundary_resource_group:     {mAP50: 0.973, precision: 1.000, recall: 0.677}
+  boundary_vpc_or_vnet:        {mAP50: 0.672, precision: 0.589, recall: 0.814}
+  boundary_subnet_public:      {mAP50: 0.655, precision: 0.432, recall: 0.850}
+  boundary_subnet_private:     {mAP50: 0.689, precision: 0.561, recall: 0.780}
+  boundary_autoscaling_group:  {mAP50: 0.615, precision: 0.377, recall: 0.750}
+
+artefacts:
+  best_pt:   models/best.pt     # 5.2 MB — checkpoint PyTorch para retraining
+  best_onnx: models/best.onnx   # 10.0 MB — runtime de produção (ONNX opset 18)
+
+notes: |
+  - Early stopping disparou na epoch 46 (patience=20, melhor epoch=26).
+  - security_identity_provider teve desempenho muito baixo (mAP50=0.05) devido
+    a apenas 10 instâncias no split de validação.
+  - external_saas_service e communication_service não aparecem no val split,
+    portanto métricas não disponíveis.
+  - Para melhorar classes com baixo desempenho, coletar mais imagens com essas
+    classes ou aumentar patience para permitir mais epochs de treinamento.

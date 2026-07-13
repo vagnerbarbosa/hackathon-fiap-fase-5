@@ -38,10 +38,12 @@ import argparse
 import random
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import numpy as np
 import torch
+import yaml
 
 
 # ---------------------------------------------------------------------------
@@ -51,6 +53,29 @@ import torch
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_YAML = REPO_ROOT / "dataset" / "data.yaml"
 MODELS_DIR = REPO_ROOT / "models"
+
+
+def _resolve_data_yaml(data_yaml: Path) -> Path:
+    """
+    O Ultralytics resolve o campo 'path' do data.yaml relativo ao diretório de
+    trabalho atual, não ao diretório do arquivo. Para garantir que funcione
+    independentemente de onde o script é chamado, geramos um arquivo temporário
+    com o 'path' preenchido com o caminho absoluto do dataset.
+    """
+    with open(data_yaml, encoding="utf-8") as f:
+        cfg = yaml.safe_load(f)
+
+    # Resolve o path absoluto real do dataset (pasta que contém o data.yaml)
+    dataset_root = data_yaml.parent.resolve()
+    cfg["path"] = str(dataset_root).replace("\\", "/")
+
+    # Escreve em arquivo temporário que o Ultralytics vai ler
+    tmp = tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False, encoding="utf-8"
+    )
+    yaml.dump(cfg, tmp, allow_unicode=True, sort_keys=False)
+    tmp.close()
+    return Path(tmp.name)
 
 
 def _set_seeds(seed: int) -> None:
@@ -178,7 +203,7 @@ def main() -> None:
     _set_seeds(args.seed)
 
     # ------------------------------------------------------------------
-    # Modo export-only
+    # Modo export-only (não precisa do data.yaml)
     # ------------------------------------------------------------------
     if args.export_only is not None:
         pt_path = args.export_only
@@ -188,7 +213,6 @@ def main() -> None:
         print(f"Exportando {pt_path} → ONNX …")
         model = YOLO(str(pt_path))
         model.export(format="onnx", imgsz=args.imgsz, opset=17, simplify=True)
-        # Copia para models/
         src_onnx = pt_path.with_suffix(".onnx")
         if src_onnx.exists():
             dest = MODELS_DIR / "best.onnx"
@@ -196,6 +220,14 @@ def main() -> None:
             shutil.copy2(src_onnx, dest)
             print(f"  Saved  best.onnx → {dest}")
         return
+
+    # Gera um data.yaml temporário com 'path' absoluto.
+    # O Ultralytics resolve 'path' relativo ao cwd, não ao arquivo — por isso
+    # não podemos usar o data.yaml original com path relativo.
+    if not args.data.exists():
+        print(f"[ERROR] data.yaml não encontrado: {args.data}")
+        sys.exit(1)
+    resolved_yaml = _resolve_data_yaml(args.data)
 
     # ------------------------------------------------------------------
     # Modo resume
@@ -211,10 +243,6 @@ def main() -> None:
         # ------------------------------------------------------------------
         # Treino do zero (fine-tuning)
         # ------------------------------------------------------------------
-        if not args.data.exists():
-            print(f"[ERROR] data.yaml não encontrado: {args.data}")
-            sys.exit(1)
-
         print("=" * 60)
         print("  YOLOv11n — Fine-tuning")
         print("=" * 60)
@@ -231,7 +259,7 @@ def main() -> None:
         model = YOLO(args.weights)
 
         train_results = model.train(
-            data=str(args.data),
+            data=str(resolved_yaml),   # <-- yaml temporário com path absoluto
             epochs=args.epochs,
             imgsz=args.imgsz,
             batch=args.batch,
@@ -257,7 +285,13 @@ def main() -> None:
             exist_ok=True,
         )
 
-    run_dir = Path(train_results.save_dir)
+    # model.train() retorna DetMetrics quando early stopping dispara,
+    # ou um objeto Results com .save_dir no caso normal.
+    # Em ambos os casos o save_dir é o mesmo: args.project / args.run_name.
+    if hasattr(train_results, "save_dir"):
+        run_dir = Path(train_results.save_dir)
+    else:
+        run_dir = Path(args.project) / args.run_name
     print(f"\nTreino concluído. Artefatos em: {run_dir}")
 
     # ------------------------------------------------------------------
@@ -267,7 +301,7 @@ def main() -> None:
     best_model = YOLO(str(best_pt))
 
     val_metrics = best_model.val(
-        data=str(args.data),
+        data=str(resolved_yaml),   # <-- mesmo yaml temporário com path absoluto
         split="val",
         imgsz=args.imgsz,
         device=args.device,
