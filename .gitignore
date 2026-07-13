@@ -200,3 +200,8 @@ notebooks/*.nbconvert.ipynb
 *.pickle
 *.npy
 *.npz
+
+# YOLO auto-generated cache files (regenerated at training time, no need to version)
+dataset/train/labels.cache
+dataset/val/labels.cache
+dataset/test/labels.cache
