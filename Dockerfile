@@ -1,6 +1,10 @@
 # Build stage
 FROM python:3.11-slim-bookworm as builder
 
+# Build arguments
+ARG APP_VERSION=0.0.0
+ENV APP_VERSION=${APP_VERSION}
+
 WORKDIR /app
 
 # Install system dependencies for building
@@ -23,6 +27,10 @@ RUN poetry install --only main --no-interaction --no-ansi
 
 # Runtime stage
 FROM python:3.11-slim-bookworm as runtime
+
+# Runtime environment variables
+ARG APP_VERSION=0.0.0
+ENV APP_VERSION=${APP_VERSION}
 
 WORKDIR /app
 

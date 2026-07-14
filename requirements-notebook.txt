@@ -1,0 +1,44 @@
+# Requirements for notebooks/01_train_yolo.ipynb
+# Pin exact versions for reproducibility (RNF-02)
+
+# Core YOLO framework
+ultralytics==8.3.157
+
+# Deep learning backend (original)
+# torch==2.5.1
+# torchvision==0.20.1
+
+# Deep learning backend (precisam ser instalados separadamente com o índice )
+# correto para CUDA (ver instruções abaixo)
+# GPU NVIDIA Blackwell (RTX 50xx) → CUDA 12.8:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cu128
+# CPU only:
+#   pip install torch==2.11.0 torchvision==0.26.0 --index-url https://download.pytorch.org/whl/cpu
+
+# Computer vision
+opencv-python==4.10.0.84
+
+# Data handling / augmentation
+albumentations==1.4.18
+numpy==1.26.4
+Pillow==11.0.0
+
+# Visualization / reporting
+matplotlib==3.9.4
+seaborn==0.13.2
+
+# ONNX export dependencies (required by torch.onnx in PyTorch 2.11+)
+onnx==1.17.0
+onnxscript==0.7.1
+onnxslim==0.1.94
+onnxruntime-gpu==1.27.0
+
+# Utilities
+tqdm==4.67.1
+PyYAML==6.0.2
+pandas==2.2.3
+scikit-learn==1.6.1
+
+# Jupyter / notebook
+ipykernel==6.29.5
+ipywidgets==8.1.5

@@ -18,7 +18,10 @@ class Settings(BaseSettings):
 
     # Application
     app_name: str = Field(default="FIAP STRIDE API", description="Application name")
-    app_version: str = Field(default="0.2.0", description="Application version")
+    app_version: str = Field(
+        default="0.0.0",
+        description="Application version (set via APP_VERSION env var or during build)",
+    )
     debug: bool = Field(default=False, description="Debug mode")
 
     # Database

@@ -82,6 +82,7 @@ celerybeat-schedule
 .env
 .env.*
 .venv
+.venv-*/
 env/
 venv/
 ENV/
@@ -262,3 +263,10 @@ skills-lock.json
 # -------------------------------
 ENDOFFILE
 EOF
+
+# -------------------------------
+# YOLO auto-generated cache files (regenerated at training time, no need to version)
+# -------------------------------
+dataset/train/labels.cache
+dataset/val/labels.cache
+dataset/test/labels.cache
