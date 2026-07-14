@@ -178,21 +178,13 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
     setIsExporting(true)
     setExportError(null)
 
-    // Obter API key das variáveis de ambiente
-    const API_KEY = import.meta.env.VITE_API_KEY as string | undefined
-
     try {
-      // Fazer download via fetch (permite enviar headers)
-      const headers: HeadersInit = {
-        'Accept': 'application/json'
-      }
-      if (API_KEY) {
-        headers['X-API-Key'] = API_KEY
-      }
-
+      // Fazer download via fetch (API key adicionada pelo proxy)
       const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=${format}`, {
         method: 'GET',
-        headers
+        headers: {
+          'Accept': 'application/json'
+        }
       })
 
       // Tratar erros de autenticação ou endpoint não implementado

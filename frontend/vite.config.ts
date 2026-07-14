@@ -11,7 +11,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8001',
         changeOrigin: true,
-        secure: false,
+        // secure: true por padrão (recomendado para desenvolvimento também)
         rewrite: (path) => path,
         configure: (proxy, options) => {
           proxy.on('error', (err, req, res) => {
@@ -28,12 +28,10 @@ export default defineConfig({
       '/version': {
         target: 'http://localhost:8001',
         changeOrigin: true,
-        secure: false,
       },
       '/health': {
         target: 'http://localhost:8001',
         changeOrigin: true,
-        secure: false,
       },
     },
   },

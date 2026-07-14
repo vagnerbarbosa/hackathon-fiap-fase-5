@@ -6,17 +6,14 @@ import ThreatReport from './components/ThreatReport'
 import './App.css'
 
 // Configuração da API
-const API_KEY = import.meta.env.VITE_API_KEY as string | undefined
+// API Key é adicionada pelo proxy reverso (nginx) - não exposta no frontend
 
-// Helper para criar headers com API Key quando configurada
 const createHeaders = (contentType?: string): HeadersInit => {
   const headers: HeadersInit = {}
   if (contentType) {
     headers['Content-Type'] = contentType
   }
-  if (API_KEY) {
-    headers['X-API-Key'] = API_KEY
-  }
+  // X-API-Key é adicionado pelo proxy - não precisa aqui
   return headers
 }
 
