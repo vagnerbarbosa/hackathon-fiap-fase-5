@@ -1,0 +1,43 @@
+# Ultralytics resolves 'path' relative to the working directory — not this file.
+# The absolute path is injected at runtime by scripts/train_yolo.py and
+# notebooks/01_train_yolo.ipynb, so this field is intentionally left as a
+# placeholder. Do not rely on it for manual yolo CLI calls.
+path: TO_BE_SET_AT_RUNTIME
+train: train/images
+val: val/images
+test: test/images
+
+# Number of classes (nc) — must match len(names)
+nc: 30
+
+names:
+  0: actor_user
+  1: edge_ddos_protection
+  2: edge_cdn
+  3: edge_waf
+  4: edge_gateway
+  5: edge_portal
+  6: external_entry_point
+  7: integration_orchestrator
+  8: compute_load_balancer
+  9: compute_service
+  10: compute_worker
+  11: data_database
+  12: data_cache
+  13: data_storage
+  14: security_identity_provider
+  15: security_key_management
+  16: obs_monitoring
+  17: obs_audit
+  18: external_backend_service
+  19: external_saas_service
+  20: external_web_service
+  21: communication_service
+  22: backup_service
+  23: boundary_cloud
+  24: boundary_region
+  25: boundary_resource_group
+  26: boundary_vpc_or_vnet
+  27: boundary_subnet_public
+  28: boundary_subnet_private
+  29: boundary_autoscaling_group
