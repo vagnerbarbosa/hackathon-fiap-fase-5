@@ -2,15 +2,17 @@
 
 from uuid import uuid4
 
-from domain.models import Countermeasure, EnrichedThreat, Severity
+from src.domain.models import Countermeasure, EnrichedThreat, Severity
 
 fake_enriched = [
     EnrichedThreat(
         id=str(uuid4()),
         category="T",
+        category_name="Tampering",
         component_id="comp-db-1",
         component_type="database",
         description="Possibilidade de alteração não autorizada dos dados em repouso.",
+        justification="Bancos armazenam dados persistentes que exigem integridade.",
         severity=Severity.HIGH,
         cwe_id="CWE-522",
         cwe_name="Insufficiently Protected Credentials",
