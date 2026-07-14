@@ -68,7 +68,7 @@ Todas as specs estão em `specs/features/`:
 |---|---------|--------|------------------|--------|
 | **000** | **`000-domain-contracts.md`** | **Contratos de Domínio** | **Models Pydantic v2 compartilhados — pré-requisito para TODAS as specs** | ✅ **Concluída** |
 | **001** | **`001-api-core-scaffolding.md`** | **API Core + Scaffolding** | **FastAPI, Pydantic v2, PostgreSQL, Docker, segurança OWASP** | ✅ **Concluída** |
-| 002 | `002-dataset-training-yolo.md` | Dataset e Treinamento YOLO | Geração/ anotação de dataset, treino de modelo | ⏳ Pendente |
+| **002** | **`002-dataset-training-yolo.md`** | **Dataset e Treinamento YOLO** | **Geração/ anotação de dataset, treino de modelo** | ✅ **Concluída** |
 | **003** | **`003-component-detection-service.md`** | **Serviço de Detecção de Componentes** | **Inferência YOLO, pré-processamento, heurística espacial** | ✅ **Concluída** |
 | **004** | **`004-stride-engine.md`** | **Motor STRIDE** | **Aplicação sistemática das 6 categorias STRIDE** | ✅ **Concluída** |
 | **005** | **`005-vulnerability-contramedidas.md`** | **Vulnerabilidades e Contramedidas** | **Busca de CVEs/CWEs, contramedidas OWASP** | ✅ **Concluída** |
