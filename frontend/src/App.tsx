@@ -97,6 +97,18 @@ function App() {
   const [uploadProgress, setUploadProgress] = useState<number>(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const isMountedRef = useRef(true)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current)
+      }
+    }
+  }, [])
 
   // React Query: Buscar versão do sistema (com cache)
   const { data: systemVersion } = useQuery({
@@ -129,33 +141,54 @@ function App() {
         if (jobStatusData.error) {
           setErrorMessage(jobStatusData.error)
         }
+        // Remover query da cache quando job terminar para liberar memória
+        if (jobId) {
+          queryClient.removeQueries({ queryKey: ['jobStatus', jobId] })
+        }
       }
     }
-  }, [jobStatusData])
+  }, [jobStatusData, jobId, queryClient])
+
+  // Helper para limpar intervalo de progresso
+  const clearProgressInterval = () => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current)
+      progressIntervalRef.current = null
+    }
+  }
 
   // React Query: Mutation para upload
   const uploadMutation = useMutation({
     mutationFn: uploadFile,
     onMutate: () => {
+      if (!isMountedRef.current) return
+
       setUploadStatus('uploading')
       setUploadProgress(0)
       setErrorMessage('')
 
+      // Limpar intervalo anterior se existir
+      clearProgressInterval()
+
       // Simular progresso
-      const progressInterval = setInterval(() => {
+      progressIntervalRef.current = setInterval(() => {
+        if (!isMountedRef.current) {
+          clearProgressInterval()
+          return
+        }
         setUploadProgress((prev) => {
           if (prev >= 90) {
-            clearInterval(progressInterval)
+            clearProgressInterval()
             return 90
           }
           return prev + 10
         })
       }, 200)
-
-      return { progressInterval }
     },
-    onSuccess: (data, _variables, context) => {
-      clearInterval(context?.progressInterval)
+    onSuccess: (data) => {
+      clearProgressInterval()
+      if (!isMountedRef.current) return
+
       setUploadProgress(100)
       setJobId(data.job_id)
       setUploadStatus('processing')
@@ -167,8 +200,10 @@ function App() {
       // Invalidar cache para forçar novo fetch
       queryClient.invalidateQueries({ queryKey: ['jobStatus', data.job_id] })
     },
-    onError: (error: Error, _variables, context) => {
-      clearInterval(context?.progressInterval)
+    onError: (error: Error) => {
+      clearProgressInterval()
+      if (!isMountedRef.current) return
+
       setErrorMessage(error.message || 'Erro de conexão com o servidor')
       setUploadStatus('error')
     },
@@ -205,6 +240,7 @@ function App() {
     // Gerar preview da imagem (com validação XSS)
     const reader = new FileReader()
     reader.onload = (e) => {
+      if (!isMountedRef.current) return
       const result = e.target?.result
       if (typeof result === 'string' && result.startsWith('data:image/')) {
         setPreviewUrl(result)
@@ -214,6 +250,7 @@ function App() {
       }
     }
     reader.onerror = () => {
+      if (!isMountedRef.current) return
       setErrorMessage('Erro ao ler arquivo. Verifique o formato.')
       setUploadStatus('error')
     }
@@ -238,6 +275,12 @@ function App() {
   }
 
   const handleReset = () => {
+    // Limpar intervalo pendente
+    clearProgressInterval()
+    // Remover query da cache ao resetar para liberar memória
+    if (jobId) {
+      queryClient.removeQueries({ queryKey: ['jobStatus', jobId] })
+    }
     setSelectedFile(null)
     setPreviewUrl(null)
     setUploadStatus('idle')
