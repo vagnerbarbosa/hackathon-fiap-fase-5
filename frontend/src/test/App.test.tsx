@@ -1,7 +1,28 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import App from '../App'
+
+// Criar um QueryClient para testes
+const createTestQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      staleTime: 0,
+    },
+  },
+})
+
+// Wrapper para testes com QueryClientProvider
+const renderWithQueryClient = (component: React.ReactNode) => {
+  const queryClient = createTestQueryClient()
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {component}
+    </QueryClientProvider>
+  )
+}
 
 // Mock do fetch global
 const mockFetch = vi.fn()
@@ -23,7 +44,7 @@ describe('App Integration', () => {
         json: async () => ({ version: '0.2.0' }),
       })
 
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await waitFor(() => {
         expect(screen.getByTestId('system-version')).toHaveTextContent('v0.2.0')
@@ -38,7 +59,7 @@ describe('App Integration', () => {
           json: async () => ({ version: '0.2.0' }),
         })
 
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledTimes(2)
@@ -48,7 +69,7 @@ describe('App Integration', () => {
     it('deve lidar com falha completa na busca de versão', async () => {
       mockFetch.mockRejectedValue(new Error('Network error'))
 
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       // Aguarda um momento para garantir que o erro foi tratado
       await waitFor(() => {
@@ -59,13 +80,13 @@ describe('App Integration', () => {
 
   describe('Navegação entre Tabs', () => {
     it('deve iniciar na tab de upload', () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       expect(screen.getByText('Upload de Diagrama de Arquitetura')).toBeInTheDocument()
     })
 
     it('deve navegar para tab Sobre ao clicar', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const sobreButton = screen.getByText('Sobre')
       await userEvent.click(sobreButton)
@@ -74,7 +95,7 @@ describe('App Integration', () => {
     })
 
     it('deve voltar para tab Análise ao clicar', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await userEvent.click(screen.getByText('Sobre'))
       await userEvent.click(screen.getByText('Análise'))
@@ -92,7 +113,7 @@ describe('App Integration', () => {
     })
 
     it('deve permitir seleção de arquivo', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const file = new File(['test content'], 'diagrama.png', { type: 'image/png' })
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
@@ -105,7 +126,7 @@ describe('App Integration', () => {
     })
 
     it('deve mostrar botões após seleção de arquivo', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const file = new File(['test'], 'diagrama.png', { type: 'image/png' })
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
@@ -119,7 +140,7 @@ describe('App Integration', () => {
     })
 
     it('deve mostrar tamanho do arquivo em MB', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const file = new File(['test'], 'diagrama.png', { type: 'image/png' })
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
@@ -132,7 +153,7 @@ describe('App Integration', () => {
     })
 
     it('deve permitir trocar arquivo após seleção', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const file = new File(['test'], 'diagrama.png', { type: 'image/png' })
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
@@ -153,7 +174,7 @@ describe('App Integration', () => {
 
   describe('Seção STRIDE', () => {
     it('deve exibir explicação do STRIDE', () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       expect(screen.getByText('O que é STRIDE?')).toBeInTheDocument()
       expect(screen.getByText('S')).toBeInTheDocument()
@@ -163,7 +184,7 @@ describe('App Integration', () => {
     })
 
     it('deve exibir todas as categorias do STRIDE', () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       const categories = [
         'Spoofing',
@@ -182,7 +203,7 @@ describe('App Integration', () => {
 
   describe('Sobre o Projeto', () => {
     it('deve exibir informações do projeto', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await userEvent.click(screen.getByText('Sobre'))
 
@@ -191,7 +212,7 @@ describe('App Integration', () => {
     })
 
     it('deve exibir integrantes do grupo', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await userEvent.click(screen.getByText('Sobre'))
 
@@ -202,7 +223,7 @@ describe('App Integration', () => {
     })
 
     it('deve exibir tecnologias utilizadas', async () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       await userEvent.click(screen.getByText('Sobre'))
 
@@ -212,13 +233,13 @@ describe('App Integration', () => {
 
   describe('Rodapé', () => {
     it('deve exibir copyright', () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       expect(screen.getByText('© 2026 Grupo 27')).toBeInTheDocument()
     })
 
     it('deve exibir mensagem de privacidade', () => {
-      render(<App />)
+      renderWithQueryClient(<App />)
 
       expect(screen.getByText(/não coleta dados pessoais/i)).toBeInTheDocument()
     })

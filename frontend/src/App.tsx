@@ -1,19 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Shield, Upload, Info, AlertTriangle, Github, FileImage, Loader2, XCircle } from 'lucide-react'
 import StrideCard from './components/StrideCard'
 import TechBadge from './components/TechBadge'
 import ThreatReport from './components/ThreatReport'
 import './App.css'
 
-// Configuração da API
 // API Key é adicionada pelo proxy reverso (nginx) - não exposta no frontend
-
 const createHeaders = (contentType?: string): HeadersInit => {
   const headers: HeadersInit = {}
   if (contentType) {
     headers['Content-Type'] = contentType
   }
-  // X-API-Key é adicionado pelo proxy - não precisa aqui
   return headers
 }
 
@@ -35,90 +33,146 @@ interface JobStatusResponse {
   error?: string
 }
 
+// API functions
+const fetchSystemVersion = async (): Promise<string> => {
+  try {
+    const response = await fetch('/version', { headers: createHeaders() })
+    if (response.ok) {
+      const data = await response.json()
+      return data.version
+    }
+  } catch {
+    // Fallback para porta direta
+    try {
+      const response = await fetch('http://localhost:8001/version', { headers: createHeaders() })
+      if (response.ok) {
+        const data = await response.json()
+        return data.version
+      }
+    } catch {
+      // Silenciar erro em produção
+    }
+  }
+  return ''
+}
+
+const fetchJobStatus = async (jobId: string): Promise<JobStatusResponse> => {
+  const response = await fetch(`/api/v1/threat-model/${jobId}`, {
+    headers: createHeaders(),
+  })
+  if (!response.ok) {
+    throw new Error('Failed to fetch job status')
+  }
+  return response.json()
+}
+
+const uploadFile = async (file: File): Promise<UploadResponse> => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch('/api/v1/threat-model/analyze', {
+    method: 'POST',
+    headers: createHeaders(),
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.detail || `Erro ${response.status}: Falha no upload`)
+  }
+
+  return response.json()
+}
+
 function App() {
+  const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState<'upload' | 'about'>('upload')
-  const [systemVersion, setSystemVersion] = useState<string>('')
 
   // Estados do upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle')
   const [jobId, setJobId] = useState<string>('')
-  const [, setJobStatus] = useState<JobStatusResponse | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>('')
   const [uploadProgress, setUploadProgress] = useState<number>(0)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
-  // Buscar versão do sistema
-  useEffect(() => {
-    const fetchVersion = async () => {
-      try {
-        const response = await fetch('/version', {
-          headers: createHeaders(),
-        })
-        if (response.ok) {
-          const data = await response.json()
-          console.log('[Version] API version (proxy):', data.version)
-          setSystemVersion(data.version)
-          return
-        }
-      } catch (error) {
-        console.log('[Version] Proxy failed, trying direct...')
+  // React Query: Buscar versão do sistema (com cache)
+  const { data: systemVersion } = useQuery({
+    queryKey: ['systemVersion'],
+    queryFn: fetchSystemVersion,
+    staleTime: 1000 * 60 * 5, // 5 minutos
+  })
+
+  // React Query: Polling do status do job (com backoff)
+  const { data: jobStatusData } = useQuery({
+    queryKey: ['jobStatus', jobId],
+    queryFn: () => fetchJobStatus(jobId),
+    enabled: !!jobId && uploadStatus === 'processing',
+    refetchInterval: (query) => {
+      // Polling adaptativo: mais frequente no início, depois espaça
+      const data = query.state.data
+      if (data?.status === 'completed' || data?.status === 'failed') {
+        return false // Para o polling
       }
+      return 2000 // 2 segundos
+    },
+    retry: false,
+  })
 
-      try {
-        const response = await fetch('http://localhost:8001/version', {
-          headers: createHeaders(),
-        })
-        if (response.ok) {
-          const data = await response.json()
-          console.log('[Version] API version (direct):', data.version)
-          setSystemVersion(data.version)
-          return
+  // Handle job status changes
+  useEffect(() => {
+    if (jobStatusData) {
+      if (jobStatusData.status === 'completed' || jobStatusData.status === 'failed') {
+        setUploadStatus(jobStatusData.status === 'completed' ? 'completed' : 'error')
+        if (jobStatusData.error) {
+          setErrorMessage(jobStatusData.error)
         }
-      } catch (error) {
-        console.error('[Version] Failed to fetch from both proxy and direct:', error)
       }
     }
-    fetchVersion()
-  }, [])
+  }, [jobStatusData])
 
-  // Polling do status do job
-  useEffect(() => {
-    if (jobId && uploadStatus === 'processing') {
-      pollingIntervalRef.current = setInterval(async () => {
-        try {
-          const response = await fetch(`/api/v1/threat-model/${jobId}`, {
-            headers: createHeaders(),
-          })
-          if (response.ok) {
-            const data: JobStatusResponse = await response.json()
-            setJobStatus(data)
+  // React Query: Mutation para upload
+  const uploadMutation = useMutation({
+    mutationFn: uploadFile,
+    onMutate: () => {
+      setUploadStatus('uploading')
+      setUploadProgress(0)
+      setErrorMessage('')
 
-            if (data.status === 'completed' || data.status === 'failed') {
-              setUploadStatus(data.status === 'completed' ? 'completed' : 'error')
-              if (data.error) {
-                setErrorMessage(data.error)
-              }
-              if (pollingIntervalRef.current) {
-                clearInterval(pollingIntervalRef.current)
-              }
-            }
+      // Simular progresso
+      const progressInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return 90
           }
-        } catch (error) {
-          console.error('Erro ao consultar status:', error)
-        }
-      }, 2000)
-    }
+          return prev + 10
+        })
+      }, 200)
 
-    return () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current)
+      return { progressInterval }
+    },
+    onSuccess: (data, _variables, context) => {
+      clearInterval(context?.progressInterval)
+      setUploadProgress(100)
+      setJobId(data.job_id)
+      setUploadStatus('processing')
+
+      if (data.status === 'completed') {
+        setUploadStatus('completed')
       }
-    }
-  }, [jobId, uploadStatus])
+
+      // Invalidar cache para forçar novo fetch
+      queryClient.invalidateQueries({ queryKey: ['jobStatus', data.job_id] })
+    },
+    onError: (error: Error, _variables, context) => {
+      clearInterval(context?.progressInterval)
+      setErrorMessage(error.message || 'Erro de conexão com o servidor')
+      setUploadStatus('error')
+    },
+  })
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -152,7 +206,6 @@ function App() {
     const reader = new FileReader()
     reader.onload = (e) => {
       const result = e.target?.result
-      // Validar que é uma data URL de imagem válida (proteção XSS)
       if (typeof result === 'string' && result.startsWith('data:image/')) {
         setPreviewUrl(result)
       } else {
@@ -179,56 +232,9 @@ function App() {
     event.preventDefault()
   }
 
-  const handleUpload = async () => {
+  const handleUpload = () => {
     if (!selectedFile) return
-
-    setUploadStatus('uploading')
-    setUploadProgress(0)
-    setErrorMessage('')
-
-    const formData = new FormData()
-    formData.append('file', selectedFile)
-
-    try {
-      // Simular progresso de upload
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 200)
-
-      const response = await fetch('/api/v1/threat-model/analyze', {
-        method: 'POST',
-        headers: createHeaders(),
-        body: formData,
-      })
-
-      clearInterval(progressInterval)
-      setUploadProgress(100)
-
-      if (response.ok) {
-        const data: UploadResponse = await response.json()
-        setJobId(data.job_id)
-        setUploadStatus('processing')
-
-        // Se o backend retornar completed imediatamente (mock)
-        if (data.status === 'completed') {
-          setUploadStatus('completed')
-        }
-      } else {
-        const errorData = await response.json().catch(() => ({}))
-        setErrorMessage(errorData.detail || `Erro ${response.status}: Falha no upload`)
-        setUploadStatus('error')
-      }
-    } catch (error) {
-      console.error('Erro no upload:', error)
-      setErrorMessage('Erro de conexão com o servidor. Verifique se a API está rodando.')
-      setUploadStatus('error')
-    }
+    uploadMutation.mutate(selectedFile)
   }
 
   const handleReset = () => {
@@ -236,15 +242,12 @@ function App() {
     setPreviewUrl(null)
     setUploadStatus('idle')
     setJobId('')
-    setJobStatus(null)
     setErrorMessage('')
     setUploadProgress(0)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
     }
   }
-
-  // Note: download functionality is now handled by ThreatReport component
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-fiap-gray-900 via-fiap-black to-fiap-gray-900">
@@ -253,14 +256,18 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-fiap-pink" />
+              <Shield className="w-8 h-8 text-fiap-pink" aria-hidden="true" />
               <div>
                 <h1 className="text-xl font-bold text-white">FIAP STRIDE</h1>
                 <p className="text-xs text-slate-400">Grupo 27 - Hackathon Fase 5</p>
               </div>
             </div>
-            <nav className="flex space-x-4">
+            <nav className="flex space-x-4" role="tablist" aria-label="Navegação principal">
               <button
+                role="tab"
+                aria-selected={activeTab === 'upload'}
+                aria-controls="upload-panel"
+                id="upload-tab"
                 onClick={() => setActiveTab('upload')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'upload'
@@ -269,11 +276,15 @@ function App() {
                 }`}
               >
                 <span className="flex items-center space-x-2">
-                  <Upload className="w-4 h-4" />
+                  <Upload className="w-4 h-4" aria-hidden="true" />
                   <span>Análise</span>
                 </span>
               </button>
               <button
+                role="tab"
+                aria-selected={activeTab === 'about'}
+                aria-controls="about-panel"
+                id="about-tab"
                 onClick={() => setActiveTab('about')}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   activeTab === 'about'
@@ -282,7 +293,7 @@ function App() {
                 }`}
               >
                 <span className="flex items-center space-x-2">
-                  <Info className="w-4 h-4" />
+                  <Info className="w-4 h-4" aria-hidden="true" />
                   <span>Sobre</span>
                 </span>
               </button>
@@ -294,12 +305,12 @@ function App() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'upload' ? (
-          <div className="space-y-6">
+          <div id="upload-panel" role="tabpanel" aria-labelledby="upload-tab" className="space-y-6">
             {/* Hero Section */}
-            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
               <div className="flex items-start space-x-4">
                 <div className="p-3 bg-fiap-pink/10 rounded-xl">
-                  <Shield className="w-8 h-8 text-fiap-pink" />
+                  <Shield className="w-8 h-8 text-fiap-pink" aria-hidden="true" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-white mb-2">
@@ -313,10 +324,10 @@ function App() {
                   </p>
                 </div>
               </div>
-            </div>
+            </section>
 
             {/* Upload Section */}
-            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
               <input
                 type="file"
                 ref={fileInputRef}
@@ -324,6 +335,7 @@ function App() {
                 accept=".png,.jpg,.jpeg"
                 className="hidden"
                 data-testid="file-input"
+                aria-label="Selecionar arquivo de imagem"
               />
 
               {uploadStatus === 'idle' && !selectedFile && (
@@ -333,9 +345,17 @@ function App() {
                   onDrop={handleDrop}
                   onDragOver={handleDragOver}
                   data-testid="upload-dropzone"
+                  role="button"
+                  aria-label="Área de upload de imagem"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      fileInputRef.current?.click()
+                    }
+                  }}
                 >
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-slate-700/50 rounded-full mb-6">
-                    <Upload className="w-10 h-10 text-slate-400" />
+                    <Upload className="w-10 h-10 text-slate-400" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Upload de Diagrama de Arquitetura
@@ -344,7 +364,10 @@ function App() {
                     Arraste e solte uma imagem do diagrama ou clique para selecionar.
                     Formatos suportados: PNG, JPG, JPEG (máx. 50MB)
                   </p>
-                  <button className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors">
+                  <button
+                    className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
+                    aria-label="Abrir seletor de arquivo"
+                  >
                     Selecionar Arquivo
                   </button>
                   <p className="text-sm text-slate-500 mt-4">
@@ -360,13 +383,13 @@ function App() {
                     {previewUrl ? (
                       <img
                         src={previewUrl}
-                        alt="Preview"
+                        alt="Pré-visualização do diagrama selecionado"
                         className="max-h-48 max-w-full mx-auto rounded-lg shadow-lg border-2 border-fiap-pink/30"
                         data-testid="image-preview"
                       />
                     ) : (
                       <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full">
-                        <FileImage className="w-10 h-10 text-fiap-pink" />
+                        <FileImage className="w-10 h-10 text-fiap-pink" aria-hidden="true" />
                       </div>
                     )}
                   </div>
@@ -382,6 +405,7 @@ function App() {
                       onClick={handleUpload}
                       className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
                       data-testid="start-analysis"
+                      aria-label="Iniciar análise de segurança"
                     >
                       Iniciar Análise
                     </button>
@@ -389,6 +413,7 @@ function App() {
                       onClick={handleReset}
                       className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
                       data-testid="change-file"
+                      aria-label="Trocar arquivo selecionado"
                     >
                       Trocar Arquivo
                     </button>
@@ -398,15 +423,22 @@ function App() {
 
               {/* Upload em progresso */}
               {uploadStatus === 'uploading' && (
-                <div className="text-center py-12" data-testid="uploading">
+                <div className="text-center py-12" data-testid="uploading" role="status" aria-live="polite">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
-                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
+                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Enviando Arquivo...
                   </h3>
                   <div className="max-w-md mx-auto mb-4">
-                    <div className="bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-slate-700 rounded-full h-2 overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={uploadProgress}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Progresso do upload"
+                    >
                       <div
                         className="bg-fiap-pink h-full transition-all duration-300"
                         style={{ width: `${uploadProgress}%` }}
@@ -420,9 +452,9 @@ function App() {
 
               {/* Processando análise */}
               {uploadStatus === 'processing' && (
-                <div className="text-center py-12" data-testid="processing">
+                <div className="text-center py-12" data-testid="processing" role="status" aria-live="polite">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-fiap-pink/10 rounded-full mb-6">
-                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" />
+                    <Loader2 className="w-10 h-10 text-fiap-pink animate-spin" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Analisando Diagrama...
@@ -432,7 +464,14 @@ function App() {
                     Isso pode levar alguns minutos.
                   </p>
                   <div className="max-w-md mx-auto">
-                    <div className="bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-slate-700 rounded-full h-2 overflow-hidden"
+                      role="progressbar"
+                      aria-valuenow={60}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label="Progresso da análise"
+                    >
                       <div
                         className="bg-fiap-pink h-full animate-pulse"
                         style={{ width: '60%' }}
@@ -459,9 +498,9 @@ function App() {
 
               {/* Erro */}
               {uploadStatus === 'error' && (
-                <div className="text-center py-12" data-testid="error">
+                <div className="text-center py-12" data-testid="error" role="alert" aria-live="assertive">
                   <div className="inline-flex items-center justify-center w-20 h-20 bg-red-500/10 rounded-full mb-6">
-                    <XCircle className="w-10 h-10 text-red-500" />
+                    <XCircle className="w-10 h-10 text-red-500" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">
                     Erro na Análise
@@ -474,18 +513,19 @@ function App() {
                       onClick={handleReset}
                       className="px-6 py-3 bg-fiap-pink hover:bg-fiap-pink/80 text-white rounded-lg font-medium transition-colors"
                       data-testid="try-again"
+                      aria-label="Tentar análise novamente"
                     >
                       Tentar Novamente
                     </button>
                   </div>
                 </div>
               )}
-            </div>
+            </section>
 
             {/* STRIDE Explanation */}
-            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+            <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
               <div className="flex items-center space-x-3 mb-6">
-                <AlertTriangle className="w-6 h-6 text-amber-400" />
+                <AlertTriangle className="w-6 h-6 text-amber-400" aria-hidden="true" />
                 <h3 className="text-xl font-bold text-white">O que é STRIDE?</h3>
               </div>
               <p className="text-slate-400 leading-relaxed mb-6">
@@ -531,10 +571,12 @@ function App() {
                   color="pink"
                 />
               </div>
-            </div>
+            </section>
           </div>
         ) : (
-          <AboutSection />
+          <div id="about-panel" role="tabpanel" aria-labelledby="about-tab">
+            <AboutSection />
+          </div>
         )}
       </main>
 
@@ -544,7 +586,7 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <Shield className="w-5 h-5 text-emerald-400" />
+                <Shield className="w-5 h-5 text-emerald-400" aria-hidden="true" />
                 <span className="font-semibold text-white">STRIDE</span>
               </div>
               <p className="text-sm text-slate-400">
@@ -576,7 +618,7 @@ function App() {
 function AboutSection() {
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+      <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
         <h2 className="text-2xl font-bold text-white mb-6">Sobre o Projeto</h2>
         <div className="prose prose-invert max-w-none">
           <p className="text-slate-400 leading-relaxed mb-4">
@@ -618,8 +660,9 @@ function AboutSection() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
+              aria-label="Perfil GitHub de Adriel Santos"
             >
-              <Github className="w-5 h-5 text-slate-400" />
+              <Github className="w-5 h-5 text-slate-400" aria-hidden="true" />
               <div>
                 <p className="text-white font-medium">Adriel Santos</p>
                 <p className="text-sm text-slate-500">@AdrielCandido</p>
@@ -630,8 +673,9 @@ function AboutSection() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
+              aria-label="Perfil GitHub de Leticia Nepomuceno"
             >
-              <Github className="w-5 h-5 text-slate-400" />
+              <Github className="w-5 h-5 text-slate-400" aria-hidden="true" />
               <div>
                 <p className="text-white font-medium">Leticia Nepomuceno</p>
                 <p className="text-sm text-slate-500">@LeticiaNepomucena</p>
@@ -642,8 +686,9 @@ function AboutSection() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
+              aria-label="Perfil GitHub de Lucas Silva"
             >
-              <Github className="w-5 h-5 text-slate-400" />
+              <Github className="w-5 h-5 text-slate-400" aria-hidden="true" />
               <div>
                 <p className="text-white font-medium">Lucas Silva</p>
                 <p className="text-sm text-slate-500">@lucfsilva</p>
@@ -654,8 +699,9 @@ function AboutSection() {
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-3 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors"
+              aria-label="Perfil GitHub de Vagner Barbosa"
             >
-              <Github className="w-5 h-5 text-slate-400" />
+              <Github className="w-5 h-5 text-slate-400" aria-hidden="true" />
               <div>
                 <p className="text-white font-medium">Vagner Barbosa</p>
                 <p className="text-sm text-slate-500">@vagnerbarbosa</p>
@@ -669,14 +715,15 @@ function AboutSection() {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center space-x-2 px-4 py-3 bg-fiap-pink/10 border border-fiap-pink/20 rounded-lg text-fiap-pink hover:bg-fiap-pink/20 transition-colors"
+            aria-label="Acessar repositório no GitHub"
           >
-            <Github className="w-5 h-5" />
+            <Github className="w-5 h-5" aria-hidden="true" />
             <span>github.com/vagnerbarbosa/hackathon-fiap-fase-5</span>
           </a>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+      <section className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
         <h2 className="text-2xl font-bold text-white mb-6">Tecnologias Utilizadas</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <TechBadge name="FastAPI" color="emerald" />
@@ -688,7 +735,7 @@ function AboutSection() {
           <TechBadge name="YOLOv11" color="purple" />
           <TechBadge name="PyTorch" color="orange" />
         </div>
-      </div>
+      </section>
     </div>
   )
 }

@@ -237,10 +237,10 @@ describe('ThreatReport', () => {
       expect(window.open).not.toHaveBeenCalled()
     })
 
-    it('deve mostrar mensagem amigável quando endpoint retornar 501', async () => {
-      // Mock fetch retornando 501 (Not Implemented)
+    it('deve mostrar mensagem amigável quando endpoint PDF retornar 404', async () => {
+      // Mock fetch retornando 404 (PDF ainda não implementado no backend)
       vi.mocked(fetch).mockResolvedValueOnce({
-        status: 501,
+        status: 404,
         ok: false,
       } as Response)
 
@@ -263,10 +263,13 @@ describe('ThreatReport', () => {
       // Clicar em PDF
       fireEvent.click(screen.getByText('PDF'))
 
-      // Verificar se mensagem de erro aparece
+      // Verificar se mensagem amigável aparece
       await waitFor(() => {
         expect(screen.getByText(/Exportação em PDF ainda não está disponível/)).toBeInTheDocument()
       })
+
+      // Verificar que window.open NÃO foi chamado
+      expect(window.open).not.toHaveBeenCalled()
     })
 
     it('deve mostrar mensagem amigável com erro de conexão', async () => {

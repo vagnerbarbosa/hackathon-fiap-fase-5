@@ -291,58 +291,75 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
               <button
                 onClick={() => setExportMenuOpen(!exportMenuOpen)}
                 disabled={isExporting}
+                aria-expanded={exportMenuOpen}
+                aria-haspopup="menu"
+                aria-label="Abrir menu de exportação"
                 className="flex items-center gap-2 px-4 py-2 bg-fiap-pink hover:bg-fiap-pink/80 disabled:bg-fiap-pink/50 text-white rounded-lg font-medium transition-colors"
               >
                 {isExporting ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" aria-hidden="true" />
                     Verificando...
                   </>
                 ) : (
                   <>
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4" aria-hidden="true" />
                     Exportar
-                    {exportMenuOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {exportMenuOpen ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
                   </>
                 )}
               </button>
 
               {exportMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-10">
+                <div
+                  className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-lg z-10"
+                  role="menu"
+                  aria-label="Opções de exportação"
+                >
                   <button
                     disabled={isExporting}
                     onClick={() => handleExport('json')}
+                    role="menuitem"
+                    aria-label="Exportar em formato JSON"
                     className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <FileJson className="w-4 h-4 text-blue-400" /> JSON
+                    <FileJson className="w-4 h-4 text-blue-400" aria-hidden="true" /> JSON
                   </button>
                   <button
                     disabled={isExporting}
                     onClick={() => handleExport('md')}
+                    role="menuitem"
+                    aria-label="Exportar em formato Markdown"
                     className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <FileText className="w-4 h-4 text-slate-400" /> Markdown
+                    <FileText className="w-4 h-4 text-slate-400" aria-hidden="true" /> Markdown
                   </button>
                   <button
                     disabled={isExporting}
                     onClick={() => handleExport('html')}
+                    role="menuitem"
+                    aria-label="Exportar em formato HTML"
                     className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <FileCode className="w-4 h-4 text-orange-400" /> HTML
+                    <FileCode className="w-4 h-4 text-orange-400" aria-hidden="true" /> HTML
                   </button>
                   <button
                     disabled={isExporting}
                     onClick={() => handleExport('csv')}
+                    role="menuitem"
+                    aria-label="Exportar em formato CSV"
                     className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <FileSpreadsheet className="w-4 h-4 text-green-400" /> CSV
+                    <FileSpreadsheet className="w-4 h-4 text-green-400" aria-hidden="true" /> CSV
                   </button>
                   <button
                     disabled={isExporting}
                     onClick={() => handleExport('pdf')}
+                    role="menuitem"
+                    aria-label="Exportar em formato PDF"
                     className="flex items-center gap-2 w-full px-4 py-2 text-left text-slate-300 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <FileType className="w-4 h-4 text-red-400" /> PDF
+                    <FileType className="w-4 h-4 text-red-400" aria-hidden="true" /> PDF
                   </button>
                 </div>
               )}
@@ -351,6 +368,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
             <button
               data-testid="new-analysis"
               onClick={onNewAnalysis}
+              aria-label="Iniciar nova análise"
               className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-medium transition-colors"
             >
               Nova Análise
@@ -360,32 +378,32 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
       </div>
 
       {/* Cards de resumo */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="region" aria-label="Resumo de ameaças por severidade">
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <XCircle className="w-5 h-5 text-red-400" />
-            <span className="text-red-400 font-semibold">{criticalCount}</span>
+            <XCircle className="w-5 h-5 text-red-400" aria-hidden="true" />
+            <span className="text-red-400 font-semibold" aria-label={`${criticalCount} ameaças críticas`}>{criticalCount}</span>
           </div>
           <span className="text-slate-400 text-sm">Ameaças Críticas</span>
         </div>
         <div className="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle className="w-5 h-5 text-orange-400" />
-            <span className="text-orange-400 font-semibold">{highCount}</span>
+            <AlertTriangle className="w-5 h-5 text-orange-400" aria-hidden="true" />
+            <span className="text-orange-400 font-semibold" aria-label={`${highCount} ameaças altas`}>{highCount}</span>
           </div>
           <span className="text-slate-400 text-sm">Ameaças Altas</span>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-5 h-5 text-yellow-400" />
-            <span className="text-yellow-400 font-semibold">{mediumCount}</span>
+            <Shield className="w-5 h-5 text-yellow-400" aria-hidden="true" />
+            <span className="text-yellow-400 font-semibold" aria-label={`${mediumCount} ameaças médias`}>{mediumCount}</span>
           </div>
           <span className="text-slate-400 text-sm">Ameaças Médias</span>
         </div>
         <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-1">
-            <Shield className="w-5 h-5 text-blue-400" />
-            <span className="text-blue-400 font-semibold">{lowCount}</span>
+            <Shield className="w-5 h-5 text-blue-400" aria-hidden="true" />
+            <span className="text-blue-400 font-semibold" aria-label={`${lowCount} ameaças baixas`}>{lowCount}</span>
           </div>
           <span className="text-slate-400 text-sm">Ameaças Baixas</span>
         </div>
@@ -399,12 +417,12 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
         </h3>
 
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full" role="table" aria-label="Matriz de ameaças STRIDE por componente">
             <thead>
               <tr className="border-b border-slate-700">
-                <th className="text-left py-3 px-4 text-slate-400 font-medium">Componente</th>
+                <th scope="col" className="text-left py-3 px-4 text-slate-400 font-medium">Componente</th>
                 {Object.entries(STRIDE_CATEGORIES).map(([key, config]) => (
-                  <th key={key} className="text-center py-3 px-2">
+                  <th key={key} scope="col" className="text-center py-3 px-2">
                     <div className={`inline-flex flex-col items-center p-2 rounded-lg ${config.bgColor} ${config.borderColor} border`}>
                       <span className={`text-lg font-bold ${config.textColor}`}>{key}</span>
                       <span className={`text-xs ${config.textColor} opacity-80`}>{config.label.split(' ')[0]}</span>
@@ -492,8 +510,12 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
                             )}
                           </div>
 
-                          <button className="text-slate-400 hover:text-white transition-colors ml-4">
-                            {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                          <button
+                            className="text-slate-400 hover:text-white transition-colors ml-4"
+                            aria-label={isExpanded ? "Recolher detalhes da ameaça" : "Expandir detalhes da ameaça"}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? <ChevronUp className="w-5 h-5" aria-hidden="true" /> : <ChevronDown className="w-5 h-5" aria-hidden="true" />}
                           </button>
                         </div>
 
