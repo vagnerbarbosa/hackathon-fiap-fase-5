@@ -52,14 +52,25 @@ services:
     container_name: fiap-redis
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
     networks:
       - fiap-network
     restart: unless-stopped
 
-volumes:
-  redis_data:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:8001
+        - VITE_API_KEY=${API_KEY:-dev-api-key-change-in-production}
+    container_name: fiap-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - api
+    networks:
+      - fiap-network
+    restart: unless-stopped
 
 networks:
   fiap-network:

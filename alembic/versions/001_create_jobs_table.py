@@ -1,4 +1,4 @@
-"""Create jobs table
+"""Cria tabela de jobs
 
 Revision ID: 001
 Revises:
@@ -22,7 +22,7 @@ depends_on: Union[str, None] = None
 def upgrade() -> None:
     op.create_table(
         "jobs",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.String(36), primary_key=True),
         sa.Column("status", sa.String(20), nullable=False, default="pending"),
         sa.Column("input_image_path", sa.String(500), nullable=False),
         sa.Column("output_report_path", sa.String(500), nullable=True),
@@ -31,10 +31,10 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
     )
 
-    # Create index on status for faster queries
+    # Cria índice no status para queries mais rápidas
     op.create_index("ix_jobs_status", "jobs", ["status"])
 
-    # Create index on created_at for sorting
+    # Cria índice no created_at para ordenação
     op.create_index("ix_jobs_created_at", "jobs", ["created_at"])
 
 

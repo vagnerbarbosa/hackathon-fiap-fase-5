@@ -12,11 +12,12 @@
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-SDD-2ea44f?style=flat-square)](https://github.com/github/spec-kit)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-ff6b35?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/code)
+[![PRs Open](https://img.shields.io/github/issues-pr/vagnerbarbosa/hackathon-fiap-fase-5?style=flat-square&color=blue)](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5/pulls)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 **Sistema automatizado de modelagem de ameaças STRIDE a partir de diagramas de arquitetura de software usando Visão Computacional e IA.**
 
-> **📅 Atualizado**: 2026-06-21 | **Versão**: 0.1.0 | **Status**: Desenvolvimento MVP
+> **📅 Atualizado**: 2026-07-12 | **Versão**: 0.2.0 | **Status**: MVP - Frontend com testes e preview de imagem
 
 ---
 
@@ -57,9 +58,9 @@ Imagem de Arquitetura
 
 | Ambiente | URL | Status |
 |----------|-----|--------|
-| Local | `http://localhost:8001` | 🟢 Desenvolvimento |
 | Healthcheck | `http://localhost:8001/health` | 🟢 Online |
 | Swagger UI | `http://localhost:8001/docs` | 🟢 Documentação API |
+| Frontend | `http://localhost:5173` | 🟢 Interface Web (Vite Dev) |
 
 ---
 
@@ -73,8 +74,8 @@ Imagem de Arquitetura
 | 🎨 **CV** | OpenCV | Pré-processamento de imagens |
 | 🗄️ **Banco** | PostgreSQL + SQLAlchemy 2.0 | Persistência de jobs e relatórios |
 | ⚡ **Cache** | Redis | Cache de resultados e rate limiting |
-| ⚛️ **Frontend** | React + TypeScript + Vite | Interface web para upload e visualização |
-| 🎨 **UI** | Tailwind CSS + React Query | Estilização e gerenciamento de estado |
+| 💻 **Frontend** | React + TypeScript + Vite + Tailwind | Interface web moderna e responsiva |
+| 🎨 **UI** | Tailwind CSS + Lucide Icons | Design system customizado |
 | 📦 **Container** | Docker + Docker Compose | Orquestração de serviços |
 
 ---
@@ -82,27 +83,48 @@ Imagem de Arquitetura
 ## 📁 Estrutura do Projeto
 
 ```
-├── src/
-│   ├── api/              # Rotas FastAPI, controllers, DTOs
-│   ├── core/             # Configurações, segurança, logging
-│   ├── services/         # Casos de uso (detecção, STRIDE, relatórios)
-│   ├── infrastructure/   # Adaptadores (DB, ML, cache)
-│   ├── models/           # Entidades de domínio (ORM)
-│   └── workers/          # Processamento assíncrono
-├── tests/
-│   ├── unit/             # Testes isolados
-│   ├── integration/      # Testes de integração
-│   └── e2e/              # Testes end-to-end
-├── specs/                # Especificações SpeckIt / SDD
-├── docs/                 # Documentação
-├── scripts/              # Scripts auxiliares
-├── notebooks/            # Notebooks de treinamento
-├── dataset/              # Dataset de diagramas (YOLO)
-├── config/               # Mapeamentos YAML (STRIDE, vulnerabilidades)
-├── docker-compose.yml
-├── Dockerfile
-├── pyproject.toml
-└── README.md
+├── src/                          # Código fonte Python (FastAPI)
+│   ├── api/                      # Rotas FastAPI, controllers, DTOs
+│   ├── core/                     # Configurações, segurança, logging
+│   ├── services/                 # Casos de uso (detecção, STRIDE, relatórios)
+│   ├── infrastructure/           # Adaptadores (DB, ML, cache)
+│   ├── models/                   # Entidades de domínio (ORM)
+│   └── workers/                  # Processamento assíncrono
+├── tests/                        # Testes
+│   ├── unit/                     # Testes isolados
+│   ├── integration/              # Testes de integração
+│   └── e2e/                      # Testes end-to-end
+├── frontend/                     # Aplicação React (TypeScript + Vite)
+│   ├── src/                      # Código fonte React
+│   │   ├── components/           # Componentes React
+│   │   ├── App.tsx               # Componente principal
+│   │   ├── main.tsx              # Entry point
+│   │   └── index.css             # Estilos globais
+│   ├── public/                   # Assets estáticos
+│   ├── dist/                     # Build de produção
+│   ├── Dockerfile                # Container do frontend
+│   ├── nginx.conf                # Config Nginx
+│   ├── package.json              # Dependências npm
+│   ├── tailwind.config.js        # Config Tailwind
+│   ├── vite.config.ts            # Config Vite
+│   └── tsconfig.json             # Config TypeScript
+├── scripts/                      # Scripts de automação
+│   ├── start-stride.sh           # Start Linux/macOS
+│   ├── start-stride.ps1          # Start Windows (PowerShell)
+│   └── start-stride.py            # Start Python (cross-platform)
+├── specs/                        # Especificações SpeckIt
+│   └── features/                 # Specs de features
+├── docs/                         # Documentação
+│   ├── sdd.md                    # Software Design Document
+│   └── divisao-de-trabalho.md    # Divisão da equipe
+├── models/                       # Modelos YOLO treinados
+├── storage/                      # Uploads temporários
+├── logs/                         # Logs da aplicação
+├── docker-compose.yml            # Orquestração Docker
+├── Dockerfile                    # Container da API
+├── pyproject.toml                # Dependências Python
+├── CLAUDE.md                     # Instruções para Claude Code
+└── README.md                     # Este arquivo
 ```
 
 ---
@@ -126,8 +148,12 @@ cd hackathon-fiap-fase-5
 
 ```bash
 cp .env.example .env
-# Edite .env e defina DATABASE_URL, REDIS_URL, API_KEY
 ```
+
+> **Nota:** Para rodar localmente com Docker, os valores padrão em `.env` já estão configurados e funcionam sem alterações. Você só precisa editar o arquivo se:
+> - Quiser personalizar as credenciais do banco de dados
+> - Estiver rodando em ambiente de produção
+> - Precisar configurar uma API Key específica
 
 ### 3. Inicie a API (escolha seu método)
 
@@ -135,18 +161,18 @@ cp .env.example .env
 
 **Linux/macOS:**
 ```bash
-./scripts/start-api.sh
+./scripts/start-stride.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\start-api.ps1
+.\scripts\start-stride.ps1
 ```
 
 **Python (Cross-platform):**
 ```bash
 # Funciona em qualquer sistema com Python 3
-python scripts/start-api.py
+python scripts/start-stride.py
 ```
 
 **Makefile (Linux/macOS):**
@@ -168,13 +194,13 @@ docker-compose exec api alembic upgrade head
 
 ```bash
 # Modo rápido (sem rebuild)
-./scripts/start-api.sh --no-build
+./scripts/start-stride.sh --no-build
 
 # Modo foreground (ver logs em tempo real)
-./scripts/start-api.sh --foreground
+./scripts/start-stride.sh --foreground
 
 # Sem migrações automáticas
-./scripts/start-api.sh --no-migrations
+./scripts/start-stride.sh --no-migrations
 ```
 
 ### 5. Teste a API
@@ -186,6 +212,63 @@ curl http://localhost:8001/health
 # API protegida (requer API Key)
 curl -H "X-API-Key: sua-api-key" \
   http://localhost:8001/api/v1/threat-model/analyze
+```
+
+### 6. Inicie o Frontend (opcional)
+
+O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados.
+
+#### 🚀 Opção 1: Via Docker Compose (Recomendado)
+
+O frontend já está incluído no `docker-compose.yml` e será iniciado junto com a API:
+
+```bash
+# O frontend sobe automaticamente na porta 5173
+docker compose up frontend -d
+
+# Ou para rebuildar após alterações
+docker compose build frontend --no-cache
+docker compose up frontend -d
+```
+
+Acesse: http://localhost:5173
+
+#### 💻 Opção 2: Desenvolvimento Local (Node.js)
+
+Para desenvolvimento com hot-reload:
+
+```bash
+cd frontend
+
+# Instalar dependências
+npm install
+
+# Criar .env.local (opcional)
+cp .env.example .env
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+```
+
+Acesse: http://localhost:5173
+
+**Requisitos:**
+- Node.js 18+
+- npm 9+
+
+#### 🧪 Executar Testes do Frontend
+
+```bash
+cd frontend
+
+# Executar todos os testes
+npm test
+
+# Executar com cobertura
+npm run test:coverage
+
+# Modo watch (durante desenvolvimento)
+npm run test:watch
 ```
 
 ### Endpoints disponíveis
@@ -259,14 +342,16 @@ make help
 - [x] Definição do tema e regras do hackathon
 - [x] Especificações SpeckIt (8 features)
 - [x] SDD consolidado
-- [x] **Spec 001**: API Core + Scaffolding (✅ Concluída)
-- [ ] Spec 002: Dataset + Treinamento YOLOv11n
-- [x] **Spec 003**: Módulo de detecção de componentes (✅ Concluída)
-- [ ] Spec 004: Motor STRIDE
-- [ ] Spec 005: Busca de vulnerabilidades e contramedidas
-- [ ] Spec 006: Gerador de relatórios
-- [ ] Spec 007: CI/CD GitHub Actions
-- [ ] Spec 008: Vídeo de demonstração (15 min)
+- [x] **Spec 000**: Contratos de Domínio (Pydantic Models) (✅ Concluída)
+- [x] **Spec 001**: API Core + Scaffolding (FastAPI, Docker, PostgreSQL) (✅ Concluída)
+- [ ] **Spec 002**: Dataset e Treinamento YOLO (em desenvolvimento)
+- [x] **Spec 003**: Serviço de Detecção de Componentes (✅ Concluída)
+- [ ] **Spec 004**: Motor STRIDE (pendente)
+- [ ] **Spec 005**: Vulnerabilidades e Contramedidas (pendente)
+- [ ] **Spec 006**: Gerador de Relatórios (pendente)
+- [ ] **Spec 007**: CI/CD GitHub Actions (pendente)
+- [x] **Spec 008**: Frontend React (✅ Concluída)
+- [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
 
 ---
 

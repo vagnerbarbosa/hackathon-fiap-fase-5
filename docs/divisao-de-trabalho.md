@@ -34,7 +34,7 @@ A [Spec 000 — Contratos de Domínio](../features/000-domain-contracts.md) foi 
 | **Lucas Silva** | [@lucfsilva](https://github.com/lucfsilva) | **002** (Dataset/Treino) + **007** (CI/CD) | Dataset, treinamento YOLOv11n, pipeline de qualidade |
 | **Adriel Santos** | [@AdrielCandido](https://github.com/AdrielCandido) | **004** (STRIDE) + **005** (Vulnerabilidades) | Motor STRIDE, busca CWE/CVE, contramedidas OWASP |
 | **Leticia Nepomucena** | [@LeticiaNepomucena](https://github.com/LeticiaNepomucena) | **006** (Relatórios) + **009** (Vídeo) | Templates Jinja2, exportações, roteiro de apresentação |
-| **A Definir** | — | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
+| **Vagner Barbosa** | [@vagnerbarbosa](https://github.com/vagnerbarbosa) | **008** (Frontend React) | Interface web, upload, visualização de relatórios |
 
 ---
 
@@ -165,7 +165,7 @@ git push origin feature/004-stride-engine
 
 ## 🚀 Guia de Implementação em Paralelo
 
-> **✅ Specs 000 e 001 implementadas! Novas specs liberadas.**
+> **✅ Spec 000 implementada! Todos podem começar AGORA.**
 
 Este guia detalha como cada membro pode implementar suas specs usando **mocks** para desbloquear trabalho paralelo.
 
@@ -175,14 +175,14 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 | Membro | Spec | Status | Mock Necessário |
 |--------|------|--------|-----------------|
-| **Vagner** | 001 API Core | ✅ **CONCLUÍDA** | — |
-| **Lucas** | 002 Dataset YOLO | ✅ Livre | Nenhum |
-| **Vagner** | 003 Detecção | ✅ **CONCLUÍDA** | — |
-| **Adriel** | 004 STRIDE | ✅ Livre | Usa `ArchitectureGraph` da Spec 003 |
-| **Adriel** | 005 Vulnerabilidades | ✅ Livre | `fake_threats` |
-| **Leticia** | 006 Relatórios | ✅ Livre | `fake_enriched`, `fake_job` |
-| **Lucas** | 007 CI/CD | ✅ Livre | Todos os mocks |
-| **A Definir** | 008 Frontend | ⏳ Bloqueada | Aguardar API + Reports |
+| **Vagner** | 001 API Core | ✅ **Concluída** | `fake_job` |
+| **Lucas** | 002 Dataset YOLO | ⏳ Em Progresso | Nenhum |
+| **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
+| **Adriel** | 004 STRIDE | ⏳ Em Progresso | Componente real da Spec 003 |
+| **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
+| **Leticia** | 006 Relatórios | ⏳ Em Progresso | `Job` real (Spec 001 ✅), `fake_enriched` (aguardando Spec 005) |
+| **Lucas** | 007 CI/CD | ⏳ Em Progresso | Todos os mocks |
+| **Vagner** | 008 Frontend | ✅ **Concluída** | Layout completo, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
 
 ---
@@ -207,7 +207,9 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 
 ## 👤 Orientações por Membro
 
-### Vagner — Spec 003 (Detecção)
+### Vagner — Spec 001 (API Core) + 003 (Detecção)
+
+**Spec 001**: Implementar FastAPI + PostgreSQL usando `Job` dos contratos.
 
 **Spec 003**: Implementar serviço de detecção usando stub YOLO:
 
@@ -246,13 +248,16 @@ jobs:
 
 ### Adriel — Spec 004 (STRIDE) + 005 (Vulnerabilidades)
 
-**Spec 004**: Usar `fake_architecture_graph` para desenvolver motor STRIDE:
+**Spec 004**: Usar o serviço real de detecção da Spec 003:
 
 ```python
-from tests.mocks.fake_architecture_graph import fake_graph
 from domain.models import ArchitectureGraph, Threat, Severity
+from services.component_detection import ComponentDetectionService
 
 class StrideEngine:
+    def __init__(self, detection_service: ComponentDetectionService):
+        self.detection_service = detection_service
+
     def analyze(self, graph: ArchitectureGraph) -> list[Threat]:
         threats = []
         for component in graph.components:
@@ -267,9 +272,11 @@ class StrideEngine:
                 ))
         return threats
 
-# Testa com mock
-engine = StrideEngine()
-threats = engine.analyze(fake_graph)  # ✅ Funciona sem Spec 003
+# Usa componente real da Spec 003
+detection_service = ComponentDetectionService()
+graph = detection_service.detect(image_bytes)  # ✅ Spec 003 concluída
+engine = StrideEngine(detection_service)
+threats = engine.analyze(graph)
 ```
 
 **Spec 005**: Usar `fake_threats` para desenvolver lookup de CWEs:
@@ -296,44 +303,71 @@ enriched = [service.enrich(t) for t in fake_threats]  # ✅ Funciona sem Spec 00
 
 ### Leticia — Spec 006 (Relatórios) + 009 (Vídeo)
 
-**Spec 006**: Usar múltiplos mocks para desenvolver gerador de relatórios:
+**Spec 006**: Usar `Job` real da Spec 001 e `fake_enriched` até Spec 005 estar pronta:
 
 ```python
 from tests.mocks.fake_enriched_threats import fake_enriched
-from tests.mocks.fake_job import fake_job
+from domain.models import Job
+from repositories.job_repository import JobRepository
 from jinja2 import Template
 
 class ReportGenerator:
-    def generate_md(self, threats, job) -> str:
+    def generate_md(self, threats, job: Job) -> str:
         template = Template(open("templates/report.md.j2").read())
         return template.render(threats=threats, job=job)
 
-# Testa com mocks
-gen = ReportGenerator()
-report = gen.generate_md(fake_enriched, fake_job)  # ✅ Funciona sem Specs 001/005
+# Job real da Spec 001 ✅
+job_repo = JobRepository()
+real_job = job_repo.get(job_id)  # ✅ Spec 001 concluída
+
+# Enriched mock até Spec 005 estar pronta
+report = gen.generate_md(fake_enriched, real_job)  # 🔄 Aguardando Spec 005
 ```
 
 **Spec 009**: ⏳ **AGUARDAR**. Só comece quando todas as specs 001-008 estiverem integradas.
 
 ---
 
-### A Definir — Spec 008 (Frontend React)
+### Vagner — Spec 008 (Frontend React)
 
-**Spec 008**: ⏳ **AGUARDAR**. Desenvolver interface React quando Spec 001 (API) e Spec 006 (Reports) estiverem prontos.
+**Spec 008**: ✅ **IMPLEMENTADA**. Frontend React desenvolvido.
+
+**Tecnologias Frontend:**
+- **Framework**: React 18+ com TypeScript
+- **Build Tool**: Vite 5.x
+- **Styling**: Tailwind CSS 3.x
+- **Fonte**: Inter (system-ui fallback)
+- **Ícones**: Lucide React
+- **State Management**: React Query
+- **HTTP Client**: Axios
+- **Container**: Nginx (multi-stage build)
+
+**Cores:**
+- Primária: `#10B981` (emerald)
+- Secundária: `#3B82F6` (blue)
+- Fundo escuro: `#0f172a` (slate-900)
+
+**Funcionalidades Implementadas:**
+- Layout responsivo com tema escuro
+- Explicação da metodologia STRIDE (6 categorias)
+- Seção "Sobre o Projeto" com integrantes do Grupo 27
+- Links para perfis GitHub dos membros
+- Link para repositório do projeto
+- Copyright e nota de privacidade
+- Dockerfile e nginx.conf configurados
+- Integração com docker-compose.yml
+
+**Portas:**
+- Frontend: http://localhost:5173
+- API: http://localhost:8001
 
 ```typescript
-// Interface principal
-interface ReportViewerProps {
-  jobId: string;
-  report: ReportData;
-  onExport: (format: ExportFormat) => void;
-}
-
 // Componentes principais
-- UploadZone: Drag-drop de imagens
-- LoadingState: Polling de status do job
-- ReportViewer: Visualização do relatório STRIDE
-- ExportButtons: JSON, Markdown, HTML, PDF, CSV
+- App.tsx: Componente principal com navegação
+- StrideCard: Cards explicativos das 6 categorias STRIDE
+- AboutSection: Sobre o projeto, integrantes, tecnologias
+- UploadZone: Área de upload (placeholder para integração futura)
+- TechBadge: Badges de tecnologias utilizadas
 ```
 
 ---
@@ -341,10 +375,11 @@ interface ReportViewerProps {
 ## 📋 Checklist de Início
 
 ```markdown
-### Vagner (003)
-- [x] ~~Branch `feature/001-api-core` criada~~ ✅ CONCLUÍDA
-- [x] ~~Branch `feature/003-component-detection` criada~~ ✅ CONCLUÍDA
-- [x] ~~`YOLOStub` funciona~~ ✅ CONCLUÍDO
+### Vagner (001 + 003)
+- [x] Branch `feature/001-api-core` criada ✅ **Implementada e mergeada**
+- [x] Branch `feature/003-component-detection` criada ✅ **PR #11 aberta**
+- [x] FastAPI + PostgreSQL configurados
+- [x] `YOLOStub` funciona
 
 ### Lucas (002 + 007)
 - [ ] Branch `feature/002-dataset-yolo` criada
@@ -355,7 +390,7 @@ interface ReportViewerProps {
 ### Adriel (004 + 005)
 - [ ] Branch `feature/004-stride-engine` criada
 - [ ] Branch `feature/005-vulnerability-lookup` criada
-- [ ] `fake_graph` funciona
+- [x] Componente real da Spec 003 disponível
 - [ ] `data/cwes.yaml` criado
 
 ### Leticia (006 + 009)
@@ -364,11 +399,17 @@ interface ReportViewerProps {
 - [ ] Templates iniciais criados
 - [ ] Todos os mocks importam corretamente
 
-### A Definir (008)
-- [ ] Branch `feature/008-frontend-react` criada
-- [ ] Vite + React + TypeScript configurado
-- [ ] Tailwind CSS instalado
-- [ ] React Query configurado
+### Vagner (008 Frontend)
+- [x] Branch `feature/008-frontend-react` criada
+- [x] Vite + React + TypeScript configurado
+- [x] Tailwind CSS instalado
+- [x] React Query configurado
+- [x] Design system implementado
+- [x] Explicação STRIDE implementada
+- [x] Integrantes do Grupo 27 com links GitHub
+- [x] Copyright e nota de privacidade
+- [x] Dockerfile multi-stage configurado
+- [x] Integrado ao docker-compose.yml
 ```
 
 ---
@@ -405,3 +446,4 @@ git push origin feature/00X-sua-spec
 ---
 
 *Documento atualizado: 2026-07-11*
+*Frontend React implementado*

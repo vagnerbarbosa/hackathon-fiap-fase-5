@@ -1,6 +1,6 @@
 #!/bin/bash
-# Start API script for Linux/macOS
-# Usage: ./scripts/start-api.sh [options]
+# Start STRIDE System script for Linux/macOS
+# Usage: ./scripts/start-stride.sh [options]
 
 set -e
 
@@ -22,9 +22,9 @@ RUN_MIGRATIONS=true
 
 # Help function
 show_help() {
-    echo "Usage: ./scripts/start-api.sh [OPTIONS]"
+    echo "Usage: ./scripts/start-stride.sh [OPTIONS]"
     echo ""
-    echo "Start the FIAP STRIDE API with Docker Compose"
+    echo "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     echo ""
     echo "Options:"
     echo "  -h, --help          Show this help message"
@@ -33,9 +33,8 @@ show_help() {
     echo "  --no-migrations     Skip database migrations"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/start-api.sh              # Start with build and migrations"
-    echo "  ./scripts/start-api.sh --no-build   # Start quickly without rebuild"
-    echo "  ./scripts/start-api.sh --foreground # Run in foreground mode"
+    echo "  ./scripts/start-stride.sh              # Start all services"
+    echo "  ./scripts/start-stride.sh --no-build   # Use existing images"
 }
 
 # Parse arguments
@@ -101,7 +100,6 @@ fi
 mkdir -p storage logs
 
 echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║        FIAP STRIDE API - Docker Startup               ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -130,28 +128,26 @@ fi
 # Wait for services to be ready
 echo ""
 echo -e "${BLUE}Waiting for services to be ready...${NC}"
-sleep 5
 
-# Check if API is healthy
-echo -e "${BLUE}Checking API health...${NC}"
+# Health check com timeout de 60 segundos
+HEALTH_CHECK_URL="http://localhost:8001/health"
 MAX_RETRIES=30
 RETRY_COUNT=0
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if curl -s http://localhost:8000/health > /dev/null 2>&1; then
-        echo -e "${GREEN}✓ API is healthy${NC}"
+    if curl -sf "$HEALTH_CHECK_URL" > /dev/null 2>&1; then
+        echo -e "${GREEN}✓ API is ready!${NC}"
         break
     fi
     RETRY_COUNT=$((RETRY_COUNT + 1))
-    echo -e "${YELLOW}Waiting for API to be ready... ($RETRY_COUNT/$MAX_RETRIES)${NC}"
+    if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+        echo -e "${RED}✗ API failed to start within expected time${NC}"
+        echo "Check logs with: $COMPOSE_CMD logs api"
+        exit 1
+    fi
+    echo -n "."
     sleep 2
 done
-
-if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-    echo -e "${RED}✗ API failed to start within expected time${NC}"
-    echo "Check logs with: $COMPOSE_CMD logs api"
-    exit 1
-fi
 
 # Run migrations if requested
 if [ "$RUN_MIGRATIONS" = true ]; then
@@ -165,19 +161,5 @@ fi
 # Print success message
 echo ""
 echo -e "${GREEN}╔════════════════════════════════════════════════════════╗${NC}"
-echo -e "${GREEN}║           🚀 API Started Successfully!                 ║${NC}"
-echo -e "${GREEN}╚════════════════════════════════════════════════════════╝${NC}"
-echo ""
-echo -e "${BLUE}Available endpoints:${NC}"
-echo -e "  ${GREEN}• Health Check:${NC} http://localhost:8000/health"
-echo -e "  ${GREEN}• Swagger UI:${NC}   http://localhost:8000/docs"
-echo -e "  ${GREEN}• Redoc:${NC}        http://localhost:8000/redoc"
-echo -e "  ${GREEN}• API Version:${NC}  http://localhost:8000/version"
-echo ""
-echo -e "${BLUE}To stop the API:${NC}"
-echo -e "  ${YELLOW}$COMPOSE_CMD down${NC}"
-echo ""
-echo -e "${BLUE}To view logs:${NC}"
-echo -e "  ${YELLOW}$COMPOSE_CMD logs -f api${NC}"
 echo ""
 echo -e "${BLUE}Happy hacking! 🛡️🔍${NC}"
