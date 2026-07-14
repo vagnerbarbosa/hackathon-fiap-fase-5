@@ -148,10 +148,21 @@ function App() {
     setErrorMessage('')
     setUploadStatus('idle')
 
-    // Gerar preview da imagem
+    // Gerar preview da imagem (com validação XSS)
     const reader = new FileReader()
     reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string)
+      const result = e.target?.result
+      // Validar que é uma data URL de imagem válida (proteção XSS)
+      if (typeof result === 'string' && result.startsWith('data:image/')) {
+        setPreviewUrl(result)
+      } else {
+        setErrorMessage('Erro ao processar imagem. Tente outro arquivo.')
+        setUploadStatus('error')
+      }
+    }
+    reader.onerror = () => {
+      setErrorMessage('Erro ao ler arquivo. Verifique o formato.')
+      setUploadStatus('error')
     }
     reader.readAsDataURL(file)
   }
