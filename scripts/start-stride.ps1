@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
-# Start API script for Windows (PowerShell)
-# Usage: .\scripts\start-api.ps1 [options]
+# Start STRIDE System script for Windows (PowerShell)
+# Usage: .\scripts\start-stride.ps1 [options]
 
 param(
     [switch]$Help,
@@ -22,9 +22,9 @@ $ProjectDir = Split-Path -Parent $ScriptDir
 
 # Help function
 function Show-Help {
-    Write-Host "Usage: .\scripts\start-api.ps1 [OPTIONS]"
+    Write-Host "Usage: .\scripts\start-stride.ps1 [OPTIONS]"
     Write-Host ""
-    Write-Host "Start the FIAP STRIDE API with Docker Compose"
+    Write-Host "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Help              Show this help message"
@@ -33,9 +33,8 @@ function Show-Help {
     Write-Host "  -NoMigrations      Skip database migrations"
     Write-Host ""
     Write-Host "Examples:"
-    Write-Host "  .\scripts\start-api.ps1              # Start with build and migrations"
-    Write-Host "  .\scripts\start-api.ps1 -NoBuild    # Start quickly without rebuild"
-    Write-Host "  .\scripts\start-api.ps1 -Foreground  # Run in foreground mode"
+    Write-Host "  .\scripts\start-stride.ps1              # Start all services"
+    Write-Host "  .\scripts\start-stride.ps1 -NoBuild      # Use existing images"
 }
 
 # Show help if requested
@@ -91,7 +90,6 @@ New-Item -ItemType Directory -Force -Path "storage" | Out-Null
 New-Item -ItemType Directory -Force -Path "logs" | Out-Null
 
 Write-Host "${Blue}╔════════════════════════════════════════════════════════╗${NC}"
-Write-Host "${Blue}║        FIAP STRIDE API - Docker Startup               ║${NC}"
 Write-Host "${Blue}╚════════════════════════════════════════════════════════╝${NC}"
 Write-Host ""
 
@@ -121,27 +119,32 @@ if ($Foreground) {
 # Wait for services to be ready
 Write-Host ""
 Write-Host "${Blue}Waiting for services to be ready...${NC}"
-Start-Sleep -Seconds 5
 
-# Check if API is healthy
-Write-Host "${Blue}Checking API health...${NC}"
+# Health check com timeout de 60 segundos
+$HealthCheckUrl = "http://localhost:8001/health"
 $MaxRetries = 30
 $RetryCount = 0
 $ApiHealthy = $false
 
 while ($RetryCount -lt $MaxRetries) {
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:8000/health" -UseBasicParsing -ErrorAction Stop
+        $response = Invoke-WebRequest -Uri $HealthCheckUrl -Method GET -TimeoutSec 2 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
-            Write-Host "${Green}✓ API is healthy${NC}"
             $ApiHealthy = $true
+            Write-Host "${Green}✓ API is ready!${NC}"
             break
         }
     } catch {
-        $RetryCount++
-        Write-Host "${Yellow}Waiting for API to be ready... ($RetryCount/$MaxRetries)${NC}"
-        Start-Sleep -Seconds 2
+        # Continuar tentando
     }
+    $RetryCount++
+    if ($RetryCount -eq $MaxRetries) {
+        Write-Host "${Red}✗ API failed to start within expected time${NC}"
+        Write-Host "Check logs with: ${ComposeCmd} logs api"
+        exit 1
+    }
+    Write-Host -NoNewline "."
+    Start-Sleep -Seconds 2
 }
 
 if (-not $ApiHealthy) {
@@ -164,19 +167,5 @@ if (-not $NoMigrations) {
 # Print success message
 Write-Host ""
 Write-Host "${Green}╔════════════════════════════════════════════════════════╗${NC}"
-Write-Host "${Green}║           🚀 API Started Successfully!                 ║${NC}"
-Write-Host "${Green}╚════════════════════════════════════════════════════════╝${NC}"
-Write-Host ""
-Write-Host "${Blue}Available endpoints:${NC}"
-Write-Host "  ${Green}• Health Check:${NC} http://localhost:8000/health"
-Write-Host "  ${Green}• Swagger UI:${NC}   http://localhost:8000/docs"
-Write-Host "  ${Green}• Redoc:${NC}        http://localhost:8000/redoc"
-Write-Host "  ${Green}• API Version:${NC}  http://localhost:8000/version"
-Write-Host ""
-Write-Host "${Blue}To stop the API:${NC}"
-Write-Host "  ${Yellow}${ComposeCmd} down${NC}"
-Write-Host ""
-Write-Host "${Blue}To view logs:${NC}"
-Write-Host "  ${Yellow}${ComposeCmd} logs -f api${NC}"
 Write-Host ""
 Write-Host "${Blue}Happy hacking! 🛡️🔍${NC}"

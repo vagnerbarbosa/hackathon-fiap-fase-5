@@ -74,7 +74,7 @@ Todas as specs estão em `specs/features/`:
 | 005 | `005-vulnerability-contramedidas.md` | Vulnerabilidades e Contramedidas | Busca de CVEs/CWEs, contramedidas OWASP | ⏳ Pendente |
 | 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
 | 007 | `007-ci-cd-github-actions.md` | CI/CD | GitHub Actions, lint, testes, Docker build | ⏳ Pendente |
-| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ⏳ Pendente |
+| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ✅ **Implementado (MVP)** |
 | 009 | `009-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |
 
 ---
@@ -84,41 +84,36 @@ Todas as specs estão em `specs/features/`:
 ### 3.1 Diagrama de Componentes
 
 ```
-+------------------+       +------------------+
-|     Client       |       |   Admin/DEV      |
-| (curl/frontend)  |       | (monitoramento)  |
-+--------+---------+       +--------+---------+
-         |                          |
-         v                          v
-+--------------------------------------------------------+
-|                    FastAPI API (Port 8000)             |
-|  +----------------+  +----------------+  +--------+  |
-|  | Upload Route   |  | Report Route   |  | Health |  |
-|  | (RF-01)        |  | (RF-06)        |  | Check  |  |
-|  +--------+-------+  +--------+-------+  +--------+  |
-|           |                 |                        |
-|  +--------v-------+  +--------v-------+                |
-|  | Component      |  | Report         |                |
-|  | Detection      |  | Generator      |                |
-|  | Service        |  | (Jinja2)       |                |
-|  | (Spec 003)     |  | (Spec 006)     |                |
-|  +--------+-------+  +--------+-------+                |
-|           |                 |                        |
-|  +--------v-------+  +--------v-------+                |
-|  | STRIDE Engine  |  | Vulnerability  |                |
-|  | (Spec 004)     |  | Service        |                |
-|  +--------+-------+  | (Spec 005)     |                |
-|           |          +--------+-------+                |
-|           |                 |                          |
-+--------------------------------------------------------+
-            |                 |
-            v                 v
-+-----------+----+    +-----+--------+
-|  PostgreSQL    |    |    Redis     |
-|  (Jobs,        |    |  (Cache,     |
-|   Reports)     |    |   Rate Limit)|
-+----------------+    +--------------+
++------------------+      +--------------------------------------------------------+
+|  Navegador       |      |                    FastAPI API (Port 8000)             |
+|  (Chrome/Firefox)|      |  +----------------+  +----------------+  +--------+  |
++--------+---------+      |  | Upload Route   |  | Report Route   |  | Health |  |
+         |                |  | (RF-01)        |  | (RF-06)        |  | Check  |  |
+         |                |  +--------+-------+  +--------+-------+  +--------+  |
+         v                |           |                 |                        |
++------------------+      |  +--------v-------+  +--------v-------+                |
+| React Frontend   |      |  | Component      |  | Report         |                |
+| (Port 5173)      |      |  | Detection      |  | Generator      |                |
+| - Upload UI      |      |  | Service        |  | (Jinja2)       |                |
+| - STRIDE Cards   |      |  | (Spec 003)     |  | (Spec 006)     |                |
+| - Grupo 27 Info  |      |  +--------+-------+  +--------+-------+                |
+| - Identidade FIAP|      |           |                 |                        |
++--------+---------+      |  +--------v-------+  +--------v-------+                |
+         |                |  | STRIDE Engine  |  | Vulnerability  |                |
+         |                |  | (Spec 004)     |  | Service        |                |
+         +--------------->|  +--------+-------+  | (Spec 005)     |                |
+           (Proxy API)      |           |          +--------+-------+                |
+                           |           |                 |                          |
+                           +--------------------------------------------------------+
+                                       |                 |                          
+                                       v                 v                          
+                           +-----------+----+    +-----+--------+                   
+                           |  PostgreSQL    |    |    Redis     |                   
+                           |  (Jobs,        |    |  (Cache,     |                   
+                           |   Reports)     |    |   Rate Limit)|                   
+                           +----------------+    +--------------+                    
 ```
+
 
 ### 3.2 Fluxo de Dados (End-to-End)
 
@@ -243,11 +238,12 @@ Todas as specs estão em `specs/features/`:
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
 | Documentação do fluxo | Em progresso (este SDD + specs) | Equipe |
-| Frontend React | Pendente (Spec 008) | Equipe |
+| **Frontend React** | **✅ Implementado** - Layout completo com STRIDE e Grupo 27 | Equipe |
 | Vídeo de até 15 min | Planejado (Spec 009) | Equipe |
-| Link do GitHub | Pendente criação do repo | Equipe |
+| Link do GitHub | ✅ Criado: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
 
 ---
 
 *SDD consolidado em: 2026-07-11*
 *Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*
+*Frontend implementado: React + TypeScript + Vite + Tailwind CSS com identidade FIAP*

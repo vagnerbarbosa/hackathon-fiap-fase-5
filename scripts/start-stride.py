@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Start API script - Cross-platform (Linux, macOS, Windows)
+Start STRIDE System script - Cross-platform (Linux, macOS, Windows)
 Universal fallback that works on any OS with Python 3.
 
-Usage: python scripts/start-api.py [options]
+Usage: python scripts/start-stride.py [options]
 """
 
 import argparse
@@ -14,6 +14,11 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+
+try:
+    import requests
+except ImportError:
+    requests = None
 
 
 def get_project_dir() -> Path:
@@ -94,44 +99,13 @@ def run_command(cmd: str, cwd: Path | None = None, check: bool = True) -> subpro
     return result
 
 
-def wait_for_api(timeout: int = 60) -> bool:
-    """Wait for API to be healthy."""
-    import urllib.request
-    import urllib.error
-
-    print("⏳ Waiting for API to be ready...")
-    start_time = time.time()
-
-    while time.time() - start_time < timeout:
-        try:
-            response = urllib.request.urlopen(
-                "http://localhost:8000/health",
-                timeout=2
-            )
-            if response.status == 200:
-                print("✅ API is healthy")
-                return True
-        except (urllib.error.URLError, urllib.error.HTTPError):
-            pass
-
-        print("⏳ Waiting...", end="\r")
-        time.sleep(2)
-
-    print("❌ API failed to start within expected time")
-    return False
 
 
 def main() -> None:
     """Main function."""
     parser = argparse.ArgumentParser(
-        description="Start the FIAP STRIDE API with Docker Compose",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  python scripts/start-api.py              # Start with build and migrations
-  python scripts/start-api.py --no-build # Start quickly without rebuild
-  python scripts/start-api.py --foreground # Run in foreground mode
-"""
+        description="Start the complete STRIDE Threat Modeling System (API + Frontend + Database)",
+        prog="start-stride.py"
     )
 
     parser.add_argument(
@@ -156,7 +130,6 @@ Examples:
     project_dir = get_project_dir()
 
     print("=" * 60)
-    print("     FIAP STRIDE API - Docker Startup")
     print("=" * 60)
     print("")
 
@@ -191,10 +164,41 @@ Examples:
             print("\n👋 Stopped by user")
         return
 
-    # Wait for API
-    time.sleep(5)  # Give containers time to start
+    # Wait for services to be ready
+    print("")
+    print("⏳ Waiting for services to be ready...")
 
-    if not wait_for_api():
+    # Health check com timeout de 60 segundos
+    health_check_url = "http://localhost:8001/health"
+    max_retries = 30
+    retry_count = 0
+    api_healthy = False
+
+    if requests is None:
+        print("⚠️  requests module not available, skipping health check...")
+        time.sleep(5)
+        api_healthy = True
+    else:
+        while retry_count < max_retries:
+            try:
+                response = requests.get(health_check_url, timeout=2)
+                if response.status_code == 200:
+                    api_healthy = True
+                    print("✅ API is ready!")
+                    break
+            except requests.RequestException:
+                pass
+
+            retry_count += 1
+            if retry_count == max_retries:
+                print(f"❌ API failed to start within expected time")
+                print(f"Check logs with: {compose_cmd} logs api")
+                sys.exit(1)
+            print(".", end="", flush=True)
+            time.sleep(2)
+
+    if not api_healthy:
+        print(f"❌ API failed to start within expected time")
         print(f"Check logs with: {compose_cmd} logs api")
         sys.exit(1)
 
@@ -210,20 +214,6 @@ Examples:
     # Success message
     print("")
     print("=" * 60)
-    print("     🚀 API Started Successfully!")
-    print("=" * 60)
-    print("")
-    print("Available endpoints:")
-    print("  • Health Check: http://localhost:8000/health")
-    print("  • Swagger UI:   http://localhost:8000/docs")
-    print("  • Redoc:        http://localhost:8000/redoc")
-    print("  • API Version:  http://localhost:8000/version")
-    print("")
-    print("To stop the API:")
-    print(f"  {compose_cmd} down")
-    print("")
-    print("To view logs:")
-    print(f"  {compose_cmd} logs -f api")
     print("")
     print("Happy hacking! 🛡️🔍")
 

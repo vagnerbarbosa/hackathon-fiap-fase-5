@@ -1,5 +1,5 @@
-# Makefile for FIAP STRIDE API
-# Cross-platform convenience wrapper for start-api scripts
+# Makefile for FIAP STRIDE System
+# Cross-platform convenience wrapper for start-stride scripts
 
 .PHONY: help start start-quick stop logs migrate test lint clean
 
@@ -7,28 +7,34 @@
 .DEFAULT_GOAL := help
 
 help: ## Show this help message
-	@echo "FIAP STRIDE API - Available Commands:"
+	@echo "FIAP STRIDE System - Available Commands:"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
 
-start: ## Start the API (build + migrations)
-	@echo "🚀 Starting API..."
-	@./scripts/start-api.sh
+start: ## Start all services (API + Frontend + Database)
+	@echo "🚀 Starting STRIDE System..."
+	@./scripts/start-stride.sh
 
-start-quick: ## Start the API quickly (skip build)
-	@echo "🚀 Starting API (quick mode)..."
-	@./scripts/start-api.sh --no-build
+start-quick: ## Start quickly (skip build)
+	@echo "🚀 Starting STRIDE System (quick mode)..."
+	@./scripts/start-stride.sh --no-build
 
-start-fg: ## Start the API in foreground mode
-	@echo "🚀 Starting API (foreground mode)..."
-	@./scripts/start-api.sh --foreground
+start-fg: ## Start in foreground mode
+	@echo "🚀 Starting STRIDE System (foreground mode)..."
+	@./scripts/start-stride.sh --foreground
 
 stop: ## Stop all containers
-	@echo "🛑 Stopping API..."
+	@echo "🛑 Stopping STRIDE System..."
 	@docker-compose down
 
-logs: ## View API logs
+logs: ## View logs
+	@docker-compose logs -f
+
+logs-api: ## View API logs
 	@docker-compose logs -f api
+
+logs-frontend: ## View Frontend logs
+	@docker-compose logs -f frontend
 
 migrate: ## Run database migrations
 	@echo "🔄 Running migrations..."
@@ -68,10 +74,10 @@ clean: ## Clean up containers, volumes, and temp files
 	@find . -type d -name "*.pyc" -delete 2>/dev/null || true
 
 # Windows support (use with make -f Makefile.windows if needed)
-start-windows: ## Start the API on Windows (PowerShell)
-	@echo "🚀 Starting API (Windows)..."
-	@powershell -ExecutionPolicy Bypass -File scripts/start-api.ps1
+start-windows: ## Start on Windows (PowerShell)
+	@echo "🚀 Starting STRIDE System (Windows)..."
+	@powershell -ExecutionPolicy Bypass -File scripts/start-stride.ps1
 
-start-py: ## Start the API using Python script (universal)
-	@echo "🚀 Starting API (Python)..."
-	@python3 scripts/start-api.py
+start-py: ## Start using Python script (universal)
+	@echo "🚀 Starting STRIDE System (Python)..."
+	@python3 scripts/start-stride.py

@@ -48,7 +48,7 @@ class LocalFileStorage:
         with open(file_path, "wb") as f:
             f.write(content)
 
-        logger.info(f"File saved: {file_path}", extra_fields={"file_path": str(file_path)})
+        logger.info(f"File saved: {file_path}")
         return str(file_path.relative_to(self.base_path))
 
     async def get_path(self, relative_path: str) -> Path:

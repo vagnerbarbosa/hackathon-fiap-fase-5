@@ -1,7 +1,7 @@
-"""End-to-end integration tests for component detection.
+"""Testes de integração end-to-end para detecção de componentes.
 
-These tests use the actual YOLO model if available, otherwise skip.
-For CI/CD, tests use the stub to ensure pipeline passes.
+Estes testes usam o modelo YOLO real se disponível, caso contrário são pulados.
+Para CI/CD, os testes usam o stub para garantir que o pipeline passe.
 """
 
 from pathlib import Path
@@ -16,27 +16,27 @@ from src.services.component_detector import (
 )
 
 
-# Path to actual YOLO model (if available)
+# Caminho para modelo YOLO real (se disponível)
 MODEL_PATH = Path("models/best.pt")
 ONNX_MODEL_PATH = Path("models/best.onnx")
 
 
 def create_test_diagram(output_path: Path, components: list) -> None:
-    """Create a synthetic architecture diagram for testing.
+    """Cria um diagrama de arquitetura sintético para testes.
 
     Args:
-        output_path: Where to save the image.
-        components: List of (type, x, y, w, h) tuples.
+        output_path: Onde salvar a imagem.
+        components: Lista de tuplas (type, x, y, w, h).
     """
     img = Image.new("RGB", (800, 600), color="white")
     draw = ImageDraw.Draw(img)
 
     colors = {
-        "user": (255, 100, 100),      # Red
-        "api": (100, 100, 255),       # Blue
-        "database": (100, 255, 100), # Green
-        "cache": (255, 255, 100),     # Yellow
-        "queue": (255, 100, 255),     # Purple
+        "user": (255, 100, 100),      # Vermelho
+        "api": (100, 100, 255),       # Azul
+        "database": (100, 255, 100), # Verde
+        "cache": (255, 255, 100),     # Amarelo
+        "queue": (255, 100, 255),     # Roxo
     }
 
     for comp_type, x, y, w, h in components:
@@ -49,8 +49,8 @@ def create_test_diagram(output_path: Path, components: list) -> None:
 
 @pytest.fixture
 def service():
-    """Create service instance."""
-    # Use real model if available, otherwise stub
+    """Cria instância do service."""
+    # Usa modelo real se disponível, caso contrário stub
     model_path = None
     if MODEL_PATH.exists():
         model_path = str(MODEL_PATH)
@@ -65,7 +65,7 @@ def service():
 
 @pytest.fixture
 def test_diagram(tmp_path):
-    """Create a test architecture diagram."""
+    """Cria um diagrama de arquitetura de teste."""
     diagram_path = tmp_path / "test_diagram.png"
     components = [
         ("user", 50, 100, 100, 80),
@@ -78,7 +78,7 @@ def test_diagram(tmp_path):
 
 @pytest.fixture
 def empty_image(tmp_path):
-    """Create an empty image for negative testing."""
+    """Cria uma imagem vazia para testes negativos."""
     img_path = tmp_path / "empty.png"
     img = Image.new("RGB", (640, 480), color="white")
     img.save(img_path)
@@ -86,21 +86,21 @@ def empty_image(tmp_path):
 
 
 class TestDetectionE2E:
-    """End-to-end detection tests."""
+    """Testes end-to-end de detecção."""
 
     @pytest.mark.asyncio
     @pytest.mark.skipif(
         not MODEL_PATH.exists() and not ONNX_MODEL_PATH.exists(),
-        reason="Model not available - using stub",
+        reason="Modelo não disponível - usando stub",
     )
     async def test_detection_with_real_model(self, service, test_diagram):
-        """Test detection with actual YOLO model (if available)."""
+        """Testa detecção com modelo YOLO real (se disponível)."""
         graph = await service.detect(test_diagram)
 
         assert isinstance(graph, ArchitectureGraph)
         assert len(graph.components) >= 1
 
-        # Verify all components have required fields
+        # Verifica se todos os componentes têm campos obrigatórios
         for comp in graph.components:
             assert comp.id
             assert comp.type
@@ -110,18 +110,18 @@ class TestDetectionE2E:
 
     @pytest.mark.asyncio
     async def test_detection_with_stub(self, service, test_diagram):
-        """Test detection with stub (always runs)."""
-        # Force use of stub
+        """Testa detecção com stub (sempre executa)."""
+        # Força uso de stub
         if not service.is_using_stub:
-            pytest.skip("Real model available, skipping stub test")
+            pytest.skip("Modelo real disponível, pulando teste de stub")
 
         graph = await service.detect(test_diagram)
 
         assert isinstance(graph, ArchitectureGraph)
-        # Stub returns 5 components
+        # Stub retorna 5 componentes
         assert len(graph.components) == 5
 
-        # Verify component types
+        # Verifica tipos de componentes
         types = [c.type for c in graph.components]
         assert "user" in types
         assert "api" in types
@@ -129,7 +129,7 @@ class TestDetectionE2E:
 
     @pytest.mark.asyncio
     async def test_detection_performance(self, service, test_diagram):
-        """Test detection completes within reasonable time."""
+        """Testa se detecção completa em tempo razoável."""
         import asyncio
         import time
 
@@ -137,42 +137,42 @@ class TestDetectionE2E:
         graph = await service.detect(test_diagram)
         elapsed = time.time() - start
 
-        # Should complete in less than 10 seconds (stub is instant)
-        # Real model may take longer on CPU
+        # Deve completar em menos de 10 segundos (stub é instantâneo)
+        # Modelo real pode demorar mais em CPU
         assert elapsed < 10.0
 
     @pytest.mark.asyncio
     async def test_detection_idempotent(self, service, test_diagram):
-        """Multiple detections of same image should return same result."""
+        """Múltiplas detecções da mesma imagem devem retornar mesmo resultado."""
         graph1 = await service.detect(test_diagram)
         graph2 = await service.detect(test_diagram)
 
-        # Same number of components
+        # Mesmo número de componentes
         assert len(graph1.components) == len(graph2.components)
 
-        # Same component types (order may vary)
+        # Mesmos tipos de componentes (ordem pode variar)
         types1 = sorted([c.type for c in graph1.components])
         types2 = sorted([c.type for c in graph2.components])
         assert types1 == types2
 
 
 class TestErrorHandlingE2E:
-    """Tests for error conditions."""
+    """Testes para condições de erro."""
 
     @pytest.mark.asyncio
     async def test_no_components_detected(self, service, empty_image):
-        """Empty image should raise NoComponentsDetectedError."""
-        # Even stub returns components, so we need to mock this
-        # or use a truly empty image that won't trigger detection
-        pytest.skip("Stub always returns components - skip for now")
+        """Imagem vazia deve lançar NoComponentsDetectedError."""
+        # Mesmo stub retorna componentes, então precisamos mockar isso
+        # ou usar uma imagem realmente vazia que não dispara detecção
+        pytest.skip("Stub sempre retorna componentes - pulando por enquanto")
 
     @pytest.mark.asyncio
     async def test_invalid_image_format(self, service, tmp_path):
-        """Invalid image should raise appropriate error."""
+        """Imagem inválida deve lançar erro apropriado."""
         invalid_path = tmp_path / "invalid.txt"
         invalid_path.write_text("not an image")
 
-        # Should raise an error during preprocessing
+        # Deve lançar erro durante pré-processamento
         with pytest.raises(Exception) as exc_info:
             await service.detect(invalid_path)
 
@@ -180,17 +180,17 @@ class TestErrorHandlingE2E:
 
     @pytest.mark.asyncio
     async def test_nonexistent_file(self, service):
-        """Non-existent file should raise FileNotFoundError."""
+        """Arquivo inexistente deve lançar FileNotFoundError."""
         with pytest.raises(FileNotFoundError):
             await service.detect(Path("/nonexistent/path/image.png"))
 
 
 class TestArchitectureGraphStructure:
-    """Tests for output structure."""
+    """Testes para estrutura de saída."""
 
     @pytest.mark.asyncio
     async def test_graph_has_all_fields(self, service, test_diagram):
-        """ArchitectureGraph should have all required fields."""
+        """ArchitectureGraph deve ter todos os campos obrigatórios."""
         graph = await service.detect(test_diagram)
 
         assert hasattr(graph, "components")
@@ -203,7 +203,7 @@ class TestArchitectureGraphStructure:
 
     @pytest.mark.asyncio
     async def test_components_have_valid_bounding_boxes(self, service, test_diagram):
-        """All components should have valid bounding boxes."""
+        """Todos os componentes devem ter bounding boxes válidas."""
         graph = await service.detect(test_diagram)
 
         for comp in graph.components:
@@ -215,51 +215,51 @@ class TestArchitectureGraphStructure:
 
     @pytest.mark.asyncio
     async def test_components_have_valid_centers(self, service, test_diagram):
-        """All components should have center points within bbox."""
+        """Todos os componentes devem ter pontos centrais dentro da bbox."""
         graph = await service.detect(test_diagram)
 
         for comp in graph.components:
             center = comp.center
             bbox = comp.bbox
 
-            # Center should be within bounding box
+            # Centro deve estar dentro da bounding box
             assert bbox.x_min <= center.x <= bbox.x_max
             assert bbox.y_min <= center.y <= bbox.y_max
 
 
 class TestCachingE2E:
-    """Tests for caching behavior."""
+    """Testes para comportamento de cache."""
 
     @pytest.mark.asyncio
     async def test_cache_speedup(self, service, test_diagram):
-        """Cached detection should be faster than first detection."""
+        """Detecção cacheada deve ser mais rápida que a primeira."""
         import time
 
-        # First detection (may be slow)
+        # Primeira detecção (pode ser lenta)
         start1 = time.time()
         await service.detect(test_diagram)
         time1 = time.time() - start1
 
-        # Second detection (should be from cache)
+        # Segunda detecção (deve ser do cache)
         start2 = time.time()
         await service.detect(test_diagram)
         time2 = time.time() - start2
 
-        # Cached version should be much faster (if caching works)
-        # Allow some tolerance for timing
+        # Versão cacheada deve ser muito mais rápida (se caching funcionar)
+        # Permite alguma tolerância para timing
         assert time2 < time1 * 2
 
     @pytest.mark.asyncio
     async def test_cache_returns_same_result(self, service, test_diagram):
-        """Cached result should be same as original."""
+        """Resultado cacheado deve ser igual ao original."""
         graph1 = await service.detect(test_diagram)
         graph2 = await service.detect(test_diagram)
 
-        # Same number of components
+        # Mesmo número de componentes
         assert len(graph1.components) == len(graph2.components)
 
-        # Same data flows
+        # Mesmos data flows
         assert len(graph1.data_flows) == len(graph2.data_flows)
 
-        # Same trust boundaries
+        # Mesmos trust boundaries
         assert len(graph1.trust_boundaries) == len(graph2.trust_boundaries)
