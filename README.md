@@ -129,6 +129,31 @@ Imagem de Arquitetura
 
 ---
 
+## 📊 Dataset
+
+O dataset de treinamento (4.190 imagens, 32 classes) não está versionado no Git devido ao tamanho. Para baixar:
+
+```bash
+# Instalar dependência
+pip install huggingface_hub
+
+# Baixar dataset
+python scripts/download_dataset.py
+```
+
+Ou clone diretamente do HuggingFace:
+```bash
+git clone https://huggingface.co/datasets/fiap-grupo27/architecture-diagrams-stride dataset/
+```
+
+O dataset inclui:
+- **4.190 imagens** de diagramas de arquitetura AWS/Azure
+- **32 classes** de componentes (actor_user, edge_waf, compute_service, data_database, etc.)
+- **Augmentations**: BW, blur, noise, jpeg compression, gamma correction
+- **Formato YOLO**: Labels em `dataset/{train,val,test}/labels/`
+
+---
+
 ## 🚦 Como Executar
 
 ### Pré-requisitos
@@ -136,6 +161,7 @@ Imagem de Arquitetura
 - Docker + Docker Compose
 - Git
 - 8GB+ RAM (16GB recomendado para treinamento)
+- **Dataset baixado** (veja seção 📊 Dataset acima)
 
 ### 1. Clone o repositório
 
