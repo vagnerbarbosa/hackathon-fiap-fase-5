@@ -168,6 +168,9 @@ models/*.onnx
 models/*.pth
 models/*.safetensors
 
+# Ultralytics training runs (checkpoints, plots, logs — not versioned)
+runs/
+
 # Dataset images (large files — use DVC or external storage)
 dataset/train/images/
 dataset/val/images/
