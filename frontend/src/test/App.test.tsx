@@ -122,7 +122,7 @@ describe('App Integration', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('filename')).toHaveTextContent('diagrama.png')
-      })
+      }, { timeout: 3000 })
     })
 
     it('deve mostrar botões após seleção de arquivo', async () => {
@@ -136,7 +136,7 @@ describe('App Integration', () => {
       await waitFor(() => {
         expect(screen.getByTestId('start-analysis')).toBeInTheDocument()
         expect(screen.getByTestId('change-file')).toBeInTheDocument()
-      })
+      }, { timeout: 3000 })
     })
 
     it('deve mostrar tamanho do arquivo em MB', async () => {

@@ -217,7 +217,7 @@ function App() {
   }
 
   const validateAndSetFile = (file: File) => {
-    // Validar tipo
+    // Validar tipo MIME
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg']
     if (!validTypes.includes(file.type)) {
       setErrorMessage('Formato inválido. Use PNG, JPG ou JPEG.')

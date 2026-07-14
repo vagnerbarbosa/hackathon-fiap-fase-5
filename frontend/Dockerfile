@@ -2,9 +2,6 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Accept build arguments for API configuration
-ARG VITE_API_URL
-
 COPY package*.json ./
 RUN npm install
 
