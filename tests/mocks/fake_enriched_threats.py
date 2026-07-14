@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from domain.models import Countermeasure, EnrichedThreat, Severity
+from src.domain.models import Countermeasure, EnrichedThreat, Severity
 
 fake_enriched = [
     EnrichedThreat(

@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from core.stride_mappings import StrideMappingError, StrideMappings
+from src.core.stride_mappings import StrideMappingError, StrideMappings
 
 
 def test_loads_component_and_data_flow_mappings() -> None:

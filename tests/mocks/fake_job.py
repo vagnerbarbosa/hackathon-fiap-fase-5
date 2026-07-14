@@ -3,7 +3,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from domain.models import Job, JobStatus
+from src.domain.models import Job, JobStatus
 
 fake_job = Job(
     id=uuid4(),

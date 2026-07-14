@@ -1,6 +1,6 @@
 """Regras de severidade e ordenacao para analise STRIDE."""
 
-from domain.models import Severity
+from src.domain.models import Severity
 
 
 SEVERITY_ORDER = {

@@ -4,8 +4,8 @@ import logging
 
 import pytest
 
-from core.stride_mappings import StrideMappings
-from domain.models import (
+from src.core.stride_mappings import StrideMappings
+from src.domain.models import (
     ArchitectureGraph,
     BoundingBox,
     DataFlow,
@@ -14,7 +14,7 @@ from domain.models import (
     Severity,
     Threat,
 )
-from services.stride_engine import StrideEngine
+from src.services.stride_engine import StrideEngine
 
 
 def component(component_id: str, component_type: str) -> DetectedComponent:
@@ -183,12 +183,12 @@ def test_unknown_component_does_not_break_engine(
         trust_boundaries=[["custom-1"]],
     )
 
-    caplog.set_level(logging.WARNING, logger="services.stride_engine")
+    caplog.set_level(logging.WARNING, logger="src.services.stride_engine")
 
     assert analyze(engine, graph) == []
     payload = json.loads(caplog.records[0].message)
     assert payload["level"] == "warning"
-    assert payload["module"] == "services.stride_engine"
+    assert payload["module"] == "src.services.stride_engine"
     assert payload["message"] == "Unknown component type in STRIDE analysis."
     assert payload["component_id"] == "custom-1"
     assert payload["component_type"] == "custom_component"

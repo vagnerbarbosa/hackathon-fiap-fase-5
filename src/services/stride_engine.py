@@ -5,13 +5,13 @@ import logging
 from datetime import UTC, datetime
 from pathlib import Path
 
-from core.stride_mappings import (
+from src.core.stride_mappings import (
     MappingThreat,
     StrideMappings,
     default_stride_mappings_path,
 )
-from core.stride_rules import calculate_severity, category_name, severity_sort_rank
-from domain.models import ArchitectureGraph, DataFlow, Threat
+from src.core.stride_rules import calculate_severity, category_name, severity_sort_rank
+from src.domain.models import ArchitectureGraph, DataFlow, Threat
 
 
 DATA_FLOW_COMPONENT_TYPE = "data_flow"

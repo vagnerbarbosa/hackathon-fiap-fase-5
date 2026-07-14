@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from domain.models import Severity, Threat
+from src.domain.models import Severity, Threat
 
 fake_threats = [
     Threat(
