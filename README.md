@@ -87,14 +87,16 @@ Imagem de Arquitetura
 ├── src/                          # Código fonte Python (FastAPI)
 │   ├── api/                      # Rotas FastAPI, controllers, DTOs
 │   ├── core/                     # Configurações, segurança, logging
-│   ├── services/                 # Casos de uso (detecção, STRIDE, relatórios)
+│   ├── domain/                   # Entidades e modelos de domínio
 │   ├── infrastructure/           # Adaptadores (DB, ML, cache)
-│   ├── models/                   # Entidades de domínio (ORM)
+│   ├── models/                   # Entidades ORM (SQLAlchemy)
+│   ├── services/                 # Casos de uso (detecção, STRIDE, relatórios)
 │   └── workers/                  # Processamento assíncrono
 ├── tests/                        # Testes
 │   ├── unit/                     # Testes isolados
 │   ├── integration/              # Testes de integração
-│   └── e2e/                      # Testes end-to-end
+│   ├── e2e/                      # Testes end-to-end
+│   └── mocks/                    # Mocks e fixtures
 ├── frontend/                     # Aplicação React (TypeScript + Vite)
 │   ├── src/                      # Código fonte React
 │   │   ├── components/           # Componentes React
@@ -103,27 +105,46 @@ Imagem de Arquitetura
 │   │   └── index.css             # Estilos globais
 │   ├── public/                   # Assets estáticos
 │   ├── dist/                     # Build de produção
+│   ├── coverage/                 # Relatórios de cobertura
+│   ├── index.html                # Template HTML
 │   ├── Dockerfile                # Container do frontend
 │   ├── nginx.conf                # Config Nginx
 │   ├── package.json              # Dependências npm
 │   ├── tailwind.config.js        # Config Tailwind
 │   ├── vite.config.ts            # Config Vite
+│   ├── vitest.config.ts          # Config Vitest
 │   └── tsconfig.json             # Config TypeScript
 ├── scripts/                      # Scripts de automação
-│   ├── start-stride.sh           # Start Linux/macOS
-│   ├── start-stride.ps1          # Start Windows (PowerShell)
-│   └── start-stride.py            # Start Python (cross-platform)
+│   ├── bash/                     # Scripts Linux/macOS
+│   │   └── start-stride.sh       # Start principal
+│   └── powershell/               # Scripts Windows
+│       └── start-stride.ps1
+├── config/                       # Configurações YAML/JSON
 ├── specs/                        # Especificações SpeckIt
-│   └── features/                 # Specs de features
+│   └── features/                 # Specs de features (000-009)
 ├── docs/                         # Documentação
 │   ├── sdd.md                    # Software Design Document
+│   ├── API-Collection-README.md  # Coleções Postman/Bruno
+│   ├── postman-collection.json   # Import Postman
+│   ├── bruno-collection/         # Coleção Bruno
 │   └── divisao-de-trabalho.md    # Divisão da equipe
+├── dataset/                      # Dataset YOLO (não versionado)
+│   ├── train/                    # Imagens de treino
+│   ├── val/                      # Imagens de validação
+│   └── test/                     # Imagens de teste
+├── notebooks/                    # Jupyter notebooks (análises)
 ├── models/                       # Modelos YOLO treinados
+│   └── best.onnx                 # Modelo ONNX para inferência
 ├── storage/                      # Uploads temporários
+│   └── models/                   # Cache de modelos
 ├── logs/                         # Logs da aplicação
+├── alembic/                      # Migrations Alembic
+│   └── versions/                 # Scripts de migration
+├── alembic.ini                   # Config Alembic
 ├── docker-compose.yml            # Orquestração Docker
 ├── Dockerfile                    # Container da API
-├── pyproject.toml                # Dependências Python
+├── pyproject.toml                # Dependências Python (Poetry)
+├── poetry.lock                   # Lock de dependências
 ├── CLAUDE.md                     # Instruções para Claude Code
 └── README.md                     # Este arquivo
 ```
