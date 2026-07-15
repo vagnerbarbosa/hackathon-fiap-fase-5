@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "FIAP STRIDE API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

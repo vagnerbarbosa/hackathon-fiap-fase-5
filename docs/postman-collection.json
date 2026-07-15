@@ -1,0 +1,451 @@
+{
+  "info": {
+    "name": "FIAP STRIDE API - Modelagem de Ameaças",
+    "description": "API para análise automatizada de modelagem de ameaças STRIDE a partir de diagramas de arquitetura de software.\n\n**Base URL**: `http://localhost:8001`\n\n**Autenticação**: API Key via header `X-API-Key`\n\n**Pipeline**: Upload → Detecção (YOLOv11n) → Análise STRIDE → Relatório",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Verificar Saúde da API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Verifica se a API está online e a conectividade com o banco de dados."
+          },
+          "response": [
+            {
+              "name": "Sucesso - API Saudável",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/health",
+                  "host": ["{{base_url}}"],
+                  "path": ["health"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"healthy\",\n  \"version\": \"0.2.0\",\n  \"database\": \"connected\",\n  \"timestamp\": \"2026-07-14T20:00:00+00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Endpoint Raiz",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Retorna informações básicas da API e link para documentação."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Threat Model",
+      "item": [
+        {
+          "name": "Upload e Análise de Imagem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/caminho/para/diagrama.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/threat-model/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "threat-model", "analyze"]
+            },
+            "description": "Faz upload de uma imagem de diagrama de arquitetura e inicia a análise STRIDE.\n\n**Tipos suportados**: PNG, JPG, JPEG\n\n**Processo**:\n1. Validação do arquivo\n2. Detecção de componentes via YOLOv11n\n3. Análise STRIDE (S, T, R, I, D, E)\n4. Busca de vulnerabilidades (CVE/CWE)\n5. Geração de relatório\n\nRetorna um `job_id` para acompanhar o progresso."
+          },
+          "response": [
+            {
+              "name": "Sucesso - Análise Iniciada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "diagrama.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/threat-model/analyze",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "threat-model", "analyze"]
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"processing\",\n  \"message\": \"Análise iniciada. Use GET /threat-model/{job_id} para acompanhar o progresso.\"\n}"
+            },
+            {
+              "name": "Erro - Tipo de Arquivo Inválido",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}"
+                  }
+                ],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "file",
+                      "type": "file",
+                      "src": "arquivo.pdf"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "{{base_url}}/api/v1/threat-model/analyze",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "v1", "threat-model", "analyze"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Tipo de arquivo não suportado: application/pdf. Use PNG ou JPEG.\"\n}"
+            },
+            {
+              "name": "Erro - Baixa Confiança (Não é Diagrama)",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Não foi possível detectar componentes na imagem. A imagem não parece ser um diagrama de arquitetura válido ou está muito desfocada/escura.\"\n}"
+            },
+            {
+              "name": "Erro - Modelo Não Disponível",
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Serviço de detecção não inicializado. Verifique se o modelo ONNX está disponível em storage/models/best.onnx\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Consultar Status do Job",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/threat-model/{{job_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "threat-model", "{{job_id}}"]
+            },
+            "description": "Obtém o status atual de um job de análise.\n\n**Status possíveis**: `pending`, `processing`, `completed`, `failed`"
+          },
+          "response": [
+            {
+              "name": "Status - Processando",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"processing\",\n  \"input_image_path\": \"uploads/upload_diagrama.png\",\n  \"output_report_path\": null,\n  \"error_message\": null,\n  \"created_at\": \"2026-07-14T20:00:00\",\n  \"updated_at\": \"2026-07-14T20:00:05\"\n}"
+            },
+            {
+              "name": "Status - Concluído",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"completed\",\n  \"input_image_path\": \"uploads/upload_diagrama.png\",\n  \"output_report_path\": \"reports/550e8400-e29b-41d4-a716-446655440000.md\",\n  \"error_message\": null,\n  \"created_at\": \"2026-07-14T20:00:00\",\n  \"updated_at\": \"2026-07-14T20:00:10\"\n}"
+            },
+            {
+              "name": "Status - Falha",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"status\": \"failed\",\n  \"input_image_path\": \"uploads/upload_diagrama.png\",\n  \"output_report_path\": null,\n  \"error_message\": \"Não foi possível detectar componentes na imagem.\",\n  \"created_at\": \"2026-07-14T20:00:00\",\n  \"updated_at\": \"2026-07-14T20:00:05\"\n}"
+            },
+            {
+              "name": "Erro - Job Não Encontrado",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"detail\": \"Job 550e8400-e29b-41d4-a716-446655440000 not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Obter Relatório (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/threat-model/{{job_id}}/report?format=json",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "threat-model", "{{job_id}}", "report"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                }
+              ]
+            },
+            "description": "Obtém o relatório de análise em formato JSON.\n\n**Query Parameters**:\n- `format`: `json` (padrão) ou `html`"
+          },
+          "response": [
+            {
+              "name": "Relatório JSON",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"job_id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"format\": \"json\",\n  \"status\": \"completed\",\n  \"components\": [\n    {\n      \"id\": \"comp-1\",\n      \"type\": \"web_server\",\n      \"confidence\": 0.95,\n      \"bbox\": {\n        \"x_min\": 10,\n        \"y_min\": 20,\n        \"x_max\": 150,\n        \"y_max\": 180\n      }\n    },\n    {\n      \"id\": \"comp-2\",\n      \"type\": \"database\",\n      \"confidence\": 0.88,\n      \"bbox\": {\n        \"x_min\": 200,\n        \"y_min\": 50,\n        \"x_max\": 300,\n        \"y_max\": 150\n      }\n    }\n  ],\n  \"threats\": [\n    {\n      \"category\": \"S\",\n      \"category_name\": \"Spoofing\",\n      \"component_id\": \"comp-1\",\n      \"component_type\": \"web_server\",\n      \"description\": \"Falso servidor web pode receber tráfego de usuários.\",\n      \"severity\": \"high\",\n      \"cwe_id\": \"CWE-290\",\n      \"cve_ids\": [\"CVE-2023-1234\"],\n      \"countermeasures\": [\n        {\n          \"title\": \"Exigir autenticação forte\",\n          \"description\": \"Aplicar MFA e tokens assinados.\",\n          \"owasp_ref\": \"OWASP Authentication Cheat Sheet\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            {
+              "name": "Erro - Job Não Encontrado",
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": "{\n  \"detail\": \"Job não encontrado: 550e8400-e29b-41d4-a716-446655440000\"\n}"
+            },
+            {
+              "name": "Erro - Formato Inválido",
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "body": "{\n  \"detail\": \"Formato 'xml' não suportado. Use 'json' ou 'html'.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Obter Relatório (HTML)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/threat-model/{{job_id}}/report?format=html",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "threat-model", "{{job_id}}", "report"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "html"
+                }
+              ]
+            },
+            "description": "Obtém o relatório de análise em formato HTML renderizado."
+          },
+          "response": [
+            {
+              "name": "Relatório HTML",
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "html",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/html; charset=utf-8"
+                }
+              ],
+              "body": "<!DOCTYPE html>\n<html>\n<head>\n  <title>Relatório STRIDE</title>\n  <style>\n    body { font-family: Arial, sans-serif; margin: 40px; }\n    .threat { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }\n    .severity-high { border-left: 4px solid #dc3545; }\n    .severity-medium { border-left: 4px solid #ffc107; }\n    .severity-low { border-left: 4px solid #28a745; }\n  </style>\n</head>\n<body>\n  <h1>Relatório de Modelagem de Ameaças</h1>\n  <h2>Componentes Detectados</h2>\n  <!-- Componentes -->\n  <h2>Ameaças Identificadas</h2>\n  <!-- Ameaças STRIDE -->\n</body>\n</html>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Documentação",
+      "item": [
+        {
+          "name": "Swagger UI (OpenAPI)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/docs",
+              "host": ["{{base_url}}"],
+              "path": ["docs"]
+            },
+            "description": "Interface interativa Swagger UI para explorar a API."
+          }
+        },
+        {
+          "name": "ReDoc",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/redoc",
+              "host": ["{{base_url}}"],
+              "path": ["redoc"]
+            },
+            "description": "Documentação alternativa em formato ReDoc."
+          }
+        },
+        {
+          "name": "OpenAPI Schema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/openapi.json",
+              "host": ["{{base_url}}"],
+              "path": ["openapi.json"]
+            },
+            "description": "Schema OpenAPI em formato JSON."
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8001",
+      "type": "string",
+      "description": "URL base da API"
+    },
+    {
+      "key": "api_key",
+      "value": "dev-api-key-12345",
+      "type": "string",
+      "description": "API Key para autenticação"
+    },
+    {
+      "key": "job_id",
+      "value": "550e8400-e29b-41d4-a716-446655440000",
+      "type": "string",
+      "description": "UUID do job de análise"
+    }
+  ]
+}

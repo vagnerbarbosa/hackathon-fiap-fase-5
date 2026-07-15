@@ -240,6 +240,8 @@ curl -H "X-API-Key: sua-api-key" \
   http://localhost:8001/api/v1/threat-model/analyze
 ```
 
+> 💡 **Dica**: Disponibilizamos coleções de API para importar em clientes como Postman, Bruno ou Insomnia. Veja [`docs/API-Collection-README.md`](docs/API-Collection-README.md) para mais detalhes.
+
 ### 6. Inicie o Frontend (opcional)
 
 O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados. Além de visualizar as ameaças detectadas, é possível exportar os relatórios para os formatos Markdown, JSON, HTML, CSV e PDF.

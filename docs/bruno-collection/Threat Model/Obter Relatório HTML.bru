@@ -1,0 +1,33 @@
+meta {
+  name: Obter Relatório HTML
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{base_url}}/api/v1/threat-model/{{job_id}}/report?format=html
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{api_key}}
+}
+
+query {
+  format: html
+}
+
+assert {
+  res.status: eq 200
+  res.headers.content-type: contains text/html
+}
+
+docs {
+  Obtém o relatório de análise em formato HTML renderizado.
+
+  **Query Parameters:**
+  - `format`: `html`
+
+  **Resposta:** HTML completo com CSS embutido, pronto para visualização ou download.
+}

@@ -1,0 +1,30 @@
+meta {
+  name: Verificar Saúde da API
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/health
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq healthy
+}
+
+docs {
+  Verifica se a API está online e a conectividade com o banco de dados.
+
+  **Resposta esperada (200 OK):**
+  ```json
+  {
+    "status": "healthy",
+    "version": "0.2.0",
+    "database": "connected",
+    "timestamp": "2026-07-14T20:00:00+00:00"
+  }
+  ```
+}

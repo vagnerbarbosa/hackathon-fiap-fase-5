@@ -1,0 +1,59 @@
+meta {
+  name: Obter Relatório JSON
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{base_url}}/api/v1/threat-model/{{job_id}}/report?format=json
+  body: none
+  auth: none
+}
+
+headers {
+  X-API-Key: {{api_key}}
+}
+
+query {
+  format: json
+}
+
+assert {
+  res.status: eq 200
+  res.body.job_id: eq {{job_id}}
+}
+
+docs {
+  Obtém o relatório de análise em formato JSON.
+
+  **Query Parameters:**
+  - `format`: `json` (padrão) ou `html`
+
+  **Resposta exemplo:**
+  ```json
+  {
+    "job_id": "550e8400-e29b-41d4-a716-446655440000",
+    "format": "json",
+    "status": "completed",
+    "components": [
+      {
+        "id": "comp-1",
+        "type": "web_server",
+        "confidence": 0.95,
+        "bbox": { "x_min": 10, "y_min": 20, "x_max": 150, "y_max": 180 }
+      }
+    ],
+    "threats": [
+      {
+        "category": "S",
+        "category_name": "Spoofing",
+        "component_id": "comp-1",
+        "severity": "high",
+        "cwe_id": "CWE-290",
+        "cve_ids": ["CVE-2023-1234"],
+        "countermeasures": [...]
+      }
+    ]
+  }
+  ```
+}

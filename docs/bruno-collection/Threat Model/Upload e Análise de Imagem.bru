@@ -1,0 +1,52 @@
+meta {
+  name: Upload e Análise de Imagem
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{base_url}}/api/v1/threat-model/analyze
+  body: multipartForm
+  auth: none
+}
+
+headers {
+  X-API-Key: {{api_key}}
+}
+
+body:multipart-form {
+  file: @file(/caminho/para/diagrama.png)
+}
+
+assert {
+  res.status: eq 202
+  res.body.job_id: isDefined
+  res.body.status: eq processing
+}
+
+docs {
+  Faz upload de uma imagem de diagrama de arquitetura e inicia a análise STRIDE.
+
+  **Tipos suportados**: PNG, JPG, JPEG
+
+  **Processo:**
+  1. Validação do arquivo
+  2. Detecção de componentes via YOLOv11n
+  3. Análise STRIDE (S, T, R, I, D, E)
+  4. Busca de vulnerabilidades (CVE/CWE)
+  5. Geração de relatório
+
+  **Resposta esperada (202 Accepted):**
+  ```json
+  {
+    "job_id": "550e8400-e29b-41d4-a716-446655440000",
+    "status": "processing",
+    "message": "Análise iniciada. Use GET /threat-model/{job_id} para acompanhar o progresso."
+  }
+  ```
+
+  **Possíveis erros:**
+  - `400` - Tipo de arquivo não suportado (PDF, etc.)
+  - `422` - Baixa confiança (imagem não parece ser um diagrama)
+  - `503` - Modelo ONNX não disponível
+}
