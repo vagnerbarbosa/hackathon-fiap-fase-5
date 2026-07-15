@@ -203,29 +203,37 @@ cp .env.example .env
 > - Estiver rodando em ambiente de produção
 > - Precisar configurar uma API Key específica
 
-### 3. Inicie a API (escolha seu método)
+### 3. Inicie a API e Frontend (escolha seu método)
 
 #### 🚀 Opção 1: Script Automático (Recomendado)
 
 **Linux/macOS:**
 ```bash
-./scripts/start-stride.sh
+./scripts/bash/start-stride.sh
 ```
 
 **Windows (PowerShell):**
 ```powershell
-.\scripts\start-stride.ps1
-```
-
-**Python (Cross-platform):**
-```bash
-# Funciona em qualquer sistema com Python 3
-python scripts/start-stride.py
+.\scripts\powershell\start-stride.ps1
 ```
 
 **Makefile (Linux/macOS):**
 ```bash
 make start
+```
+
+> 💡 Este script sobe: PostgreSQL, Redis, API (FastAPI) e Frontend (React) automaticamente.
+
+**Opções do script:**
+```bash
+# Modo rápido (sem rebuild)
+./scripts/bash/start-stride.sh --no-build
+
+# Modo foreground (ver logs em tempo real)
+./scripts/bash/start-stride.sh --foreground
+
+# Sem migrações automáticas
+./scripts/bash/start-stride.sh --no-migrations
 ```
 
 #### 🐳 Opção 2: Docker Compose Manual
@@ -238,20 +246,7 @@ docker-compose up --build -d
 docker-compose exec api alembic upgrade head
 ```
 
-### Opções do Script
-
-```bash
-# Modo rápido (sem rebuild)
-./scripts/start-stride.sh --no-build
-
-# Modo foreground (ver logs em tempo real)
-./scripts/start-stride.sh --foreground
-
-# Sem migrações automáticas
-./scripts/start-stride.sh --no-migrations
-```
-
-### 5. Teste a API
+### 4. Teste a API
 
 ```bash
 # Health check (público)
@@ -264,9 +259,9 @@ curl -H "X-API-Key: sua-api-key" \
 
 > 💡 **Dica**: Disponibilizamos coleções de API para importar em clientes como Postman, Bruno ou Insomnia. Veja [`docs/API-Collection-README.md`](docs/API-Collection-README.md) para mais detalhes.
 
-### 6. Acesse o Frontend
+### 5. Acesse o Frontend
 
-> ✅ **Se você executou o `./scripts/start-stride.sh` na Etapa 4**, o frontend já está rodando! Acesse diretamente: **http://localhost:5173**
+> ✅ **Se você executou o script na Etapa 3**, o frontend já está rodando! Acesse diretamente: **http://localhost:5173**
 
 O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados. Além de visualizar as ameaças detectadas, é possível exportar os relatórios para os formatos Markdown, JSON, HTML, CSV e PDF.
 
