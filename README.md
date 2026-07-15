@@ -242,7 +242,7 @@ curl -H "X-API-Key: sua-api-key" \
 
 ### 6. Inicie o Frontend (opcional)
 
-O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados.
+O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados. Além de visualizar as ameaças detectadas, é possível exportar os relatórios para os formatos Markdown, JSON, HTML, CSV e PDF.
 
 #### 🚀 Opção 1: Via Docker Compose (Recomendado)
 
