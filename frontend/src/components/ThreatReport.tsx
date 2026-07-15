@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Shield,
   AlertTriangle,
@@ -12,7 +12,8 @@ import {
   ChevronUp,
   CheckCircle2,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react'
 
 interface Threat {
@@ -57,13 +58,15 @@ const STRIDE_CATEGORIES = {
   E: { label: 'Elevation of Privilege', color: 'pink', bgColor: 'bg-pink-500/20', textColor: 'text-pink-400', borderColor: 'border-pink-500/30' },
 }
 
-const SEVERITY_CONFIG = {
+const SEVERITY_CONFIG: Record<string, { label: string; color: string; bgColor: string; borderColor: string; icon: React.ComponentType<{ className?: string }> }> = {
   critical: { label: 'Crítica', color: 'text-red-400', bgColor: 'bg-red-500/20', borderColor: 'border-red-500/30', icon: XCircle },
   high: { label: 'Alta', color: 'text-orange-400', bgColor: 'bg-orange-500/20', borderColor: 'border-orange-500/30', icon: AlertTriangle },
   medium: { label: 'Média', color: 'text-yellow-400', bgColor: 'bg-yellow-500/20', borderColor: 'border-yellow-500/30', icon: AlertTriangle },
   low: { label: 'Baixa', color: 'text-blue-400', bgColor: 'bg-blue-500/20', borderColor: 'border-blue-500/30', icon: Shield },
   info: { label: 'Info', color: 'text-slate-400', bgColor: 'bg-slate-500/20', borderColor: 'border-slate-500/30', icon: Shield },
 }
+
+const DEFAULT_SEVERITY = { label: 'Desconhecida', color: 'text-slate-400', bgColor: 'bg-slate-500/20', borderColor: 'border-slate-500/30', icon: Shield }
 
 // Mock report data for development
 const getMockReportData = (jobId: string): ReportData => ({
@@ -161,8 +164,72 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
   const [exportMenuOpen, setExportMenuOpen] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
+  const [apiData, setApiData] = useState<ReportData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const data = reportData || getMockReportData(jobId)
+  // Buscar dados da API
+  useEffect(() => {
+    const fetchReport = async () => {
+      try {
+        // API Key é adicionada pelo proxy reverso (nginx)
+        const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=json`, {
+          headers: { 'Accept': 'application/json' }
+        })
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            throw new Error('Erro de autenticação')
+          }
+          throw new Error(`Erro ${response.status}: Falha ao carregar relatório`)
+        }
+        const data = await response.json()
+
+        // Converter dados da API para formato do componente
+        const converted: ReportData = {
+          job_id: data.job_id,
+          created_at: new Date().toISOString(),
+          components: data.threats?.map((t: any) => ({
+            id: t.id,
+            type: t.component_type,
+            name: t.component_type
+          })) || [],
+          threats: data.threats?.map((t: any) => ({
+            id: t.id,
+            category: t.category,
+            title: t.category_name,
+            description: t.description,
+            severity: t.severity,
+            component: t.component_type,
+            cwe_id: t.cwe_id,
+            cwe_name: t.cwe_name,
+            countermeasures: t.countermeasures?.map((c: any) => c.title) || []
+          })) || [],
+          stride_matrix: {}
+        }
+
+        // Construir matriz STRIDE
+        const componentTypes: string[] = data.threats?.map((t: any) => String(t.component_type)) || []
+        const uniqueComponents: string[] = Array.from(new Set(componentTypes))
+        uniqueComponents.forEach((comp: string) => {
+          const compThreats = data.threats?.filter((t: any) => String(t.component_type) === comp) || []
+          converted.stride_matrix[comp] = ['S', 'T', 'R', 'I', 'D', 'E'].map((cat: string) =>
+            compThreats.some((t: any) => String(t.category) === cat)
+          )
+        })
+
+        setApiData(converted)
+      } catch (err) {
+        setError('Usando dados de demonstração')
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchReport()
+  }, [jobId])
+
+  const data = apiData || reportData || getMockReportData(jobId)
   const threatsByCategory = Object.keys(STRIDE_CATEGORIES).map(cat => ({
     category: cat as keyof typeof STRIDE_CATEGORIES,
     threats: data.threats.filter(t => t.category === cat),
@@ -179,6 +246,14 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
     setExportError(null)
 
     try {
+      // Para HTML, abrir em nova aba
+      if (format === 'html') {
+        window.open(`/api/v1/threat-model/${jobId}/report?format=html`, '_blank')
+        setExportMenuOpen(false)
+        setIsExporting(false)
+        return
+      }
+
       // Fazer download via fetch (API key adicionada pelo proxy)
       const response = await fetch(`/api/v1/threat-model/${jobId}/report?format=${format}`, {
         method: 'GET',
@@ -189,7 +264,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
 
       // Tratar erros de autenticação ou endpoint não implementado
       if (response.status === 404 || response.status === 501 || response.status === 401 || response.status === 403) {
-        setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
+        setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível.`)
         setExportMenuOpen(false)
         return
       }
@@ -222,7 +297,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
       setExportMenuOpen(false)
     } catch (error) {
       // Erro de conexão ou CORS
-      setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível. Esta funcionalidade será implementada em breve.`)
+      setExportError(`Exportação em ${format.toUpperCase()} ainda não está disponível.`)
       setExportMenuOpen(false)
     } finally {
       setIsExporting(false)
@@ -231,20 +306,29 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
 
   const clearExportError = () => setExportError(null)
 
+  // Mostrar loading enquanto busca dados
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 text-fiap-pink animate-spin mb-4" />
+        <p className="text-slate-400">Carregando relatório...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* Alerta de dados mockados */}
-      {!reportData && (
+      {/* Alerta de dados mockados ou erro */}
+      {(error || !apiData) && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-amber-200 font-medium text-sm">
-                Relatório de Demonstração
+                {error ? 'Usando dados de demonstração' : 'Relatório de Demonstração'}
               </p>
               <p className="text-amber-200/70 text-sm mt-1">
-                Os dados exibidos são simulados para fins de desenvolvimento.
-                O relatório real será gerado pela Spec 006 (em progresso).
+                {error || 'Os dados exibidos são simulados. O relatório real será gerado quando a API retornar dados.'}
               </p>
             </div>
           </div>
@@ -479,7 +563,7 @@ export default function ThreatReport({ jobId, reportData, onNewAnalysis }: Threa
 
                 <div className="divide-y divide-slate-700/50">
                   {threats.map((threat) => {
-                    const severity = SEVERITY_CONFIG[threat.severity]
+                    const severity = SEVERITY_CONFIG[threat.severity] || DEFAULT_SEVERITY
                     const isExpanded = expandedThreat === threat.id
                     const Icon = severity.icon
 

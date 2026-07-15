@@ -6,6 +6,15 @@
 
 O hackathon exige um Relatório de Modelagem de Ameaças como entregável principal. Este relatório deve sintetizar todo o pipeline: componentes detectados, ameaças STRIDE, vulnerabilidades e contramedidas. A saída deve ser legível para arquitetos de software e equipes de segurança.
 
+### Status Atual (MVP)
+
+**⚠️ Implementação Parcial**: O arquivo `src/services/simple_report.py` contém uma versão **MVP (temporária)** do gerador de relatórios. Esta implementação:
+- Gera HTML básico a partir de dados mock/enriquecidos
+- Serve para validar o fluxo end-to-end enquanto a Spec 006 completa não é implementada
+- **Será substituída** pela implementação completa conforme os requisitos abaixo
+
+A versão final deve seguir todos os RFs (Requisitos Funcionais) documentados nesta spec, incluindo suporte a múltiplos formatos (Markdown, JSON, HTML, CSV, PDF) via templates Jinja2.
+
 ## Objetivo
 
 Implementar um `ReportGenerator` que:
@@ -13,6 +22,15 @@ Implementar um `ReportGenerator` que:
 2. Gere um relatório estruturado em Markdown (legível) e JSON (processável).
 3. Opcionalmente exporte para HTML (renderizado) ou PDF.
 4. Ofereça um endpoint para download do relatório.
+
+### Roadmap de Implementação
+
+| Fase | Arquivo | Descrição | Status |
+|------|---------|-------------|--------|
+| **MVP** | `src/services/simple_report.py` | Versão simples, HTML básico, dados mock | ✅ Implementado |
+| **Completa** | `src/services/report_generator.py` | Versão completa com todos os formatos | ⏳ Pendente |
+
+**Nota**: O `simple_report.py` será **substituído** quando a implementação completa da Spec 006 for desenvolvida. A API deve manter compatibilidade backward (mesmos endpoints, mesma resposta JSON).
 
 ## Requisitos Funcionais (RF)
 
@@ -285,17 +303,27 @@ fake_job = Job(
 
 ## Módulos Planejados
 
-| Arquivo | Responsabilidade |
-|---------|------------------|
-| `src/services/report_generator.py` | `ReportGenerator` — orquestração de todos os formatos |
-| `src/services/csv_exporter.py` | Exportação de ameaças para CSV via pandas |
-| `src/services/pdf_exporter.py` | Renderização HTML → PDF via WeasyPrint |
-| `src/core/templates/stride_report.md.j2` | Template Markdown |
-| `src/core/templates/stride_report.html.j2` | Template HTML (base para PDF) |
-| `src/core/templates/stride_report.csv.j2` | Template CSV (header/row) |
-| `src/core/templates/partials/` | Partials reutilizáveis |
-| `src/api/routes/report.py` | Endpoint único `GET /report?format=` |
-| `tests/unit/test_report_generator.py` | Testes de snapshot para todos os formatos |
+| Arquivo | Responsabilidade | Status |
+|---------|------------------|--------|
+| `src/services/simple_report.py` | **TEMPORÁRIO/MVP**: HTML básico para validação do fluxo | ✅ Implementado (será removido) |
+| `src/services/report_generator.py` | `ReportGenerator` — orquestração de todos os formatos | ⏳ Pendente |
+| `src/services/csv_exporter.py` | Exportação de ameaças para CSV via pandas | ⏳ Pendente |
+| `src/services/pdf_exporter.py` | Renderização HTML → PDF via WeasyPrint | ⏳ Pendente |
+| `src/core/templates/stride_report.md.j2` | Template Markdown | ⏳ Pendente |
+| `src/core/templates/stride_report.html.j2` | Template HTML (base para PDF) | ⏳ Pendente |
+| `src/core/templates/stride_report.csv.j2` | Template CSV (header/row) | ⏳ Pendente |
+| `src/core/templates/partials/` | Partials reutilizáveis | ⏳ Pendente |
+| `src/api/routes/report.py` | Endpoint único `GET /report?format=` | 🔄 Parcial (usa simple_report) |
+| `tests/unit/test_report_generator.py` | Testes de snapshot para todos os formatos | ⏳ Pendente |
+
+### Nota sobre simple_report.py
+
+O arquivo `simple_report.py` atual:
+- É uma **implementação temporária** para permitir testes end-to-end
+- Gera HTML básico sem templates Jinja2
+- Não suporta exportação para Markdown, CSV ou PDF
+- Deve ser **removido/substituído** pela implementação completa da Spec 006
+- Mantém compatibilidade de interface (mesmos inputs/outputs)
 
 ---
 

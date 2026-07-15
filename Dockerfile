@@ -57,6 +57,7 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini .
+COPY config/ ./config/
 
 # Create storage directory and set permissions
 RUN mkdir -p /app/storage /app/logs && \
