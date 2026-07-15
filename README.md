@@ -13,6 +13,7 @@
 [![Spec Kit](https://img.shields.io/badge/Spec%20Kit-SDD-2ea44f?style=flat-square)](https://github.com/github/spec-kit)
 [![Claude Code](https://img.shields.io/badge/Claude%20Code-ff6b35?style=flat-square&logo=anthropic&logoColor=white)](https://claude.ai/code)
 [![PRs Open](https://img.shields.io/github/issues-pr/vagnerbarbosa/hackathon-fiap-fase-5?style=flat-square&color=blue)](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5/pulls)
+[![Hugging Face](https://img.shields.io/badge/🤗%20Hugging%20Face-Spaces-yellow.svg?style=flat-square)](https://huggingface.co/spaces)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
 **Sistema automatizado de modelagem de ameaças STRIDE a partir de diagramas de arquitetura de software usando Visão Computacional e IA.**
