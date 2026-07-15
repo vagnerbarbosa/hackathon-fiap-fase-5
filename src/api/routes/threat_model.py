@@ -12,7 +12,7 @@ from src.core.config import settings
 from src.core.logging import get_logger
 from src.domain.models import JobStatus
 from src.infrastructure.repositories.job_repository import JobRepository
-from src.services.component_detection import ComponentDetectionService, LowConfidenceError
+from src.services.component_detection import ComponentDetectionService, LowConfidenceError, ModelNotLoadedError
 
 logger = get_logger(__name__)
 router = APIRouter(
@@ -22,10 +22,15 @@ router = APIRouter(
 )
 
 # Inicializa serviço de detecção (singleton)
-# Tenta carregar modelo ONNX primeiro (mais rápido), senão usa mock
-detection_service = ComponentDetectionService(
-    model_path=str(Path(settings.storage_path) / "models" / "best.onnx")
-)
+# O modelo ONNX deve estar disponível em storage/models/best.onnx
+try:
+    detection_service = ComponentDetectionService(
+        model_path=str(Path(settings.storage_path) / "models" / "best.onnx")
+    )
+    logger.info("Serviço de detecção inicializado com sucesso")
+except ModelNotLoadedError as e:
+    logger.error(f"Falha ao inicializar serviço de detecção: {e.message}")
+    detection_service = None
 
 
 @router.post(
@@ -97,6 +102,13 @@ async def _process_job(job_id: UUID, image_path: str, session) -> None:
         job_repo = JobRepository(bg_session)
 
         try:
+            # Verificar se o serviço de detecção está disponível
+            if detection_service is None:
+                raise ModelNotLoadedError(
+                    "Serviço de detecção não inicializado. "
+                    "Verifique se o modelo ONNX está disponível em storage/models/best.onnx"
+                )
+
             # Atualizar status para PROCESSING
             await job_repo.update_status(
                 job_id=job_id,
@@ -126,6 +138,13 @@ async def _process_job(job_id: UUID, image_path: str, session) -> None:
 
         except LowConfidenceError as e:
             logger.warning(f"Job {job_id}: falha de detecção - {e.message}")
+            await job_repo.update_status(
+                job_id=job_id,
+                status=JobStatus.FAILED,
+                error_message=str(e.message),
+            )
+        except ModelNotLoadedError as e:
+            logger.error(f"Job {job_id}: modelo não disponível - {e.message}")
             await job_repo.update_status(
                 job_id=job_id,
                 status=JobStatus.FAILED,
