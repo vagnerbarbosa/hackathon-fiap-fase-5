@@ -276,7 +276,14 @@ async def get_report(
                 {
                     "id": t.id,
                     "category": t.category,
-                    "category_name": t.category_name,
+                    "category_name": {
+                        "S": "Spoofing",
+                        "T": "Tampering",
+                        "R": "Repudiation",
+                        "I": "Information Disclosure",
+                        "D": "Denial of Service",
+                        "E": "Elevation of Privilege",
+                    }.get(t.category, t.category),
                     "component_type": t.component_type,
                     "severity": t.severity.value,
                     "description": t.description,
