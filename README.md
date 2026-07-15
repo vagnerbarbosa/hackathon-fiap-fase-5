@@ -243,49 +243,41 @@ curl -H "X-API-Key: sua-api-key" \
 
 > 💡 **Dica**: Disponibilizamos coleções de API para importar em clientes como Postman, Bruno ou Insomnia. Veja [`docs/API-Collection-README.md`](docs/API-Collection-README.md) para mais detalhes.
 
-### 6. Inicie o Frontend (opcional)
+### 6. Acesse o Frontend
+
+> ✅ **Se você executou o `./scripts/start-stride.sh` na Etapa 4**, o frontend já está rodando! Acesse diretamente: **http://localhost:5173**
 
 O frontend React fornece uma interface web para upload de diagramas e visualização dos resultados. Além de visualizar as ameaças detectadas, é possível exportar os relatórios para os formatos Markdown, JSON, HTML, CSV e PDF.
 
-#### 🚀 Opção 1: Via Docker Compose (Recomendado)
+---
 
-O frontend já está incluído no `docker-compose.yml` e será iniciado junto com a API:
+#### 💻 Desenvolvimento Local do Frontend (opcional)
 
+Use estas opções **apenas se** estiver desenvolvendo/modificando o frontend e precisar de hot-reload ou testes:
+
+**Opção A: Docker Compose (rebuild)**
 ```bash
-# O frontend sobe automaticamente na porta 5173
-docker compose up frontend -d
-
-# Ou para rebuildar após alterações
+# Após modificar código do frontend
 docker compose build frontend --no-cache
 docker compose up frontend -d
 ```
 
-Acesse: http://localhost:5173
-
-#### 💻 Opção 2: Desenvolvimento Local (Node.js)
-
-Para desenvolvimento com hot-reload:
-
+**Opção B: Node.js Local (hot-reload mais rápido)**
 ```bash
 cd frontend
 
-# Instalar dependências
+# Instalar dependências (apenas primeira vez)
 npm install
-
-# Criar .env.local (opcional)
-cp .env.example .env
 
 # Iniciar servidor de desenvolvimento
 npm run dev
 ```
 
-Acesse: http://localhost:5173
-
-**Requisitos:**
+**Requisitos para desenvolvimento local:**
 - Node.js 18+
 - npm 9+
 
-#### 🧪 Executar Testes do Frontend
+#### 🧪 Testes do Frontend
 
 ```bash
 cd frontend
