@@ -18,7 +18,7 @@
 
 **Sistema automatizado de modelagem de ameaças STRIDE a partir de diagramas de arquitetura de software usando Visão Computacional e IA.**
 
-> **📅 Atualizado**: 2026-07-12 | **Versão**: 0.2.0 | **Status**: MVP - Frontend com testes e preview de imagem
+> **📅 Atualizado**: 2026-07-14 | **Versão**: 0.3.0 | **Status**: MVP - Detecção ONNX, Relatórios multi-formato, Coleções API
 
 ---
 
