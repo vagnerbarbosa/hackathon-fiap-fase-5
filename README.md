@@ -46,7 +46,7 @@ Imagem de Arquitetura
 [Busca de Vulnerabilidades] → CVE / CWE
         |
         v
-[Geração de Relatório] → Markdown / JSON / HTML
+[Geração de Relatório] → .md / .json / .html / .csv / .pdf
 ```
 
 ---
