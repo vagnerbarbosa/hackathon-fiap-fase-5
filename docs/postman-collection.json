@@ -437,7 +437,7 @@
     },
     {
       "key": "api_key",
-      "value": "dev-api-key-12345",
+      "value": "your-secure-api-key-here",
       "type": "string",
       "description": "API Key para autenticação"
     },

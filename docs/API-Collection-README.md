@@ -22,7 +22,7 @@ Este diretório contém arquivos de importação para clientes REST como Postman
 3. Selecione o arquivo `postman-collection.json`
 4. Configure as variáveis de ambiente:
    - `base_url`: `http://localhost:8001`
-   - `api_key`: `dev-api-key-12345`
+   - `api_key`: `your-secure-api-key-here`
    - `job_id`: Deixe vazio inicialmente (será preenchido pelo endpoint de upload)
 
 ---
@@ -95,7 +95,7 @@ bruno-collection/
 
 Todas as rotas protegidas requerem o header:
 ```
-X-API-Key: dev-api-key-12345
+X-API-Key: your-secure-api-key-here
 ```
 
 **Variável**: `{{api_key}}`
