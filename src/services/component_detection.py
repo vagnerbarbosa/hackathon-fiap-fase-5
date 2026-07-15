@@ -26,7 +26,7 @@ class LowConfidenceError(Exception):
 class ComponentDetectionService:
     """Serviço de detecção de componentes usando YOLOv11n."""
 
-    DEFAULT_CONFIDENCE_THRESHOLD = 0.5
+    DEFAULT_CONFIDENCE_THRESHOLD = 0.3
 
     def __init__(
         self,
@@ -47,18 +47,17 @@ class ComponentDetectionService:
         self._load_model()
 
     def _load_model(self) -> None:
-        """Carrega o modelo YOLO se disponível."""
+        """Carrega o modelo ONNX se disponível."""
         if self.model_path and Path(self.model_path).exists():
             try:
-                from ultralytics import YOLO
-
-                self.model = YOLO(self.model_path)
-                logger.info(f"Modelo YOLO carregado de {self.model_path}")
+                import onnxruntime as ort
+                self.model = ort.InferenceSession(self.model_path)
+                logger.info(f"Modelo ONNX carregado de {self.model_path}")
             except Exception as e:
-                logger.warning(f"Falha ao carregar modelo YOLO: {e}. Usando modo mock.")
+                logger.warning(f"Falha ao carregar modelo ONNX: {e}. Usando modo mock.")
                 self.model = None
         else:
-            logger.info("Modelo YOLO não encontrado. Usando modo mock.")
+            logger.info("Modelo ONNX não encontrado. Usando modo mock.")
 
     async def detect(self, image_path: str | Path) -> ArchitectureGraph:
         """Detecta componentes em uma imagem de diagrama.
@@ -111,11 +110,170 @@ class ComponentDetectionService:
             )
 
     async def _detect_with_yolo(self, image_path: Path) -> ArchitectureGraph:
-        """Executa detecção com modelo YOLO real."""
-        # TODO: Implementar inferência real quando modelo estiver treinado (Spec 002)
-        # Por enquanto, retorna mock
-        logger.info("Usando detecção mock (modelo YOLO não treinado ainda)")
-        return await self._detect_mock(image_path)
+        """Executa detecção com modelo ONNX."""
+        if self.model is None:
+            return await self._detect_mock(image_path)
+        return await self._detect_with_onnx(image_path)
+
+    async def _detect_with_onnx(self, image_path: Path) -> ArchitectureGraph:
+        """Executa detecção com modelo ONNX."""
+        import numpy as np
+        import cv2
+
+        logger.info(f"Executando inferência ONNX em {image_path.name}")
+
+        # Carregar imagem
+        image = cv2.imread(str(image_path))
+        if image is None:
+            raise ValueError(f"Não foi possível carregar imagem: {image_path}")
+
+        original_height, original_width = image.shape[:2]
+
+        # Pré-processamento YOLOv11
+        input_size = 640
+        image_resized = cv2.resize(image, (input_size, input_size))
+        image_rgb = cv2.cvtColor(image_resized, cv2.COLOR_BGR2RGB)
+
+        # Normalizar e preparar input [1, 3, 640, 640]
+        input_tensor = image_rgb.astype(np.float32) / 255.0
+        input_tensor = np.transpose(input_tensor, (2, 0, 1))
+        input_tensor = np.expand_dims(input_tensor, axis=0)
+
+        # Inferência
+        input_name = self.model.get_inputs()[0].name
+        outputs = self.model.run(None, {input_name: input_tensor})
+
+        # Log do formato para debug
+        logger.info(f"ONNX output shape: {outputs[0].shape}")
+
+        # Processar detecções
+        # Formato exportado: [batch, features, num_anchors]
+        # features = 4(box) + 1(conf) + num_classes
+        output = outputs[0][0]  # Remove batch: [features, num_anchors]
+        num_features = output.shape[0]
+        num_classes = num_features - 5  # 5 = 4(box) + 1(conf)
+
+        logger.info(f"Features: {num_features}, Classes: {num_classes}")
+
+        # Classes do modelo (do treinamento do Lucas)
+        class_names = {
+            0: "database",
+            1: "queue",
+            2: "api",
+            3: "gateway",
+            4: "client",
+            5: "server",
+            6: "web_server",
+            7: "service",
+        }
+
+        components = []
+
+        # O formato é [84, num_anchors] - precisamos transpor para [num_anchors, 84]
+        detections = output.T  # Agora cada linha é uma âncora
+
+        for detection in detections:
+            if len(detection) < 5 + min(1, num_classes):  # Precisa de pelo menos box + conf
+                continue
+
+            # Extrair confiança (índice 4)
+            confidence = float(detection[4])
+            if confidence < self.confidence_threshold:
+                continue
+
+            # Extrair caixa
+            x_center, y_center, width, height = detection[0:4]
+
+            # Extrair classe (índices após conf)
+            class_scores = detection[5:5+num_classes]
+            if len(class_scores) > 0:
+                class_id = int(np.argmax(class_scores))
+            else:
+                class_id = 0
+
+            # Converter para coordenadas da imagem original
+            scale_x = original_width / input_size
+            scale_y = original_height / input_size
+
+            x_center_orig = x_center * scale_x
+            y_center_orig = y_center * scale_y
+            width_orig = width * scale_x
+            height_orig = height * scale_y
+
+            x_min = max(0, x_center_orig - width_orig / 2)
+            y_min = max(0, y_center_orig - height_orig / 2)
+            x_max = min(original_width, x_center_orig + width_orig / 2)
+            y_max = min(original_height, y_center_orig + height_orig / 2)
+
+            component = DetectedComponent(
+                id=str(uuid4()),
+                type=class_names.get(class_id, f"class_{class_id}"),
+                confidence=float(confidence),
+                bbox=BoundingBox(
+                    x_min=int(x_min),
+                    y_min=int(y_min),
+                    x_max=int(x_max),
+                    y_max=int(y_max),
+                ),
+                center=Point(
+                    x=int(x_center_orig),
+                    y=int(y_center_orig),
+                ),
+            )
+            components.append(component)
+
+        # Se nenhum componente detectado, lançar erro
+        if not components:
+            logger.warning("Nenhum componente detectado pelo modelo ONNX")
+            raise LowConfidenceError(
+                "Não foi possível detectar componentes na imagem. "
+                "Certifique-se de enviar um diagrama de arquitetura válido com componentes claros."
+            )
+
+        logger.info(f"ONNX detectou {len(components)} componentes")
+
+        # Criar data flows e trust boundaries
+        data_flows = self._infer_data_flows(components)
+        trust_boundaries = self._create_trust_boundaries(components)
+
+        return ArchitectureGraph(
+            components=components,
+            data_flows=data_flows,
+            trust_boundaries=trust_boundaries,
+        )
+
+    def _infer_data_flows(self, components: list[DetectedComponent]) -> list[DataFlow]:
+        """Infere fluxos de dados baseado na proximidade espacial."""
+        flows = []
+        sorted_by_x = sorted(components, key=lambda c: c.center.x)
+
+        for i in range(len(sorted_by_x) - 1):
+            source = sorted_by_x[i]
+            target = sorted_by_x[i + 1]
+
+            flows.append(DataFlow(
+                source_id=source.id,
+                target_id=target.id,
+                direction="unidirectional",
+                inferred=True,
+            ))
+
+        return flows
+
+    def _create_trust_boundaries(self, components: list[DetectedComponent]) -> list[list[str]]:
+        """Cria trust boundaries baseado em zonas."""
+        # Zonas: externa (usuário), fronteira (API), interna (database)
+        boundaries: dict[str, list[str]] = {"external": [], "boundary": [], "internal": []}
+
+        for comp in components:
+            if comp.type in ["user"]:
+                boundaries["external"].append(comp.id)
+            elif comp.type in ["api", "gateway"]:
+                boundaries["boundary"].append(comp.id)
+            else:
+                boundaries["internal"].append(comp.id)
+
+        return [v for v in boundaries.values() if v]
 
     async def _detect_mock(self, image_path: Path) -> ArchitectureGraph:
         """Retorna componentes mock para desenvolvimento.

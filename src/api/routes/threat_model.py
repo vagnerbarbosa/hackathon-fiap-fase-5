@@ -22,9 +22,9 @@ router = APIRouter(
 )
 
 # Inicializa serviço de detecção (singleton)
-# Tenta carregar modelo real, senão usa mock
+# Tenta carregar modelo ONNX primeiro (mais rápido), senão usa mock
 detection_service = ComponentDetectionService(
-    model_path=str(Path(settings.storage_path) / "models" / "best.pt")
+    model_path=str(Path(settings.storage_path) / "models" / "best.onnx")
 )
 
 
