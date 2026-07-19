@@ -9,7 +9,7 @@
 
 ### Task 1.1: Create Domain Package
 **File**: `src/domain/__init__.py`
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create empty init file to make domain a proper Python package
 **Acceptance**:
 - File exists and is empty or contains package docstring
@@ -21,7 +21,7 @@
 
 ### Task 2.1: Implement Detection Models
 **File**: `src/domain/models.py` (lines 1-59)  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create Pydantic models for detection domain
 **Models to implement**:
 - `BoundingBox` (x_min, y_min, x_max, y_max: int)
@@ -36,7 +36,7 @@
 
 ### Task 2.2: Implement STRIDE Models
 **File**: `src/domain/models.py` (lines 61-78)  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create Severity enum and Threat model
 **Models to implement**:
 - `Severity(str, Enum)`: CRITICAL, HIGH, MEDIUM, LOW, INFO
@@ -48,7 +48,7 @@
 
 ### Task 2.3: Implement Vulnerability Models
 **File**: `src/domain/models.py` (lines 80-98)  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create Countermeasure and EnrichedThreat models
 **Models to implement**:
 - `Countermeasure` (title, description, owasp_ref)
@@ -60,7 +60,7 @@
 
 ### Task 2.4: Implement Job Models
 **File**: `src/domain/models.py` (lines 100-116)  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create JobStatus enum and Job model
 **Models to implement**:
 - `JobStatus(str, Enum)`: PENDING, PROCESSING, COMPLETED, FAILED
@@ -77,12 +77,12 @@
 
 ### Task 3.1: Create Mocks Package
 **File**: `tests/mocks/__init__.py`  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create empty init file for mocks package
 
 ### Task 3.2: Create ArchitectureGraph Mock
 **File**: `tests/mocks/fake_architecture_graph.py`  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create realistic mock for Spec 004/006 testing
 **Requirements**:
 - Import models from domain.models
@@ -96,7 +96,7 @@
 
 ### Task 3.3: Create Threats Mock
 **File**: `tests/mocks/fake_threats.py`  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create mock threats for Spec 005/006 testing
 **Requirements**:
 - Import Threat, Severity from domain.models
@@ -109,7 +109,7 @@
 
 ### Task 3.4: Create EnrichedThreats Mock
 **File**: `tests/mocks/fake_enriched_threats.py`  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create mock enriched threats for Spec 006 testing
 **Requirements**:
 - Import EnrichedThreat, Severity, Countermeasure
@@ -122,7 +122,7 @@
 
 ### Task 3.5: Create Job Mock
 **File**: `tests/mocks/fake_job.py`  
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Create mock job for Spec 006 testing
 **Requirements**:
 - Import Job, JobStatus
@@ -138,7 +138,7 @@
 ## Phase 4: Validation
 
 ### Task 4.1: Import Test
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Verify all models import correctly
 **Command**:
 ```bash
@@ -147,7 +147,7 @@ python -c "from domain.models import *; print('OK')"
 **Acceptance**: Prints "OK" without errors
 
 ### Task 4.2: Validation Test
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Verify validation works for confidence bounds
 **Command**:
 ```python
@@ -163,7 +163,7 @@ except:
 **Acceptance**: Prints "OK"
 
 ### Task 4.3: Mocks Test
-**Status**: ⬜  
+**Status**: ✅  
 **Description**: Run all mock files
 **Commands**:
 ```bash
@@ -178,19 +178,19 @@ python tests/mocks/fake_job.py && echo "OK: job"
 
 ## Done When
 
-- [ ] Task 1.1: Domain package created
-- [ ] Task 2.1: Detection models implemented
-- [ ] Task 2.2: STRIDE models implemented
-- [ ] Task 2.3: Vulnerability models implemented
-- [ ] Task 2.4: Job models implemented
-- [ ] Task 3.1: Mocks package created
-- [ ] Task 3.2: ArchitectureGraph mock created
-- [ ] Task 3.3: Threats mock created
-- [ ] Task 3.4: EnrichedThreats mock created
-- [ ] Task 3.5: Job mock created
-- [ ] Task 4.1: Import test passed
-- [ ] Task 4.2: Validation test passed
-- [ ] Task 4.3: Mocks test passed
+- [x] Task 1.1: Domain package created
+- [x] Task 2.1: Detection models implemented
+- [x] Task 2.2: STRIDE models implemented
+- [x] Task 2.3: Vulnerability models implemented
+- [x] Task 2.4: Job models implemented
+- [x] Task 3.1: Mocks package created
+- [x] Task 3.2: ArchitectureGraph mock created
+- [x] Task 3.3: Threats mock created
+- [x] Task 3.4: EnrichedThreats mock created
+- [x] Task 3.5: Job mock created
+- [x] Task 4.1: Import test passed
+- [x] Task 4.2: Validation test passed
+- [x] Task 4.3: Mocks test passed
 
 ---
 

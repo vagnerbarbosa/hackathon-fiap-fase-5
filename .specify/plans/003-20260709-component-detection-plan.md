@@ -1,6 +1,7 @@
 # Plano de Implementação: Component Detection Service (Spec 003)
 
 **Feature**: 003-component-detection-service | **Branch**: `feature/003-component-detection`
+**Status**: ✅ Completed
 
 ---
 
@@ -140,30 +141,30 @@ fake_graph = ArchitectureGraph(
 ## Phase 3: Tasks
 
 ### Phase 1: Setup & Contracts
-- [ ] T001: Criar mocks YOLO stub em `tests/mocks/yolo_stub.py`
-- [ ] T002: Criar mock ArchitectureGraph em `tests/mocks/fake_architecture_graph.py`
+- [x] T001: Criar mocks YOLO stub em `tests/mocks/yolo_stub.py`
+- [x] T002: Criar mock ArchitectureGraph em `tests/mocks/fake_architecture_graph.py`
 
 ### Phase 2: Infrastructure
-- [ ] T003: Criar `src/infrastructure/ml/yolo_model.py` - wrapper YOLO/ONNX
-- [ ] T004: Criar `src/infrastructure/cache/detection_cache.py` - cache Redis
+- [x] T003: Criar `src/infrastructure/ml/yolo_model.py` - wrapper YOLO/ONNX
+- [x] T004: Criar `src/infrastructure/cache/detection_cache.py` - cache Redis
 
 ### Phase 3: Services
-- [ ] T005: Criar `src/services/image_preprocessor.py` - OpenCV preprocessing
-- [ ] T006: Criar `src/services/relationship_analyzer.py` - heurística espacial
-- [ ] T007: Criar `src/services/component_detector.py` - orquestração
+- [x] T005: Criar `src/services/image_preprocessor.py` - OpenCV preprocessing
+- [x] T006: Criar `src/services/relationship_analyzer.py` - heurística espacial
+- [x] T007: Criar `src/services/component_detector.py` - orquestração
 
 ### Phase 4: API Integration
-- [ ] T008: Atualizar `src/api/routes/threat_model.py` - endpoint POST /analyze
-- [ ] T009: Adicionar serviço ao container de dependências
+- [x] T008: Atualizar `src/api/routes/threat_model.py` - endpoint POST /analyze
+- [x] T009: Adicionar serviço ao container de dependências
 
 ### Phase 5: Tests
-- [ ] T010: Testes unitários com mocks (`tests/unit/test_component_detector.py`)
-- [ ] T011: Testes de heurística (`tests/unit/test_relationship_analyzer.py`)
-- [ ] T012: Testes de integração E2E (`tests/integration/test_detection_e2e.py`)
+- [x] T010: Testes unitários com mocks (`tests/unit/test_component_detector.py`)
+- [x] T011: Testes de heurística (`tests/unit/test_relationship_analyzer.py`)
+- [x] T012: Testes de integração E2E (`tests/integration/test_detection_e2e.py`)
 
 ### Phase 6: Documentation
-- [ ] T013: Atualizar README.md com instruções do serviço
-- [ ] T014: Documentar decisão ONNX vs PyTorch em `docs/adrs/`
+- [x] T013: Atualizar README.md com instruções do serviço
+- [~] T014: Documentar decisão ONNX vs PyTorch em `docs/adrs/` — Dispensada (documentada inline na spec 003)
 
 ---
 
