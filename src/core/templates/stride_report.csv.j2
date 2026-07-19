@@ -1,0 +1,10 @@
+{#-
+  Template CSV para referência.
+  Na implementação final, o CSV é gerado programaticamente via pandas em
+  src/services/csv_exporter.py para melhor controle de encoding e escaping.
+  Este template serve como documentação da estrutura esperada.
+-#}
+threat_id,category,category_name,component_id,component_type,severity,description,cwe_id,cwe_name,cve_ids,countermeasure_title,countermeasure_description,countermeasure_owasp_ref
+{% for row in rows -%}
+"{{ row.threat_id }}","{{ row.category }}","{{ row.category_name }}","{{ row.component_id }}","{{ row.component_type }}","{{ row.severity }}","{{ row.description }}","{{ row.cwe_id }}","{{ row.cwe_name }}","{{ row.cve_ids }}","{{ row.countermeasure_title }}","{{ row.countermeasure_description }}","{{ row.countermeasure_owasp_ref }}"
+{% endfor %}

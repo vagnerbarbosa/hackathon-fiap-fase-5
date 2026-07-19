@@ -72,7 +72,7 @@ Todas as specs estão em `specs/features/`:
 | **003** | **`003-component-detection-service.md`** | **Serviço de Detecção de Componentes** | **Inferência YOLO, pré-processamento, heurística espacial** | ✅ **Concluída** |
 | **004** | **`004-stride-engine.md`** | **Motor STRIDE** | **Aplicação sistemática das 6 categorias STRIDE** | ✅ **Concluída** |
 | **005** | **`005-vulnerability-contramedidas.md`** | **Vulnerabilidades e Contramedidas** | **Busca de CVEs/CWEs, contramedidas OWASP** | ✅ **Concluída** |
-| 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON | ⏳ Pendente |
+| 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON/CSV/PDF | ✅ **Concluída** |
 | **007** | **`007-ci-cd-github-actions.md`** | **CI/CD** | **GitHub Actions, lint, testes, Docker build** | ✅ **Concluída** |
 | **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ✅ **Implementado (MVP)** |
 | 009 | `009-video-demo-script.md` | Roteiro do Vídeo | Estrutura do vídeo de 15 min | ⏳ Bloqueada |

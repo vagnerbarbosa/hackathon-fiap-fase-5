@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Relatório STRIDE — {{ image_name }}</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #1f2937;
+      background: #f9fafb;
+    }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── PDF Page Setup ── */
+    @page {
+      margin: 20mm 15mm 25mm 15mm;
+      @top-center {
+        content: "Relatório STRIDE — FIAP Hackathon Fase 5";
+        font-size: 10px;
+        color: #6b7280;
+      }
+      @bottom-right {
+        content: "Página " counter(page) " de " counter(pages);
+        font-size: 10px;
+        color: #6b7280;
+      }
+    }
+
+    /* ── Layout ── */
+    .page-wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; }
+
+    /* ── Header ── */
+    .report-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+      color: #fff;
+      padding: 36px 40px;
+      margin-bottom: 32px;
+      border-radius: 0 0 12px 12px;
+      page-break-after: avoid;
+    }
+    .report-header .brand { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.75; margin-bottom: 8px; }
+    .report-header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .report-header .meta { font-size: 13px; opacity: 0.85; }
+    .report-header .meta span { margin-right: 20px; }
+
+    /* ── Summary Cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-top: 4px solid var(--accent, #2563eb);
+    }
+    .stat-card .number { font-size: 2rem; font-weight: 800; color: var(--accent, #1e40af); }
+    .stat-card .label  { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b7280; margin-top: 4px; }
+    .stat-card.critical { --accent: #dc2626; }
+    .stat-card.high     { --accent: #ea580c; }
+    .stat-card.medium   { --accent: #ca8a04; }
+    .stat-card.low      { --accent: #16a34a; }
+
+    /* ── Section ── */
+    .section { background: #fff; border-radius: 10px; padding: 28px 32px; margin-bottom: 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+    .section h2 { font-size: 18px; font-weight: 700; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; margin-bottom: 20px; color: #111827; }
+    .section h3 { font-size: 15px; font-weight: 600; margin: 22px 0 12px; color: #374151; }
+
+    /* ── Tables ── */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: #f3f4f6; font-weight: 600; text-align: left; padding: 9px 12px; border-bottom: 2px solid #e5e7eb; }
+    td { padding: 8px 12px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .center { text-align: center; }
+    .check  { color: #16a34a; font-size: 16px; font-weight: 700; }
+    .empty  { color: #d1d5db; }
+    .stride-matrix th, .stride-matrix td { text-align: center; }
+    .stride-matrix td:first-child { text-align: left; font-weight: 600; }
+
+    /* ── Threat Cards ── */
+    .threat-card {
+      border: 1px solid #e5e7eb;
+      border-left: 5px solid var(--tc-color, #6b7280);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 14px;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+    .threat-card.critical { --tc-color: #dc2626; background: #fef2f2; }
+    .threat-card.high     { --tc-color: #ea580c; background: #fff7ed; }
+    .threat-card.medium   { --tc-color: #ca8a04; background: #fefce8; }
+    .threat-card.low      { --tc-color: #16a34a; background: #f0fdf4; }
+
+    .threat-card .threat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .threat-card .threat-title { font-weight: 700; font-size: 14px; }
+    .threat-card .threat-meta  { font-size: 12px; color: #6b7280; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge.critical { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; }
+    .badge.high     { background:#fff7ed; color:#ea580c; border:1px solid #fdba74; }
+    .badge.medium   { background:#fefce8; color:#ca8a04; border:1px solid #fde047; }
+    .badge.low      { background:#f0fdf4; color:#16a34a; border:1px solid #86efac; }
+    .badge.info     { background:#eff6ff; color:#2563eb; border:1px solid #93c5fd; }
+    .badge.stride   { background:#ede9fe; color:#7c3aed; border:1px solid #c4b5fd; }
+
+    /* ── Countermeasures ── */
+    .cm-list { list-style: none; padding: 0; margin: 8px 0 0; }
+    .cm-list li {
+      padding: 6px 0 6px 14px;
+      border-left: 3px solid #e5e7eb;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .cm-list li strong { display: block; color: #374151; }
+    .cm-list li .owasp-ref { font-size: 11px; color: #6b7280; margin-top: 2px; }
+
+    /* ── Component List ── */
+    .comp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+    .comp-chip {
+      background: #f3f4f6;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    .comp-chip .comp-type { font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; color: #4b5563; }
+    .comp-chip .comp-conf { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+    /* ── Risk Score cell ── */
+    .rs-high   { color: #dc2626; font-weight: 800; }
+    .rs-medium { color: #ea580c; font-weight: 700; }
+    .rs-low    { color: #16a34a; }
+
+    /* ── Footer ── */
+    .report-footer {
+      margin-top: 40px;
+      padding: 20px 0;
+      border-top: 1px solid #e5e7eb;
+      font-size: 11px;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    /* ── Print / PDF ── */
+    @media print {
+      body { background: #fff; }
+      .report-header { border-radius: 0; }
+      .section { box-shadow: none; border: 1px solid #e5e7eb; }
+    }
+
+    @media (max-width: 640px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .section { padding: 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="report-header">
+  <div class="brand">FIAP Hackathon Fase 5 · Threat Modeling AI</div>
+  <h1>Relatório de Modelagem de Ameaças — STRIDE</h1>
+  <div class="meta">
+    <span>📅 {{ timestamp }}</span>
+    <span>🖼 {{ image_name }}</span>
+    <span>🔑 Job: <code>{{ job_id }}</code></span>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-grid">
+    <div class="stat-card">
+      <div class="number">{{ component_count }}</div>
+      <div class="label">Componentes</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">{{ threat_count }}</div>
+      <div class="label">Ameaças</div>
+    </div>
+    <div class="stat-card critical">
+      <div class="number">{{ critical_count }}</div>
+      <div class="label">Críticas</div>
+    </div>
+    <div class="stat-card high">
+      <div class="number">{{ high_count }}</div>
+      <div class="label">Alto Risco</div>
+    </div>
+    <div class="stat-card medium">
+      <div class="number">{{ medium_count }}</div>
+      <div class="label">Médio Risco</div>
+    </div>
+    <div class="stat-card low">
+      <div class="number">{{ low_count }}</div>
+      <div class="label">Baixo Risco</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: ARCHITECTURE -->
+  <div class="section">
+    <h2>2. Diagrama de Arquitetura Analisado</h2>
+
+    <h3>Componentes Detectados</h3>
+    <div class="comp-grid">
+      {% for comp in components %}
+      <div class="comp-chip">
+        <div class="comp-type">{{ comp.type }}</div>
+        <div class="comp-conf">{{ "%.0f"|format(comp.confidence * 100) }}% confiança</div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:2px;">ID: {{ comp.id[:8] }}…</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if data_flows %}
+    <h3>Fluxos de Dados</h3>
+    <table>
+      <thead><tr><th>Origem</th><th>Destino</th><th>Direção</th><th>Inferido</th></tr></thead>
+      <tbody>
+        {% for flow in data_flows %}
+        <tr>
+          <td><code>{{ flow.source_id[:12] }}</code></td>
+          <td><code>{{ flow.target_id[:12] }}</code></td>
+          <td>{{ flow.direction }}</td>
+          <td>{{ "Sim" if flow.inferred else "Não" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if trust_boundaries %}
+    <h3>Trust Boundaries</h3>
+    <ul>
+      {% for boundary in trust_boundaries %}
+      <li><strong>Zona {{ loop.index }}</strong>: {{ boundary | join(", ") }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+
+  <!-- SECTION 3: STRIDE MATRIX -->
+  <div class="section">
+    <h2>3. Matriz STRIDE por Componente</h2>
+    <table class="stride-matrix">
+      <thead>
+        <tr>
+          <th style="text-align:left">Componente</th>
+          <th title="Spoofing">S</th>
+          <th title="Tampering">T</th>
+          <th title="Repudiation">R</th>
+          <th title="Information Disclosure">I</th>
+          <th title="Denial of Service">D</th>
+          <th title="Elevation of Privilege">E</th>
+          <th>Risk Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in stride_matrix %}
+        <tr>
+          <td>{{ row.component_type }}</td>
+          {% for cat in ["S","T","R","I","D","E"] %}
+          <td>{% if cat in row.categories %}<span class="check">✓</span>{% else %}<span class="empty">—</span>{% endif %}</td>
+          {% endfor %}
+          <td>
+            <span class="{{ 'rs-high' if row.risk_score >= 20 else ('rs-medium' if row.risk_score >= 7 else 'rs-low') }}">
+              {{ row.risk_score }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="margin-top:12px;font-size:11px;color:#9ca3af;">
+      S=Spoofing · T=Tampering · R=Repudiation · I=Information Disclosure · D=Denial of Service · E=Elevation of Privilege
+    </p>
+  </div>
+
+  <!-- SECTION 4: THREAT DETAIL -->
+  <div class="section">
+    <h2>4. Detalhamento de Ameaças</h2>
+
+    {% if critical_threats %}
+    <h3>4.1 Ameaças Críticas</h3>
+    {% for threat in critical_threats %}
+    <div class="threat-card critical">
+      <div class="threat-header">
+        <span class="badge stride">{{ threat.category }} · {{ stride_names[threat.category] }}</span>
+        <span class="badge critical">CRITICAL</span>
+        <span class="threat-title">{{ threat.component_type }}</span>
+        <span class="threat-meta">ID: {{ threat.id }}</span>
+      </div>
+      <p>{{ threat.description }}</p>
+      {% if threat.cwe_id %}
+      <p style="margin-top:8px;font-size:12px;color:#6b7280;">
+        <strong>CWE:</strong>
+        <a href="https://cwe.mitre.org/data/definitions/{{ threat.cwe_id | replace('CWE-','') }}.html">{{ threat.cwe_id }}</a>
+        {% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}
+        {% if threat.cve_ids %} &nbsp;|&nbsp; <strong>CVEs:</strong> {{ threat.cve_ids | join(", ") }}{% endif %}
+      </p>
+      {% endif %}
+      {% if threat.countermeasures %}
+      <ul class="cm-list">
+        {% for cm in threat.countermeasures %}
+        <li>
+          <strong>{{ cm.title }}</strong>
+          {{ cm.description }}
+          {% if cm.owasp_ref %}<div class="owasp-ref">📚 {{ cm.owasp_ref }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if high_threats %}
+    <h3>4.2 Ameaças de Alto Risco</h3>
+    {% for threat in high_threats %}
+    <div class="threat-card high">
+      <div class="threat-header">
+        <span class="badge stride">{{ threat.category }} · {{ stride_names[threat.category] }}</span>
+        <span class="badge high">HIGH</span>
+        <span class="threat-title">{{ threat.component_type }}</span>
+        <span class="threat-meta">ID: {{ threat.id }}</span>
+      </div>
+      <p>{{ threat.description }}</p>
+      {% if threat.cwe_id %}
+      <p style="margin-top:8px;font-size:12px;color:#6b7280;">
+        <strong>CWE:</strong>
+        <a href="https://cwe.mitre.org/data/definitions/{{ threat.cwe_id | replace('CWE-','') }}.html">{{ threat.cwe_id }}</a>
+        {% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}
+      </p>
+      {% endif %}
+      {% if threat.countermeasures %}
+      <ul class="cm-list">
+        {% for cm in threat.countermeasures %}
+        <li>
+          <strong>{{ cm.title }}</strong>
+          {{ cm.description }}
+          {% if cm.owasp_ref %}<div class="owasp-ref">📚 {{ cm.owasp_ref }}</div>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if medium_threats %}
+    <h3>4.3 Ameaças de Médio Risco</h3>
+    {% for threat in medium_threats %}
+    <div class="threat-card medium">
+      <div class="threat-header">
+        <span class="badge stride">{{ threat.category }} · {{ stride_names[threat.category] }}</span>
+        <span class="badge medium">MEDIUM</span>
+        <span class="threat-title">{{ threat.component_type }}</span>
+      </div>
+      <p>{{ threat.description }}</p>
+      {% if threat.cwe_id %}<p style="font-size:12px;color:#6b7280;margin-top:6px;"><strong>CWE:</strong> {{ threat.cwe_id }}{% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if low_threats %}
+    <h3>4.4 Ameaças de Baixo Risco</h3>
+    {% for threat in low_threats %}
+    <div class="threat-card low">
+      <div class="threat-header">
+        <span class="badge stride">{{ threat.category }} · {{ stride_names[threat.category] }}</span>
+        <span class="badge low">LOW</span>
+        <span class="threat-title">{{ threat.component_type }}</span>
+      </div>
+      <p>{{ threat.description }}</p>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not (critical_threats or high_threats or medium_threats or low_threats) %}
+    <p style="color:#6b7280;font-style:italic;">Nenhuma ameaça identificada.</p>
+    {% endif %}
+  </div>
+
+  <!-- SECTION 5: COUNTERMEASURES SUMMARY -->
+  <div class="section">
+    <h2>5. Sumário de Contramedidas Recomendadas</h2>
+    {% if countermeasures_summary %}
+    <table>
+      <thead>
+        <tr>
+          <th>Prioridade</th>
+          <th>Componente</th>
+          <th>Contramedida</th>
+          <th>Referência OWASP</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in countermeasures_summary %}
+        <tr>
+          <td><span class="badge {{ item.severity }}">{{ item.severity | upper }}</span></td>
+          <td>{{ item.component_type }}</td>
+          <td>{{ item.title }}</td>
+          <td>{% if item.owasp_ref %}<a href="#">{{ item.owasp_ref }}</a>{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:#6b7280;font-style:italic;">Nenhuma contramedida identificada.</p>
+    {% endif %}
+  </div>
+
+  <!-- SECTION 6: RECOMMENDATIONS -->
+  <div class="section">
+    <h2>6. Recomendações</h2>
+    <h3>Top 3 Ações Prioritárias</h3>
+    <ol style="padding-left:20px;line-height:2;">
+      {% for rec in top_recommendations %}
+      <li><strong>{{ rec.title }}</strong> ({{ rec.component_type }}) — {{ rec.description }}</li>
+      {% endfor %}
+    </ol>
+
+    <h3 style="margin-top:20px;">Próximos Passos para Hardening</h3>
+    <ul style="padding-left:20px;line-height:2;">
+      <li>Revisar e aplicar contramedidas para ameaças <strong>críticas</strong> e de <strong>alto risco</strong> imediatamente.</li>
+      <li>Implementar monitoramento contínuo (SIEM) para detecção de anomalias.</li>
+      <li>Realizar revisão de código focada nas vulnerabilidades CWE identificadas.</li>
+      <li>Agendar pentest nos componentes com maior Risk Score.</li>
+      <li>Atualizar este relatório após cada ciclo de sprint de segurança.</li>
+    </ul>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="report-footer">
+    Relatório gerado automaticamente pelo sistema STRIDE AI — FIAP Hackathon Fase 5
+    &nbsp;|&nbsp; Job ID: <code>{{ job_id }}</code>
+    &nbsp;|&nbsp; {{ timestamp }}
+  </div>
+
+</div>
+</body>
+</html>

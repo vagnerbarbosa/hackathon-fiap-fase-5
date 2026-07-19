@@ -1,0 +1,157 @@
+# Relatório de Modelagem de Ameaças — STRIDE
+
+---
+
+## 1. Resumo Executivo
+
+| Campo | Valor |
+|-------|-------|
+| **Data da análise** | {{ timestamp }} |
+| **Imagem analisada** | {{ image_name }} |
+| **Componentes detectados** | {{ component_count }} |
+| **Ameaças identificadas** | {{ threat_count }} |
+| **Ameaças críticas** | {{ critical_count }} |
+| **Ameaças de alto risco** | {{ high_count }} |
+| **Ameaças de médio risco** | {{ medium_count }} |
+| **Ameaças de baixo risco** | {{ low_count }} |
+
+---
+
+## 2. Diagrama de Arquitetura Analisado
+
+### Componentes Detectados
+
+{% for comp in components %}
+- **{{ comp.type | upper }}** (`{{ comp.id }}`) — confiança: {{ "%.0f"|format(comp.confidence * 100) }}%
+{% endfor %}
+
+### Fluxos de Dados
+
+{% if data_flows %}
+{% for flow in data_flows %}
+- `{{ flow.source_id }}` → `{{ flow.target_id }}` ({{ flow.direction }}{% if flow.inferred %}, *inferido*{% endif %})
+{% endfor %}
+{% else %}
+> Nenhum fluxo de dados identificado.
+{% endif %}
+
+### Trust Boundaries
+
+{% if trust_boundaries %}
+{% for idx, boundary in enumerate(trust_boundaries) %}
+- **Zona {{ idx + 1 }}**: {{ boundary | join(", ") }}
+{% endfor %}
+{% else %}
+> Nenhuma trust boundary definida.
+{% endif %}
+
+---
+
+## 3. Matriz STRIDE por Componente
+
+| Componente | S | T | R | I | D | E | Risk Score |
+|------------|---|---|---|---|---|---|------------|
+{% for row in stride_matrix -%}
+| {{ row.component_type }} | {{ "✓" if "S" in row.categories else " " }} | {{ "✓" if "T" in row.categories else " " }} | {{ "✓" if "R" in row.categories else " " }} | {{ "✓" if "I" in row.categories else " " }} | {{ "✓" if "D" in row.categories else " " }} | {{ "✓" if "E" in row.categories else " " }} | **{{ row.risk_score }}** |
+{% endfor %}
+
+> **Legenda**: S=Spoofing, T=Tampering, R=Repudiation, I=Information Disclosure, D=Denial of Service, E=Elevation of Privilege
+
+---
+
+## 4. Detalhamento de Ameaças
+
+{% if critical_threats %}
+### 4.1 Ameaças Críticas
+
+{% for threat in critical_threats %}
+#### 🔴 {{ threat.category }} ({{ stride_names[threat.category] }}) — {{ threat.component_type }}
+
+- **ID**: `{{ threat.id }}`
+- **Severidade**: CRITICAL
+- **Descrição**: {{ threat.description }}
+{% if threat.cwe_id %}
+- **CWE**: [{{ threat.cwe_id }}](https://cwe.mitre.org/data/definitions/{{ threat.cwe_id | replace("CWE-", "") }}.html){% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}
+{% endif %}
+{% if threat.cve_ids %}
+- **CVEs**: {{ threat.cve_ids | join(", ") }}
+{% endif %}
+{% if threat.countermeasures %}
+- **Contramedidas**:
+{% for cm in threat.countermeasures %}
+  - **{{ cm.title }}**: {{ cm.description }}{% if cm.owasp_ref %} *(ref: {{ cm.owasp_ref }})*{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if high_threats %}
+### 4.2 Ameaças de Alto Risco
+
+{% for threat in high_threats %}
+#### 🟠 {{ threat.category }} ({{ stride_names[threat.category] }}) — {{ threat.component_type }}
+
+- **ID**: `{{ threat.id }}`
+- **Severidade**: HIGH
+- **Descrição**: {{ threat.description }}
+{% if threat.cwe_id %}
+- **CWE**: [{{ threat.cwe_id }}](https://cwe.mitre.org/data/definitions/{{ threat.cwe_id | replace("CWE-", "") }}.html){% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}
+{% endif %}
+{% if threat.countermeasures %}
+- **Contramedidas**:
+{% for cm in threat.countermeasures %}
+  - **{{ cm.title }}**: {{ cm.description }}{% if cm.owasp_ref %} *(ref: {{ cm.owasp_ref }})*{% endif %}
+{% endfor %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+{% if medium_threats or low_threats %}
+### 4.3 Ameaças de Médio/Baixo Risco
+
+{% for threat in medium_threats + low_threats %}
+#### {{ "🟡" if threat.severity.value == "medium" else "🟢" }} {{ threat.category }} — {{ threat.component_type }}
+
+- **Severidade**: {{ threat.severity.value | upper }}
+- **Descrição**: {{ threat.description }}
+{% if threat.cwe_id %}
+- **CWE**: {{ threat.cwe_id }}{% if threat.cwe_name %} — {{ threat.cwe_name }}{% endif %}
+{% endif %}
+
+{% endfor %}
+{% endif %}
+
+---
+
+## 5. Sumário de Contramedidas Recomendadas
+
+| Prioridade | Ameaça | Componente | Contramedida | Referência OWASP |
+|------------|--------|------------|--------------|------------------|
+{% for item in countermeasures_summary -%}
+| {{ item.severity | upper }} | {{ item.threat_id }} | {{ item.component_type }} | {{ item.title }} | {{ item.owasp_ref or "—" }} |
+{% endfor %}
+
+---
+
+## 6. Recomendações
+
+### Top 3 Ações Prioritárias
+
+{% for rec in top_recommendations %}
+{{ loop.index }}. **{{ rec.title }}** ({{ rec.component_type }}) — {{ rec.description }}
+{% endfor %}
+
+### Próximos Passos para Hardening
+
+- Revisar e aplicar todas as contramedidas listadas para ameaças **críticas** e de **alto risco**.
+- Implementar monitoramento contínuo (SIEM) para detecção de anomalias.
+- Realizar revisão de código focada nas vulnerabilidades CWE identificadas.
+- Agendar pentest nos componentes com maior Risk Score.
+- Atualizar este relatório após cada ciclo de sprint de segurança.
+
+---
+
+*Relatório gerado automaticamente pelo sistema STRIDE AI — FIAP Hackathon Fase 5*  
+*Job ID: `{{ job_id }}`*
