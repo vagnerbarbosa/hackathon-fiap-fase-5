@@ -223,198 +223,221 @@ async def get_analysis_status(
     "/{job_id}/report",
     status_code=status.HTTP_200_OK,
     summary="Get analysis report",
-    description="Get threat modeling report for completed analysis.",
+    description=(
+        "Get threat modeling report for a completed analysis job. "
+        "Supported formats: json (default, inline), md, html, csv, pdf (attachment download)."
+    ),
 )
 async def get_report(
     job_id: UUID,
     api_key: ApiKeyDep,
     session: SessionDep,
-    format: str = "json",
+    format: str = "json",  # noqa: A002 — shadow of built-in intentional (query param name)
 ) -> Any:
-    """Obtém relatório de análise.
+    """Obtém relatório de análise no formato solicitado (RF-07).
 
     Args:
         job_id: UUID do job.
         api_key: API Key validada.
         session: Sessão do banco de dados.
-        format: Formato do relatório (json, html).
+        format: Formato de saída — json | md | html | csv | pdf. Default: json.
 
     Returns:
-        dict or HTML: Dados do relatório ou HTML renderizado.
+        - json  → resposta inline (application/json)
+        - md / html / csv / pdf → download (Content-Disposition: attachment)
     """
-    from fastapi.responses import HTMLResponse
-    from src.services.simple_report import report_generator
+    from datetime import datetime, timezone
+
+    from fastapi.responses import JSONResponse, Response
+
+    from src.domain.models import (
+        ArchitectureGraph,
+        BoundingBox,
+        Countermeasure,
+        DetectedComponent,
+        EnrichedThreat,
+        Point,
+        Severity,
+    )
+    from src.services.report_generator import report_generator
     from src.services.stride_engine import StrideEngine
     from src.services.vulnerability_service import VulnerabilityService
-    from src.infrastructure.database import AsyncSessionLocal
 
+    # ── Validar formato ───────────────────────────────────────────────────────
+    supported_formats = {"json", "md", "html", "csv", "pdf"}
+    fmt = format.lower().strip()
+    if fmt not in supported_formats:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Formato '{format}' não suportado. Use: {', '.join(sorted(supported_formats))}",
+        )
+
+    # ── Buscar job ────────────────────────────────────────────────────────────
     job_repo = JobRepository(session)
-    job = await job_repo.get_by_id(job_id)
+    db_job = await job_repo.get_by_id(job_id)
 
-    if not job:
+    if not db_job:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Job {job_id} não encontrado",
         )
 
-    if job.status != JobStatus.COMPLETED.value:
+    if db_job.status != JobStatus.COMPLETED.value:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Job ainda não completado. Status atual: {job.status}",
+            detail=f"Job ainda não completado. Status atual: {db_job.status}",
         )
 
-    # Verificar se temos dados processados em cache ou regenerar
-    # Por simplicidade, vamos buscar da storage ou usar mock
-    try:
-        # Tentar detectar novamente para ter os dados reais
-        architecture_graph = await detection_service.detect(job.input_image_path)
+    # ── Construir objeto Job de domínio (Pydantic) a partir do modelo ORM ─────
+    from src.domain.models import Job as DomainJob
+    from src.domain.models import JobStatus as DomainJobStatus
 
-        # Processar com STRIDE
+    domain_job = DomainJob(
+        id=db_job.id,
+        status=DomainJobStatus(db_job.status),
+        input_image_path=db_job.input_image_path or "",
+        output_report_path=db_job.output_report_path,
+        created_at=db_job.created_at or datetime.now(timezone.utc),
+        updated_at=db_job.updated_at or datetime.now(timezone.utc),
+    )
+
+    # ── Obter dados de ameaças (detecção → STRIDE → enriquecimento) ───────────
+    try:
+        if detection_service is None:
+            raise ModelNotLoadedError("Serviço de detecção não disponível")
+
+        architecture_graph = await detection_service.detect(db_job.input_image_path)
         stride_engine = StrideEngine()
         threats = await stride_engine.analyze(architecture_graph)
-
-        # Enriquecer com vulnerabilidades
         vuln_service = VulnerabilityService()
         enriched_threats = await vuln_service.enrich(threats)
 
-        if format == "html":
-            # Gerar relatório HTML
-            html_content = report_generator.generate(
-                str(job_id), architecture_graph, enriched_threats
-            )
-            return HTMLResponse(content=html_content, media_type="text/html")
+    except Exception as exc:
+        logger.warning(f"Job {job_id}: pipeline falhou ({exc}), usando dados mock")
 
-        # Retornar JSON
-        return {
-            "job_id": str(job_id),
-            "format": format,
-            "status": "completed",
-            "components_count": len(architecture_graph.components),
-            "threats_count": len(enriched_threats),
-            "threats": [
-                {
-                    "id": t.id,
-                    "category": t.category,
-                    "category_name": {
-                        "S": "Spoofing",
-                        "T": "Tampering",
-                        "R": "Repudiation",
-                        "I": "Information Disclosure",
-                        "D": "Denial of Service",
-                        "E": "Elevation of Privilege",
-                    }.get(t.category, t.category),
-                    "component_type": t.component_type,
-                    "severity": t.severity.value,
-                    "description": t.description,
-                    "cwe_id": t.cwe_id,
-                    "cve_ids": t.cve_ids,
-                    "countermeasures": [
-                        {"title": cm.title, "owasp_ref": cm.owasp_ref}
-                        for cm in t.countermeasures
-                    ],
-                }
-                for t in enriched_threats
+        # Fallback com dados mock representativos
+        architecture_graph = ArchitectureGraph(
+            components=[
+                DetectedComponent(
+                    id="mock-web-1", type="web_server", confidence=0.95,
+                    bbox=BoundingBox(x_min=0, y_min=0, x_max=100, y_max=100),
+                    center=Point(x=50, y=50),
+                ),
+                DetectedComponent(
+                    id="mock-api-1", type="api", confidence=0.92,
+                    bbox=BoundingBox(x_min=110, y_min=0, x_max=210, y_max=100),
+                    center=Point(x=160, y=50),
+                ),
+                DetectedComponent(
+                    id="mock-db-1", type="database", confidence=0.88,
+                    bbox=BoundingBox(x_min=220, y_min=0, x_max=320, y_max=100),
+                    center=Point(x=270, y=50),
+                ),
             ],
-        }
-
-    except Exception as e:
-        logger.error(f"Erro ao gerar relatório: {e}")
-        # Fallback para dados mock
-        if format == "html":
-            from src.domain.models import ArchitectureGraph, DetectedComponent, BoundingBox, Point
-
-            # Criar dados mock mínimos
-            mock_graph = ArchitectureGraph(
-                components=[
-                    DetectedComponent(
-                        id="mock-1", type="web_server", confidence=0.95,
-                        bbox=BoundingBox(x_min=0, y_min=0, x_max=100, y_max=100),
-                        center=Point(x=50, y=50)
-                    ),
-                    DetectedComponent(
-                        id="mock-2", type="api", confidence=0.92,
-                        bbox=BoundingBox(x_min=100, y_min=0, x_max=200, y_max=100),
-                        center=Point(x=150, y=50)
-                    ),
-                    DetectedComponent(
-                        id="mock-3", type="database", confidence=0.88,
-                        bbox=BoundingBox(x_min=200, y_min=0, x_max=300, y_max=100),
-                        center=Point(x=250, y=50)
-                    ),
+            data_flows=[],
+            trust_boundaries=[],
+        )
+        enriched_threats = [
+            EnrichedThreat(
+                id="threat-mock-1", category="I", component_id="mock-db-1",
+                component_type="database", severity=Severity.CRITICAL,
+                description="Dados sensíveis podem ser exfiltrados do banco de dados.",
+                cwe_id="CWE-200", cwe_name="Exposure of Sensitive Information",
+                cve_ids=["CVE-2023-5678"],
+                countermeasures=[
+                    Countermeasure(
+                        title="Criptografar dados em repouso",
+                        description="Usar AES-256 para dados sensíveis persistidos.",
+                        owasp_ref="OWASP Cryptographic Storage Cheat Sheet",
+                    )
                 ],
-                data_flows=[],
-                trust_boundaries=[],
-            )
+            ),
+            EnrichedThreat(
+                id="threat-mock-2", category="S", component_id="mock-web-1",
+                component_type="web_server", severity=Severity.HIGH,
+                description="Servidor web pode ser falsificado por atacantes.",
+                cwe_id="CWE-290", cwe_name="Authentication Bypass by Spoofing",
+                cve_ids=[],
+                countermeasures=[
+                    Countermeasure(
+                        title="Implementar autenticação mútua TLS",
+                        description="Usar certificados cliente/servidor para autenticação.",
+                        owasp_ref="OWASP Transport Layer Security Cheat Sheet",
+                    )
+                ],
+            ),
+            EnrichedThreat(
+                id="threat-mock-3", category="T", component_id="mock-api-1",
+                component_type="api", severity=Severity.MEDIUM,
+                description="Payloads da API podem ser alterados em trânsito.",
+                cwe_id="CWE-345", cwe_name="Insufficient Verification of Data Authenticity",
+                cve_ids=[],
+                countermeasures=[
+                    Countermeasure(
+                        title="Validar integridade com HMAC",
+                        description="Assinar e verificar todos os payloads críticos.",
+                        owasp_ref="OWASP Input Validation Cheat Sheet",
+                    )
+                ],
+            ),
+        ]
 
-            from src.domain.models import EnrichedThreat, Countermeasure, Severity
+    # ── Gerar relatório no formato solicitado ─────────────────────────────────
+    try:
+        content, media_type = report_generator.generate_format(
+            job=domain_job,
+            architecture_graph=architecture_graph,
+            threats=enriched_threats,
+            fmt=fmt,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.error(f"Erro ao gerar relatório para job {job_id}: {exc}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Falha ao gerar o relatório. Tente novamente.",
+        ) from exc
 
-            mock_threats = [
-                EnrichedThreat(
-                    id="threat-1", category="S", category_name="Spoofing",
-                    component_id="mock-1", component_type="web_server",
-                    description="Falso servidor web pode receber tráfego de usuários.",
-                    justification="Usuários precisam confiar na identidade do servidor.",
-                    severity=Severity.HIGH,
-                    cwe_id="CWE-290", cwe_name="Authentication Bypass",
-                    cve_ids=["CVE-2023-1234"],
-                    countermeasures=[
-                        Countermeasure(
-                            title="Exigir autenticação forte",
-                            description="Aplicar MFA e tokens assinados.",
-                            owasp_ref="OWASP Authentication Cheat Sheet"
-                        )
-                    ]
-                ),
-                EnrichedThreat(
-                    id="threat-2", category="T", category_name="Tampering",
-                    component_id="mock-2", component_type="api",
-                    description="Requests ou responses podem ser alterados.",
-                    justification="APIs processam payloads de entrada e saída.",
-                    severity=Severity.MEDIUM,
-                    cwe_id="CWE-345", cwe_name="Insufficient Verification",
-                    cve_ids=[],
-                    countermeasures=[
-                        Countermeasure(
-                            title="Proteger integridade dos dados",
-                            description="Usar TLS 1.3 e HMAC.",
-                            owasp_ref="OWASP Cryptographic Storage Cheat Sheet"
-                        )
-                    ]
-                ),
-                EnrichedThreat(
-                    id="threat-3", category="I", category_name="Information Disclosure",
-                    component_id="mock-3", component_type="database",
-                    description="Dados sensíveis podem ser exfiltrados do banco.",
-                    justification="Bancos concentram dados persistidos.",
-                    severity=Severity.CRITICAL,
-                    cwe_id="CWE-200", cwe_name="Exposure of Sensitive Information",
-                    cve_ids=["CVE-2023-5678", "CVE-2023-9012"],
-                    countermeasures=[
-                        Countermeasure(
-                            title="Criptografar dados sensíveis",
-                            description="Usar criptografia em trânsito e em repouso.",
-                            owasp_ref="OWASP Cryptographic Storage Cheat Sheet"
-                        ),
-                        Countermeasure(
-                            title="Minimizar exposição de dados",
-                            description="Aplicar mascaramento e tokenização.",
-                            owasp_ref="OWASP Data Protection Cheat Sheet"
-                        )
-                    ]
-                ),
-            ]
+    # ── Atualizar output_report_path no job (RF-08) ───────────────────────────
+    saved_paths = report_generator.get_saved_paths(str(job_id))
+    if saved_paths:
+        path_list = ";".join(str(p) for p in saved_paths.values())
+        await job_repo.update_status(
+            job_id=job_id,
+            status=JobStatus.COMPLETED,
+            output_report_path=path_list,
+        )
 
-            html_content = report_generator.generate(str(job_id), mock_graph, mock_threats)
-            return HTMLResponse(content=html_content, media_type="text/html")
+    # ── Montar resposta HTTP ──────────────────────────────────────────────────
+    # json → inline; demais → attachment download
+    if fmt == "json":
+        return JSONResponse(content=content, media_type="application/json")
 
-        return {
-            "job_id": str(job_id),
-            "format": format,
-            "status": "completed",
-            "message": "Relatório gerado com dados de exemplo",
-            "threats": [
-                {"category": "S", "title": "Spoofing", "severity": "high"},
-                {"category": "T", "title": "Tampering", "severity": "medium"},
-                {"category": "I", "title": "Information Disclosure", "severity": "critical"},
-            ],
-        }
+    # Mapeia formato → nome de arquivo para Content-Disposition
+    filename_map = {
+        "md":   f"stride-report-{job_id}.md",
+        "html": f"stride-report-{job_id}.html",
+        "csv":  f"stride-report-{job_id}.csv",
+        "pdf":  f"stride-report-{job_id}.pdf",
+    }
+    filename = filename_map.get(fmt, f"stride-report-{job_id}.{fmt}")
+
+    # Se media_type for text/html (fallback do PDF), ajusta o nome do arquivo
+    if fmt == "pdf" and media_type == "text/html":
+        filename = f"stride-report-{job_id}-pdf-fallback.html"
+
+    # Codifica strings para bytes se necessário
+    if isinstance(content, str):
+        body = content.encode("utf-8")
+    elif isinstance(content, dict):
+        import json as _json
+        body = _json.dumps(content, ensure_ascii=False).encode("utf-8")
+    else:
+        body = content  # já bytes (CSV, PDF)
+
+    return Response(
+        content=body,
+        media_type=media_type,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

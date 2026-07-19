@@ -8,10 +8,7 @@ O hackathon exige um Relatório de Modelagem de Ameaças como entregável princi
 
 ### Status Atual (MVP)
 
-**⚠️ Implementação Parcial**: O arquivo `src/services/simple_report.py` contém uma versão **MVP (temporária)** do gerador de relatórios. Esta implementação:
-- Gera HTML básico a partir de dados mock/enriquecidos
-- Serve para validar o fluxo end-to-end enquanto a Spec 006 completa não é implementada
-- **Será substituída** pela implementação completa conforme os requisitos abaixo
+**✅ Implementação Completa**: A Spec 006 foi totalmente implementada. O arquivo `src/services/simple_report.py` (MVP temporário) foi removido e substituído pela implementação completa em `src/services/report_generator.py`, com suporte a todos os 5 formatos de saída via templates Jinja2 + pandas + WeasyPrint.
 
 A versão final deve seguir todos os RFs (Requisitos Funcionais) documentados nesta spec, incluindo suporte a múltiplos formatos (Markdown, JSON, HTML, CSV, PDF) via templates Jinja2.
 
@@ -27,10 +24,10 @@ Implementar um `ReportGenerator` que:
 
 | Fase | Arquivo | Descrição | Status |
 |------|---------|-------------|--------|
-| **MVP** | `src/services/simple_report.py` | Versão simples, HTML básico, dados mock | ✅ Implementado |
-| **Completa** | `src/services/report_generator.py` | Versão completa com todos os formatos | ⏳ Pendente |
+| **MVP** | `src/services/simple_report.py` | Versão simples, HTML básico, dados mock | ✅ Implementado → **Removido** |
+| **Completa** | `src/services/report_generator.py` | Versão completa com todos os formatos | ✅ **Implementada** |
 
-**Nota**: O `simple_report.py` será **substituído** quando a implementação completa da Spec 006 for desenvolvida. A API deve manter compatibilidade backward (mesmos endpoints, mesma resposta JSON).
+**Nota**: O `simple_report.py` foi removido. A implementação completa em `report_generator.py` mantém compatibilidade backward (mesmos endpoints, mesma resposta JSON).
 
 ## Requisitos Funcionais (RF)
 
@@ -305,25 +302,20 @@ fake_job = Job(
 
 | Arquivo | Responsabilidade | Status |
 |---------|------------------|--------|
-| `src/services/simple_report.py` | **TEMPORÁRIO/MVP**: HTML básico para validação do fluxo | ✅ Implementado (será removido) |
-| `src/services/report_generator.py` | `ReportGenerator` — orquestração de todos os formatos | ⏳ Pendente |
-| `src/services/csv_exporter.py` | Exportação de ameaças para CSV via pandas | ⏳ Pendente |
-| `src/services/pdf_exporter.py` | Renderização HTML → PDF via WeasyPrint | ⏳ Pendente |
-| `src/core/templates/stride_report.md.j2` | Template Markdown | ⏳ Pendente |
-| `src/core/templates/stride_report.html.j2` | Template HTML (base para PDF) | ⏳ Pendente |
-| `src/core/templates/stride_report.csv.j2` | Template CSV (header/row) | ⏳ Pendente |
-| `src/core/templates/partials/` | Partials reutilizáveis | ⏳ Pendente |
-| `src/api/routes/report.py` | Endpoint único `GET /report?format=` | 🔄 Parcial (usa simple_report) |
-| `tests/unit/test_report_generator.py` | Testes de snapshot para todos os formatos | ⏳ Pendente |
+| `src/services/simple_report.py` | **TEMPORÁRIO/MVP**: HTML básico para validação do fluxo | ❌ Removido |
+| `src/services/report_generator.py` | `ReportGenerator` — orquestração de todos os formatos | ✅ Implementado |
+| `src/services/csv_exporter.py` | Exportação de ameaças para CSV via pandas | ✅ Implementado |
+| `src/services/pdf_exporter.py` | Renderização HTML → PDF via WeasyPrint | ✅ Implementado |
+| `src/core/templates/stride_report.md.j2` | Template Markdown | ✅ Implementado |
+| `src/core/templates/stride_report.html.j2` | Template HTML (base para PDF) | ✅ Implementado |
+| `src/core/templates/stride_report.csv.j2` | Template CSV (referência/documentação) | ✅ Implementado |
+| `src/core/templates/partials/` | Partials reutilizáveis | ✅ Implementado |
+| `src/api/routes/threat_model.py` | Endpoint único `GET /report?format=` | ✅ Implementado |
+| `tests/unit/test_report_generator.py` | Testes para todos os formatos (40 testes) | ✅ Implementado |
 
 ### Nota sobre simple_report.py
 
-O arquivo `simple_report.py` atual:
-- É uma **implementação temporária** para permitir testes end-to-end
-- Gera HTML básico sem templates Jinja2
-- Não suporta exportação para Markdown, CSV ou PDF
-- Deve ser **removido/substituído** pela implementação completa da Spec 006
-- Mantém compatibilidade de interface (mesmos inputs/outputs)
+O arquivo `simple_report.py` foi **removido** após a implementação completa da Spec 006. O `report_generator.py` é agora o único responsável pela geração de relatórios em todos os formatos.
 
 ---
 

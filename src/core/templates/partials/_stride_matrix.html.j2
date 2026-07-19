@@ -1,0 +1,41 @@
+{#- Partial: Tabela Matriz STRIDE por componente -#}
+{%- set categories = ["S", "T", "R", "I", "D", "E"] -%}
+{%- set cat_names = {
+    "S": "Spoofing",
+    "T": "Tampering",
+    "R": "Repudiation",
+    "I": "Info Disclosure",
+    "D": "Denial of Service",
+    "E": "Elevation of Privilege"
+} -%}
+
+<table class="stride-matrix">
+  <thead>
+    <tr>
+      <th>Componente</th>
+      {% for cat in categories %}<th title="{{ cat_names[cat] }}">{{ cat }}</th>{% endfor %}
+      <th>Risk Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in stride_matrix %}
+    <tr>
+      <td><strong>{{ row.component_type }}</strong></td>
+      {% for cat in categories %}
+      <td class="center">
+        {% if cat in row.categories %}
+        <span class="check">✓</span>
+        {% else %}
+        <span class="empty">—</span>
+        {% endif %}
+      </td>
+      {% endfor %}
+      <td class="center">
+        <strong style="color:{{ '#dc2626' if row.risk_score >= 20 else ('#ea580c' if row.risk_score >= 10 else '#16a34a') }}">
+          {{ row.risk_score }}
+        </strong>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

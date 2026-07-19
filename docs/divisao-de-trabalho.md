@@ -180,7 +180,7 @@ Este guia detalha como cada membro pode implementar suas specs usando **mocks** 
 | **Vagner** | 003 Detecção | ✅ **Concluída** | `YOLOStub` |
 | **Adriel** | 004 STRIDE | ⏳ Em Progresso | Componente real da Spec 003 |
 | **Adriel** | 005 Vulnerabilidades | ⏳ Em Progresso | `fake_threats` |
-| **Leticia** | 006 Relatórios | ⏳ Em Progresso | `Job` real (Spec 001 ✅), `fake_enriched` (aguardando Spec 005) |
+| **Leticia** | 006 Relatórios | ✅ Concluída | `Job` real (Spec 001 ✅), `fake_enriched` (aguardando Spec 005) |
 | **Lucas** | 007 CI/CD | ⏳ Em Progresso | Todos os mocks |
 | **Vagner** | 008 Frontend | ✅ **Concluída** | Layout completo, STRIDE, Grupo 27 |
 | **Leticia** | 009 Vídeo | ⏳ Bloqueada | Aguardar integração |
@@ -394,10 +394,10 @@ report = gen.generate_md(fake_enriched, real_job)  # 🔄 Aguardando Spec 005
 - [ ] `data/cwes.yaml` criado
 
 ### Leticia (006 + 009)
-- [ ] Branch `feature/006-report-generator` criada
-- [ ] Jinja2 instalado
-- [ ] Templates iniciais criados
-- [ ] Todos os mocks importam corretamente
+- [x] Branch `feature/006-report-generator` criada
+- [x] Jinja2 instalado
+- [x] Templates iniciais criados
+- [x] Todos os mocks importam corretamente
 
 ### Vagner (008 Frontend)
 - [x] Branch `feature/008-frontend-react` criada

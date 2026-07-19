@@ -76,9 +76,11 @@ class Threat(BaseModel):
 
     id: str
     category: str  # "S","T","R","I","D","E"
+    category_name: str | None = None  # ex: "Spoofing" — preenchido pelo STRIDE engine
     component_id: str
     component_type: str
     description: str
+    justification: str | None = None  # Justificativa da ameaça para o componente
     severity: Severity
     affected_data_flows: list[str] = []
 
@@ -99,9 +101,11 @@ class EnrichedThreat(BaseModel):
 
     id: str
     category: str  # "S","T","R","I","D","E"
+    category_name: str | None = None  # ex: "Spoofing" — preenchido pelo enriquecimento
     component_id: str
     component_type: str
     description: str
+    justification: str | None = None  # Justificativa da ameaça para o componente
     severity: Severity
     cwe_id: str | None = None
     cwe_name: str | None = None

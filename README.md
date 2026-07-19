@@ -385,7 +385,7 @@ make help
 - [x] **Spec 003**: Serviço de Detecção de Componentes (✅ Concluída)
 - [x] **Spec 004**: Motor STRIDE (✅ Concluída)
 - [x] **Spec 005**: Vulnerabilidades e Contramedidas (✅ Concluída)
-- [ ] **Spec 006**: Gerador de Relatórios (pendente)
+- [x] **Spec 006**: Gerador de Relatórios (✅ Concluída)
 - [x] **Spec 007**: CI/CD GitHub Actions (✅ Concluída)
 - [x] **Spec 008**: Frontend React (✅ Concluída)
 - [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
