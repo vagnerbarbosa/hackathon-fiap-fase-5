@@ -381,7 +381,7 @@ make help
 - [x] SDD consolidado
 - [x] **Spec 000**: Contratos de Domínio (Pydantic Models) (✅ Concluída)
 - [x] **Spec 001**: API Core + Scaffolding (FastAPI, Docker, PostgreSQL) (✅ Concluída)
-- [x] **Spec 002**: Dataset e Treinamento YOLO (em desenvolvimento)
+- [x] **Spec 002**: Dataset e Treinamento YOLO (✅ Concluída)
 - [x] **Spec 003**: Serviço de Detecção de Componentes (✅ Concluída)
 - [x] **Spec 004**: Motor STRIDE (✅ Concluída)
 - [x] **Spec 005**: Vulnerabilidades e Contramedidas (✅ Concluída)

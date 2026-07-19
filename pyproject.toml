@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "hackathon-fiap-fase-5"
-version = "0.2.0"
+version = "0.3.0"
 description = "Modelagem de Ameaças com IA (STRIDE) - Hackathon FIAP Fase 5"
 authors = ["FIAP Software Security Team"]
 readme = "README.md"
