@@ -135,19 +135,38 @@ class YOLOModel:
         logger.info("Using YOLO stub (model not available)")
 
     def _load_class_names(self) -> dict:
-        """Carrega mapeamento de nomes de classes."""
-        # Default class names for architecture components
+        """Carrega mapeamento de nomes de classes (30 classes do treinamento)."""
         return {
-            0: "user",
-            1: "web_server",
-            2: "api",
-            3: "database",
-            4: "queue",
-            5: "cache",
-            6: "external_service",
-            7: "mobile_app",
-            8: "container",
-            9: "storage",
+            0: "actor_user",
+            1: "edge_ddos_protection",
+            2: "edge_cdn",
+            3: "edge_waf",
+            4: "edge_gateway",
+            5: "edge_portal",
+            6: "external_entry_point",
+            7: "integration_orchestrator",
+            8: "compute_load_balancer",
+            9: "compute_service",
+            10: "compute_worker",
+            11: "data_database",
+            12: "data_cache",
+            13: "data_storage",
+            14: "security_identity_provider",
+            15: "security_key_management",
+            16: "obs_monitoring",
+            17: "obs_audit",
+            18: "external_backend_service",
+            19: "external_saas_service",
+            20: "external_web_service",
+            21: "communication_service",
+            22: "backup_service",
+            23: "boundary_cloud",
+            24: "boundary_region",
+            25: "boundary_resource_group",
+            26: "boundary_vpc_or_vnet",
+            27: "boundary_subnet_public",
+            28: "boundary_subnet_private",
+            29: "boundary_autoscaling_group",
         }
 
     @property
@@ -163,7 +182,7 @@ class YOLOModel:
     def predict(
         self,
         image: Union[str, Path, np.ndarray],
-        conf: float = 0.25,
+        conf: float = 0.15,
         iou: float = 0.45,
         imgsz: int = 640,
     ) -> List[DetectionResult]:
@@ -222,17 +241,17 @@ class YOLOModel:
         iou: float,
         imgsz: int,
     ) -> List[DetectionResult]:
-        """Prediz usando ONNX Runtime."""
-        import onnxruntime as ort
+        """Prediz usando ONNX Runtime (formato YOLOv11)."""
+        import cv2
 
         # Preprocess image
         if isinstance(image, (str, Path)):
-            import cv2
-
             img = cv2.imread(str(image))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         else:
             img = image
+
+        original_h, original_w = img.shape[:2]
 
         # Resize and normalize
         img = cv2.resize(img, (imgsz, imgsz))
@@ -244,8 +263,8 @@ class YOLOModel:
         input_name = self._model.get_inputs()[0].name
         outputs = self._model.run(None, {input_name: img})
 
-        # Parse outputs (YOLO format)
-        return self._parse_onnx_outputs(outputs[0], conf)
+        # Parse outputs (YOLOv11 format: [batch, 4+num_classes, num_anchors])
+        return self._parse_onnx_outputs(outputs[0], conf, original_w, original_h, imgsz)
 
     def _parse_results(self, results: Any) -> List[DetectionResult]:
         """Analisa resultados YOLO em objetos DetectionResult."""
@@ -280,33 +299,52 @@ class YOLOModel:
         return detections
 
     def _parse_onnx_outputs(
-        self, outputs: np.ndarray, conf_threshold: float
+        self, output: np.ndarray, conf_threshold: float,
+        original_w: int = 640, original_h: int = 640, imgsz: int = 640,
     ) -> List[DetectionResult]:
-        """Analisa saídas do modelo ONNX."""
+        """Analisa saídas do modelo ONNX no formato YOLOv11.
+
+        YOLOv11 format: [batch, 4+num_classes, num_anchors]
+        - Não há campo de confiança separado
+        - A confiança é o valor máximo dos class scores
+        """
         detections = []
 
-        # YOLO output format: [batch, num_boxes, 5 + num_classes]
-        # Each box: [x_center, y_center, width, height, conf, class_probs...]
-        for box in outputs[0]:  # First image in batch
-            confidence = box[4]
+        # output shape: [4+num_classes, num_anchors]
+        data = output[0]  # Remove batch dimension
+        num_features = data.shape[0]
+        num_classes = num_features - 4
+
+        scale_x = original_w / imgsz
+        scale_y = original_h / imgsz
+
+        # Transpor para [num_anchors, 4+num_classes]
+        data = data.T
+
+        for det in data:
+            # Class scores começam no índice 4
+            class_scores = det[4:4 + num_classes]
+            confidence = float(np.max(class_scores))
+
             if confidence < conf_threshold:
                 continue
 
-            class_id = int(np.argmax(box[5:]))
+            class_id = int(np.argmax(class_scores))
             class_name = self._class_names.get(class_id, f"class_{class_id}")
 
             # Convert from center format to corner format
-            x_center, y_center, width, height = box[0:4]
-            x_min = x_center - width / 2
-            y_min = y_center - height / 2
-            x_max = x_center + width / 2
-            y_max = y_center + height / 2
+            x_center, y_center, width, height = det[0:4]
+
+            x_min = (x_center - width / 2) * scale_x
+            y_min = (y_center - height / 2) * scale_y
+            x_max = (x_center + width / 2) * scale_x
+            y_max = (y_center + height / 2) * scale_y
 
             detections.append(
                 DetectionResult(
                     class_name=class_name,
                     confidence=float(confidence),
-                    bbox=[x_min, y_min, x_max, y_max],
+                    bbox=[float(x_min), float(y_min), float(x_max), float(y_max)],
                 )
             )
 

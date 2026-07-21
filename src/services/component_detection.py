@@ -34,7 +34,7 @@ class ModelNotLoadedError(Exception):
 class ComponentDetectionService:
     """Serviço de detecção de componentes usando YOLOv11n ONNX."""
 
-    DEFAULT_CONFIDENCE_THRESHOLD = 0.3
+    DEFAULT_CONFIDENCE_THRESHOLD = 0.15
 
     def __init__(
         self,
@@ -161,50 +161,66 @@ class ComponentDetectionService:
         # Log do formato para debug
         logger.info(f"ONNX output shape: {outputs[0].shape}")
 
-        # Processar detecções
-        # Formato exportado: [batch, features, num_anchors]
-        # features = 4(box) + 1(conf) + num_classes
-        output = outputs[0][0]  # Remove batch: [features, num_anchors]
+        # YOLOv11 exported ONNX format: [batch, 4+num_classes, num_anchors]
+        # Não há campo de confiança separado — a confiança é o max dos class scores.
+        output = outputs[0][0]  # Remove batch: [4+num_classes, num_anchors]
         num_features = output.shape[0]
-        num_classes = num_features - 5  # 5 = 4(box) + 1(conf)
+        num_classes = num_features - 4  # 4 = box (x_center, y_center, w, h)
 
-        logger.info(f"Features: {num_features}, Classes: {num_classes}")
+        logger.info(f"Features: {num_features}, Classes detectadas: {num_classes}")
 
-        # Classes do modelo (do treinamento do Lucas)
+        # Classes do modelo conforme data.yaml (30 classes do treinamento)
         class_names = {
-            0: "database",
-            1: "queue",
-            2: "api",
-            3: "gateway",
-            4: "client",
-            5: "server",
-            6: "web_server",
-            7: "service",
+            0: "actor_user",
+            1: "edge_ddos_protection",
+            2: "edge_cdn",
+            3: "edge_waf",
+            4: "edge_gateway",
+            5: "edge_portal",
+            6: "external_entry_point",
+            7: "integration_orchestrator",
+            8: "compute_load_balancer",
+            9: "compute_service",
+            10: "compute_worker",
+            11: "data_database",
+            12: "data_cache",
+            13: "data_storage",
+            14: "security_identity_provider",
+            15: "security_key_management",
+            16: "obs_monitoring",
+            17: "obs_audit",
+            18: "external_backend_service",
+            19: "external_saas_service",
+            20: "external_web_service",
+            21: "communication_service",
+            22: "backup_service",
+            23: "boundary_cloud",
+            24: "boundary_region",
+            25: "boundary_resource_group",
+            26: "boundary_vpc_or_vnet",
+            27: "boundary_subnet_public",
+            28: "boundary_subnet_private",
+            29: "boundary_autoscaling_group",
         }
 
         components = []
 
-        # O formato é [features, num_anchors] - precisamos transpor para [num_anchors, features]
-        detections = output.T  # Agora cada linha é uma âncora
+        # Transpor para [num_anchors, 4+num_classes] — cada linha é uma detecção
+        detections = output.T
 
         for detection in detections:
-            if len(detection) < 5 + min(1, num_classes):  # Precisa de pelo menos box + conf
-                continue
+            # Extrair caixa (primeiros 4 valores)
+            x_center, y_center, width, height = detection[0:4]
 
-            # Extrair confiança (índice 4)
-            confidence = float(detection[4])
+            # Extrair class scores (índices 4 em diante)
+            class_scores = detection[4:4 + num_classes]
+
+            # A confiança no YOLOv11 é o valor máximo dos class scores
+            confidence = float(np.max(class_scores))
             if confidence < self.confidence_threshold:
                 continue
 
-            # Extrair caixa
-            x_center, y_center, width, height = detection[0:4]
-
-            # Extrair classe (índices após conf)
-            class_scores = detection[5:5+num_classes]
-            if len(class_scores) > 0:
-                class_id = int(np.argmax(class_scores))
-            else:
-                class_id = 0
+            class_id = int(np.argmax(class_scores))
 
             # Converter para coordenadas da imagem original
             scale_x = original_width / input_size
@@ -236,6 +252,9 @@ class ComponentDetectionService:
                 ),
             )
             components.append(component)
+
+        # Aplicar NMS (Non-Maximum Suppression) para remover detecções duplicadas
+        components = self._apply_nms(components, iou_threshold=0.45)
 
         # Se nenhum componente detectado, lançar erro
         if not components:
@@ -277,15 +296,71 @@ class ComponentDetectionService:
 
     def _create_trust_boundaries(self, components: list[DetectedComponent]) -> list[list[str]]:
         """Cria trust boundaries baseado em zonas."""
-        # Zonas: externa (usuário), fronteira (API), interna (database)
+        # Zonas: externa (usuário/entry points), fronteira (edge/gateway), interna (compute/data)
         boundaries: dict[str, list[str]] = {"external": [], "boundary": [], "internal": []}
 
+        external_types = {"actor_user", "external_entry_point", "external_backend_service",
+                          "external_saas_service", "external_web_service"}
+        boundary_types = {"edge_ddos_protection", "edge_cdn", "edge_waf", "edge_gateway",
+                          "edge_portal", "compute_load_balancer", "integration_orchestrator",
+                          "boundary_cloud", "boundary_region", "boundary_resource_group",
+                          "boundary_vpc_or_vnet", "boundary_subnet_public",
+                          "boundary_subnet_private", "boundary_autoscaling_group"}
+
         for comp in components:
-            if comp.type in ["user"]:
+            if comp.type in external_types:
                 boundaries["external"].append(comp.id)
-            elif comp.type in ["api", "gateway"]:
+            elif comp.type in boundary_types:
                 boundaries["boundary"].append(comp.id)
             else:
                 boundaries["internal"].append(comp.id)
 
         return [v for v in boundaries.values() if v]
+
+    def _apply_nms(
+        self, components: list[DetectedComponent], iou_threshold: float = 0.45
+    ) -> list[DetectedComponent]:
+        """Aplica Non-Maximum Suppression para remover detecções duplicadas.
+
+        Args:
+            components: Lista de componentes detectados.
+            iou_threshold: Limiar IoU para considerar como duplicata.
+
+        Returns:
+            Lista filtrada de componentes.
+        """
+        if not components:
+            return components
+
+        # Ordenar por confiança decrescente
+        components = sorted(components, key=lambda c: c.confidence, reverse=True)
+        keep = []
+
+        while components:
+            best = components.pop(0)
+            keep.append(best)
+
+            remaining = []
+            for comp in components:
+                iou = self._compute_iou(best.bbox, comp.bbox)
+                if iou < iou_threshold:
+                    remaining.append(comp)
+
+            components = remaining
+
+        return keep
+
+    @staticmethod
+    def _compute_iou(box1: BoundingBox, box2: BoundingBox) -> float:
+        """Calcula Intersection over Union entre duas bounding boxes."""
+        x_min = max(box1.x_min, box2.x_min)
+        y_min = max(box1.y_min, box2.y_min)
+        x_max = min(box1.x_max, box2.x_max)
+        y_max = min(box1.y_max, box2.y_max)
+
+        intersection = max(0, x_max - x_min) * max(0, y_max - y_min)
+        area1 = (box1.x_max - box1.x_min) * (box1.y_max - box1.y_min)
+        area2 = (box2.x_max - box2.x_min) * (box2.y_max - box2.y_min)
+        union = area1 + area2 - intersection
+
+        return intersection / union if union > 0 else 0.0

@@ -22,8 +22,8 @@ COPY pyproject.toml poetry.lock* ./
 # Configure poetry to not create virtual environment
 RUN poetry config virtualenvs.create false
 
-# Install dependencies
-RUN poetry install --only main --no-interaction --no-ansi
+# Regenerate lock file if inconsistent, then install dependencies
+RUN poetry lock --no-update && poetry install --only main --no-interaction --no-ansi
 
 # Runtime stage
 FROM python:3.11-slim-bookworm as runtime
