@@ -21,10 +21,13 @@
 - **Spec 002**: Modelo treinado `best.pt` ou `best.onnx` (usa stub/mock por enquanto)
 
 ### Requisitos do Context7 (Obrigatório)
-1. YOLO: `from ultralytics import YOLO; model = YOLO("best.pt"); results = model.predict(img, conf=0.25, iou=0.45)`
-2. ONNX: `onnxruntime.InferenceSession("best.onnx", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])`
-3. OpenCV: redimensionamento para múltiplo de 32, normalização 0-1
-4. Cache Redis: TTL 1 hora, chave = SHA-256 da imagem
+1. ONNX Runtime: `onnxruntime.InferenceSession("best.onnx", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])`
+   - Output shape: `[1, 34, 8400]` → `[batch, 4+30_classes, num_anchors]`
+   - Sem campo de confiança separado; confiança = `max(class_scores[4:])`
+2. OpenCV: redimensionamento para 640x640, normalização 0-1, conversão BGR→RGB
+3. NMS: IoU threshold 0.45 para eliminar detecções duplicadas
+4. Confidence threshold: 0.15 (mínimo para manter detecção)
+5. Cache Redis: TTL 1 hora, chave = SHA-256 da imagem
 
 ---
 
@@ -61,7 +64,7 @@ class Point(BaseModel):
 
 class DetectedComponent(BaseModel):
     id: str                     # UUID
-    type: str                   # ex: "user", "api", "database"
+    type: str                   # ex: "actor_user", "compute_service", "data_database"
     confidence: float           # 0.0-1.0
     bbox: BoundingBox
     center: Point
@@ -91,21 +94,26 @@ class ArchitectureGraph(BaseModel):
 class YOLOStub:
     """Mock do modelo YOLO para desenvolvimento paralelo."""
     
-    def predict(self, image_path, conf=0.25, iou=0.45, imgsz=640):
-        # Retorna resultados simulados
+    def predict(self, image_path, conf=0.15, iou=0.45, imgsz=640):
+        # Retorna resultados simulados (30 classes do dataset/data.yaml)
         return [MockResults([
-            MockBox(cls="user", conf=0.95, xyxy=[10, 50, 60, 100]),
-            MockBox(cls="api", conf=0.91, xyxy=[200, 50, 300, 120]),
+            MockBox(cls="actor_user", conf=0.85, xyxy=[10, 50, 60, 100]),
+            MockBox(cls="edge_gateway", conf=0.78, xyxy=[200, 50, 300, 120]),
+            MockBox(cls="data_database", conf=0.91, xyxy=[400, 50, 500, 120]),
         ])]
 
 # tests/mocks/fake_architecture_graph.py
 fake_graph = ArchitectureGraph(
     components=[
-        DetectedComponent(id="uuid-1", type="user", confidence=0.95, ...),
-        DetectedComponent(id="uuid-2", type="api", confidence=0.91, ...),
+        DetectedComponent(id="uuid-1", type="actor_user", confidence=0.85, ...),
+        DetectedComponent(id="uuid-2", type="edge_gateway", confidence=0.78, ...),
+        DetectedComponent(id="uuid-3", type="data_database", confidence=0.91, ...),
     ],
-    data_flows=[DataFlow(source_id="uuid-1", target_id="uuid-2", direction="unidirectional", inferred=True)],
-    trust_boundaries=[["uuid-1"], ["uuid-2"]],
+    data_flows=[
+        DataFlow(source_id="uuid-1", target_id="uuid-2", direction="unidirectional", inferred=True),
+        DataFlow(source_id="uuid-2", target_id="uuid-3", direction="unidirectional", inferred=True),
+    ],
+    trust_boundaries=[["uuid-1"], ["uuid-2"], ["uuid-3"]],
 )
 ```
 
@@ -116,15 +124,19 @@ fake_graph = ArchitectureGraph(
 ### Context7 Findings
 
 **YOLOv11 (Ultralytics)**:
-- Carregar: `YOLO("path/to/best.pt")`
-- Inferência: `model.predict(source, conf=0.25, iou=0.45, imgsz=640)`
-- Resultado: boxes com `cls` (classe), `conf` (confiança), `xyxy` (bbox)
-- Mapear labels numéricos para nomes via `model.names`
+- Carregar: `YOLO("path/to/best.pt")` (apenas para treinamento/debugging)
+- Inferência em produção: via ONNX Runtime (mais rápido e leve)
+- 30 classes definidas em `dataset/data.yaml`
+- Mapear labels numéricos para nomes via dicionário de classes
 
 **ONNX Runtime**:
 - Carregar: `InferenceSession("best.onnx", providers=[...])`
 - Inferência: `session.run(None, {input_name: preprocessed_image})`
+- Output shape: `[1, 34, 8400]` = `[batch, 4_box + 30_classes, num_anchors]`
+- Formato YOLOv11: **sem campo de confiança separado** — confiança = max(class_scores)
 - ~2x mais rápido que PyTorch em CPU
+- Threshold de confiança: 0.15 (aplicado pós-inferência)
+- NMS com IoU threshold 0.45
 
 **OpenCV**:
 - `cv2.resize(img, (640, 640))` - múltiplo de 32

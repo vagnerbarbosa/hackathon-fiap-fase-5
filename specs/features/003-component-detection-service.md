@@ -21,7 +21,7 @@ Implementar um serviço `ComponentDetectionService` que:
 ```python
 class DetectedComponent(BaseModel):
     id: str                     # UUID gerado
-    type: str                   # ex: "user", "api", "database"
+    type: str                   # ex: "actor_user", "compute_service", "data_database"
     confidence: float           # 0.0–1.0
     bbox: BoundingBox           # x_min, y_min, x_max, y_max (pixels)
     center: Point             # x_center, y_center (pixels)
@@ -50,20 +50,24 @@ class ComponentDetectionService:
 - Suporte a PNG, JPG, JPEG (validação por magic bytes já feita na Spec 001).
 
 ### RF-03: Inferência com YOLOv11n
-- Carregar modelo `best.pt` (ou `best.onnx` para performance) exportado na Spec 002.
-- Executar `model.predict()` com:
-  - `conf=0.25` (threshold mínimo de confiança)
-  - `iou=0.45` (threshold NMS)
+- Carregar modelo `best.onnx` exportado na Spec 002.
+- Formato de saída ONNX do YOLOv11: `[batch, 4+num_classes, num_anchors]` = `[1, 34, 8400]`.
+  - Primeiros 4 valores por âncora: `x_center, y_center, width, height` (coordenadas da caixa).
+  - Valores 4..34: scores das 30 classes (sem campo de confiança separado).
+  - A confiança de cada detecção é `max(class_scores)`.
+- Parâmetros de inferência:
+  - `conf=0.15` (threshold mínimo de confiança)
+  - `iou=0.45` (threshold NMS para eliminar duplicatas)
   - `imgsz=640`
-- Mapear labels numéricos do YOLO para nomes de classes (taxonomia definida na Spec 002).
+- Mapear labels numéricos do YOLO para nomes de classes (30 classes definidas em `dataset/data.yaml`).
 
 ### RF-04: Inferência de Relacionamentos (Heurística Espacial)
 Com base nas posições (centros) dos componentes detectados, inferir:
-- **Data Flows**: se dois componentes estão alinhados horizontalmente/verticalmente com proximidade < X pixels, inferir um fluxo.
-- **Trust Boundaries**: agrupar componentes por zonas (ex: "público", "privado", "database") com base em regras:
-  - `user` sempre está na zona "pública" (Internet).
-  - `database` sempre está na zona "privada" (Data Layer).
-  - `api` é fronteira entre público e privado.
+- **Data Flows**: componentes ordenados por posição X; componentes adjacentes recebem um fluxo unidirecional inferido.
+- **Trust Boundaries**: agrupar componentes por zonas com base em regras de domínio:
+  - Zona "external": `actor_user`, `external_entry_point`, `external_backend_service`, `external_saas_service`, `external_web_service`
+  - Zona "boundary": `edge_*`, `compute_load_balancer`, `integration_orchestrator`, `boundary_*`
+  - Zona "internal": todos os demais (`compute_service`, `compute_worker`, `data_*`, `security_*`, `obs_*`, `communication_service`, `backup_service`)
 - Marcar fluxos como `inferred: True` para diferenciar de futuras detecções explícitas.
 
 ### RF-05: Cache de Resultados
@@ -77,7 +81,19 @@ Com base nas posições (centros) dos componentes detectados, inferir:
   {
     "error": "NO_COMPONENTS_DETECTED",
     "message": "Nenhum componente de arquitetura foi detectado na imagem. Verifique se o diagrama está legível e contém componentes suportados.",
-    "supported_types": ["user", "web_server", "api", "database", "queue", "cache", "external_service", "mobile_app", "container", "storage"]
+    "supported_types": [
+      "actor_user", "edge_ddos_protection", "edge_cdn", "edge_waf", "edge_gateway",
+      "edge_portal", "external_entry_point", "integration_orchestrator",
+      "compute_load_balancer", "compute_service", "compute_worker",
+      "data_database", "data_cache", "data_storage",
+      "security_identity_provider", "security_key_management",
+      "obs_monitoring", "obs_audit",
+      "external_backend_service", "external_saas_service", "external_web_service",
+      "communication_service", "backup_service",
+      "boundary_cloud", "boundary_region", "boundary_resource_group",
+      "boundary_vpc_or_vnet", "boundary_subnet_public", "boundary_subnet_private",
+      "boundary_autoscaling_group"
+    ]
   }
   ```
 
@@ -104,14 +120,14 @@ Dado uma imagem de diagrama de arquitetura válida
 Quando o serviço ComponentDetectionService.detect() é chamado
 Então retorna uma lista de DetectedComponent
 E cada componente tem type, confidence, bbox e center preenchidos
-E confidence >= 0.25 para todos os componentes
+E confidence >= 0.15 para todos os componentes
 ```
 
 ### CA-02: Inferência de Fluxos
 ```gherkin
-Dado uma imagem com um usuário à esquerda e uma API à direita
+Dado uma imagem com um actor_user à esquerda e um compute_service à direita
 Quando o serviço detecta os componentes
-Então infere um DataFlow de "user" para "api"
+Então infere um DataFlow de "actor_user" para "compute_service"
 E marca como inferred: True
 ```
 
@@ -153,18 +169,26 @@ from domain.models import ArchitectureGraph, DetectedComponent, DataFlow, Boundi
 fake_graph = ArchitectureGraph(
     components=[
         DetectedComponent(
-            id=str(uuid4()), type="user", confidence=0.95,
+            id=str(uuid4()), type="actor_user", confidence=0.85,
             bbox=BoundingBox(x_min=10, y_min=50, x_max=60, y_max=100),
             center=Point(x_center=35, y_center=75),
         ),
         DetectedComponent(
-            id=str(uuid4()), type="api", confidence=0.91,
+            id=str(uuid4()), type="edge_gateway", confidence=0.78,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
             center=Point(x_center=250, y_center=85),
         ),
+        DetectedComponent(
+            id=str(uuid4()), type="data_database", confidence=0.91,
+            bbox=BoundingBox(x_min=400, y_min=50, x_max=500, y_max=120),
+            center=Point(x_center=450, y_center=85),
+        ),
     ],
-    data_flows=[DataFlow(source_id="comp-1", target_id="comp-2", direction="unidirectional", inferred=True)],
-    trust_boundaries=[["comp-1"], ["comp-2"]],
+    data_flows=[
+        DataFlow(source_id="comp-1", target_id="comp-2", direction="unidirectional", inferred=True),
+        DataFlow(source_id="comp-2", target_id="comp-3", direction="unidirectional", inferred=True),
+    ],
+    trust_boundaries=[["comp-1"], ["comp-2"], ["comp-3"]],
 )
 ```
 

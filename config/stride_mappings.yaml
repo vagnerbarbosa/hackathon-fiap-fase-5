@@ -1,5 +1,10 @@
+# STRIDE Threat Mappings por tipo de componente detectado pelo modelo YOLOv11 (30 classes)
+# Cada componente é mapeado para ameaças STRIDE relevantes ao seu papel na arquitetura.
+# Categorias: S=Spoofing, T=Tampering, R=Repudiation, I=Information Disclosure, D=DoS, E=Elevation of Privilege
+
 components:
-  user:
+  # --- Atores ---
+  actor_user:
     threats:
       - category: "S"
         description: "Spoofing de identidade do usuario."
@@ -7,47 +12,163 @@ components:
       - category: "R"
         description: "Negacao de acoes realizadas pelo usuario."
         justification: "Acoes de usuario precisam de trilha de auditoria confiavel."
-  web_server:
+
+  # --- Camada Edge ---
+  edge_ddos_protection:
     threats:
       - category: "S"
-        description: "Falso servidor web pode receber trafego de usuarios."
-        justification: "Usuarios precisam confiar na identidade do servidor antes de enviar credenciais ou dados."
-      - category: "T"
-        description: "Respostas HTTP podem ser alteradas antes de chegar ao cliente."
-        justification: "Conteudo servido ao cliente influencia sessoes, formularios e decisoes de seguranca."
-      - category: "R"
-        description: "Logs web insuficientes permitem negar eventos relevantes."
-        justification: "A camada web registra requisicoes e deve sustentar auditoria de eventos."
-      - category: "I"
-        description: "Headers, cookies ou paginas podem expor dados sensiveis."
-        justification: "Servidores web manipulam metadados e conteudo entregue diretamente a usuarios."
+        description: "Bypass do mecanismo de protecao DDoS via spoofing de IP."
+        justification: "Protecoes DDoS dependem de identificacao correta da origem do trafego."
       - category: "D"
-        description: "Servidor web pode sofrer indisponibilidade por DDoS."
-        justification: "A exposicao publica torna o servidor web alvo natural de esgotamento de recursos."
-      - category: "E"
-        description: "Falhas no servidor web podem permitir escalacao para shell."
-        justification: "Comprometimento da camada web pode abrir acesso ao ambiente de execucao."
-  api:
+        description: "Esgotamento de recursos do proprio servico de protecao."
+        justification: "Ataques volumetricos podem saturar a capacidade da camada de protecao."
+      - category: "T"
+        description: "Regras de filtragem podem ser manipuladas indevidamente."
+        justification: "Configuracoes incorretas podem permitir trafego malicioso ou bloquear legitimo."
+
+  edge_cdn:
+    threats:
+      - category: "T"
+        description: "Conteudo cacheado no CDN pode ser envenenado."
+        justification: "CDNs servem conteudo cacheado para multiplos usuarios sem revalidacao constante."
+      - category: "I"
+        description: "Dados sensiveis podem ser cacheados e expostos indevidamente."
+        justification: "CDNs podem reter headers ou conteudo com informacoes privadas."
+      - category: "D"
+        description: "Cache busting pode sobrecarregar a origem."
+        justification: "Invalidacao massiva de cache transfere carga para servidores de origem."
+
+  edge_waf:
     threats:
       - category: "S"
-        description: "Spoofing de tokens ou credenciais de API."
-        justification: "APIs dependem de tokens e credenciais para identificar consumidores."
+        description: "Bypass do WAF via encoding ou ofuscacao de payloads."
+        justification: "WAFs dependem de pattern matching que pode ser contornado."
       - category: "T"
-        description: "Requests ou responses podem ser alterados indevidamente."
-        justification: "APIs processam payloads de entrada e saida que afetam regras de negocio."
-      - category: "R"
-        description: "Chamadas podem ser negadas por falta de auditoria confiavel."
-        justification: "Chamadas de API precisam ser rastreaveis para responsabilizacao."
-      - category: "I"
-        description: "Dados sensiveis podem ser expostos por endpoints da API."
-        justification: "Endpoints frequentemente retornam dados de usuario, negocio ou operacao."
+        description: "Regras do WAF podem ser alteradas por acesso administrativo comprometido."
+        justification: "Configuracoes do WAF definem a superficie de protecao da aplicacao."
       - category: "D"
-        description: "Recursos da API podem ser esgotados por excesso de requisicoes."
-        justification: "APIs expostas podem receber alto volume de chamadas concorrentes."
+        description: "Processamento de regras complexas pode ser explorado para DoS."
+        justification: "Payloads crafted podem consumir recursos excessivos na avaliacao de regras."
+
+  edge_gateway:
+    threats:
+      - category: "S"
+        description: "Spoofing de tokens ou credenciais no gateway."
+        justification: "Gateways frequentemente validam autenticacao e podem ser alvo de tokens forjados."
+      - category: "T"
+        description: "Requests podem ser alterados entre cliente e backend."
+        justification: "O gateway transforma e roteia requisicoes, podendo ser ponto de manipulacao."
+      - category: "R"
+        description: "Chamadas podem ser negadas sem logs adequados no gateway."
+        justification: "Gateways centralizam trafego e devem manter rastro de todas as requisicoes."
+      - category: "I"
+        description: "Headers ou payloads podem expor dados sensiveis no roteamento."
+        justification: "Gateways processam metadados e corpos de requisicao em transito."
+      - category: "D"
+        description: "Gateway pode ser sobrecarregado por excesso de requisicoes."
+        justification: "Ponto central de entrada concentra todo o trafego da aplicacao."
       - category: "E"
         description: "Bypass de autorizacao pode causar escalacao de privilegios."
-        justification: "APIs aplicam regras de autorizacao que separam perfis e permissoes."
-  database:
+        justification: "Gateways aplicam politicas de acesso que separam perfis e permissoes."
+
+  edge_portal:
+    threats:
+      - category: "S"
+        description: "Portal pode ser clonado para phishing."
+        justification: "Portais web sao a interface direta com usuarios e alvos de clonagem."
+      - category: "T"
+        description: "Conteudo do portal pode ser adulterado via XSS ou injecao."
+        justification: "Portais renderizam conteudo dinamico que pode ser manipulado."
+      - category: "I"
+        description: "Dados sensiveis podem ser expostos na interface do portal."
+        justification: "Portais exibem informacoes de usuario e operacoes diretamente ao cliente."
+      - category: "D"
+        description: "Portal pode sofrer indisponibilidade por ataques volumetricos."
+        justification: "Interfaces publicas sao alvos naturais de ataques de negacao de servico."
+
+  # --- Pontos de Entrada Externos ---
+  external_entry_point:
+    threats:
+      - category: "S"
+        description: "Ponto de entrada pode receber requisicoes de fontes nao autenticadas."
+        justification: "Endpoints publicos sao a primeira superficie de ataque exposta."
+      - category: "T"
+        description: "Payloads de entrada podem conter dados maliciosos."
+        justification: "Dados recebidos de fontes externas nao sao confiaveis por padrao."
+      - category: "D"
+        description: "Ponto de entrada pode ser alvo de ataques volumetricos."
+        justification: "Endpoints expostos podem receber alto volume de requisicoes maliciosas."
+
+  # --- Integracao e Orquestracao ---
+  integration_orchestrator:
+    threats:
+      - category: "S"
+        description: "Servicos orquestrados podem receber comandos de fontes falsificadas."
+        justification: "Orquestradores emitem comandos que afetam multiplos servicos."
+      - category: "T"
+        description: "Fluxo de orquestracao pode ser alterado indevidamente."
+        justification: "Manipulacao do fluxo pode causar execucao incorreta de processos de negocio."
+      - category: "R"
+        description: "Etapas do fluxo podem ser negadas sem correlacao adequada."
+        justification: "Orquestracoes multi-servico precisam de rastreabilidade ponta a ponta."
+      - category: "E"
+        description: "Acesso ao orquestrador pode permitir controle de multiplos servicos."
+        justification: "Comprometimento do orquestrador amplifica impacto para todos os servicos gerenciados."
+
+  # --- Camada Compute ---
+  compute_load_balancer:
+    threats:
+      - category: "S"
+        description: "Load balancer pode ser alvo de IP spoofing."
+        justification: "Balanceadores distribuem trafego baseado em origem e destino."
+      - category: "T"
+        description: "Configuracao de roteamento pode ser alterada indevidamente."
+        justification: "Regras de balanceamento definem para onde o trafego e direcionado."
+      - category: "D"
+        description: "Sobrecarga pode esgotar capacidade do balanceador."
+        justification: "Todo o trafego passa pelo balanceador, tornando-o ponto critico."
+      - category: "I"
+        description: "Headers de saude ou metadados podem expor topologia interna."
+        justification: "Health checks e headers de roteamento podem revelar infraestrutura."
+
+  compute_service:
+    threats:
+      - category: "S"
+        description: "Spoofing de identidade entre servicos."
+        justification: "Comunicacao entre servicos depende de autenticacao mutua."
+      - category: "T"
+        description: "Codigo ou configuracao do servico pode ser alterado."
+        justification: "Deploy de versoes adulteradas pode comprometer processamento."
+      - category: "R"
+        description: "Acoes do servico podem ser negadas sem logs estruturados."
+        justification: "Servicos processam logica de negocio que precisa ser auditavel."
+      - category: "I"
+        description: "Servico pode expor dados sensiveis em logs ou respostas."
+        justification: "Servicos manipulam dados de negocio que podem vazar inadvertidamente."
+      - category: "D"
+        description: "Servico pode ser sobrecarregado por requisicoes excessivas."
+        justification: "Servicos com limites inadequados podem ficar indisponiveis."
+      - category: "E"
+        description: "Vulnerabilidades no servico podem permitir execucao arbitraria."
+        justification: "Falhas de seguranca podem escalar acesso alem do escopo do servico."
+
+  compute_worker:
+    threats:
+      - category: "T"
+        description: "Tarefas processadas pelo worker podem ser adulteradas."
+        justification: "Workers processam jobs assincronos cujo payload pode ser manipulado."
+      - category: "R"
+        description: "Execucao de tarefas pode ser negada sem rastreabilidade."
+        justification: "Jobs assincronos precisam de correlacao com origem e resultado."
+      - category: "D"
+        description: "Fila de tarefas pode ser inundada para esgotar workers."
+        justification: "Workers com capacidade limitada podem ser saturados por jobs maliciosos."
+      - category: "E"
+        description: "Worker pode executar codigo arbitrario se payload nao for validado."
+        justification: "Payloads de jobs podem conter instrucoes que escapam do sandbox esperado."
+
+  # --- Camada de Dados ---
+  data_database:
     threats:
       - category: "T"
         description: "Registros do banco podem ser alterados sem autorizacao."
@@ -64,27 +185,8 @@ components:
       - category: "E"
         description: "Permissoes excessivas podem permitir escalacao no banco."
         justification: "Contas e roles de banco podem conceder acesso alem do necessario."
-  queue:
-    threats:
-      - category: "S"
-        description: "Mensagens podem ser enviadas por produtores falsificados."
-        justification: "Filas dependem da identidade de produtores e consumidores autorizados."
-      - category: "T"
-        description: "Payloads de mensagens podem ser alterados."
-        justification: "Mensagens transportam comandos ou eventos que alteram processamento posterior."
-      - category: "R"
-        description: "Produtores ou consumidores podem negar envio ou consumo."
-        justification: "Fluxos assicronos exigem rastreabilidade de publicacao e consumo."
-      - category: "I"
-        description: "Mensagens na fila podem revelar dados sensiveis."
-        justification: "Payloads podem conter dados de usuarios, operacoes ou integracoes."
-      - category: "D"
-        description: "Fila pode ser preenchida ate ficar indisponivel."
-        justification: "Backlogs e limites de armazenamento podem degradar produtores e consumidores."
-      - category: "E"
-        description: "Acesso indevido a filas pode ampliar privilegios operacionais."
-        justification: "Permissoes em filas podem permitir publicar, consumir ou apagar eventos criticos."
-  cache:
+
+  data_cache:
     threats:
       - category: "T"
         description: "Entradas do cache podem ser envenenadas."
@@ -95,61 +197,8 @@ components:
       - category: "D"
         description: "Cache busting pode aumentar carga e causar indisponibilidade."
         justification: "Falhas no cache podem repassar carga excessiva para servicos de origem."
-  external_service:
-    threats:
-      - category: "S"
-        description: "Servico externo pode ser falsificado via DNS spoofing ou MITM."
-        justification: "Integracoes dependem da identidade e do destino correto do parceiro."
-      - category: "T"
-        description: "Callbacks ou payloads de integracao podem ser alterados."
-        justification: "Dados recebidos de terceiros influenciam processamento interno."
-      - category: "R"
-        description: "Integracoes podem ser negadas sem correlacao de eventos."
-        justification: "Eventos entre organizacoes precisam de rastreabilidade compartilhada."
-      - category: "I"
-        description: "Dados podem vazar por integracao com terceiro."
-        justification: "Servicos externos recebem ou retornam dados fora do dominio interno."
-      - category: "D"
-        description: "Indisponibilidade do parceiro pode afetar o sistema."
-        justification: "Dependencias externas podem interromper jornadas internas quando falham."
-  mobile_app:
-    threats:
-      - category: "S"
-        description: "Aplicativo pode ser clonado para simular cliente legitimo."
-        justification: "Clientes mobile podem ser copiados e usados para simular dispositivos confiaveis."
-      - category: "T"
-        description: "Binario mobile pode ser adulterado."
-        justification: "O binario roda em ambiente controlado pelo usuario final."
-      - category: "R"
-        description: "Uso local pode ser negado sem telemetria confiavel."
-        justification: "Eventos locais precisam ser correlacionados com acoes no backend."
-      - category: "I"
-        description: "Storage local pode expor dados sensiveis."
-        justification: "Dispositivos podem armazenar tokens, preferencias e dados em repouso."
-      - category: "D"
-        description: "Crash loops podem impedir uso do aplicativo."
-        justification: "Falhas recorrentes no cliente impedem acesso ao servico."
-      - category: "E"
-        description: "Jailbreak ou root pode contornar controles locais."
-        justification: "Ambientes comprometidos podem ignorar protecoes aplicadas no cliente."
-  container:
-    threats:
-      - category: "S"
-        description: "Imagem de container pode ser falsificada."
-        justification: "Implantacoes dependem da origem e assinatura corretas das imagens."
-      - category: "T"
-        description: "Imagem ou runtime do container pode ser alterado."
-        justification: "Alteracoes na imagem ou runtime mudam o comportamento do servico."
-      - category: "I"
-        description: "Secrets em variaveis de ambiente podem vazar."
-        justification: "Containers frequentemente recebem configuracoes sensiveis por ambiente."
-      - category: "D"
-        description: "Consumo excessivo de recursos pode derrubar o container."
-        justification: "Limites insuficientes de CPU, memoria ou IO afetam disponibilidade."
-      - category: "E"
-        description: "Container escape pode elevar privilegios no host."
-        justification: "Quebras de isolamento podem permitir acesso alem do container."
-  storage:
+
+  data_storage:
     threats:
       - category: "T"
         description: "Arquivos armazenados podem ser alterados indevidamente."
@@ -167,6 +216,222 @@ components:
         description: "ACLs incorretas podem permitir bypass de autorizacao."
         justification: "Politicas de acesso em storage controlam leitura, escrita e administracao."
 
+  # --- Camada de Seguranca ---
+  security_identity_provider:
+    threats:
+      - category: "S"
+        description: "Identity provider pode ser alvo de credential stuffing ou token forgery."
+        justification: "IdPs sao a raiz de confianca para autenticacao de toda a plataforma."
+      - category: "T"
+        description: "Tokens emitidos podem ser alterados se assinatura for comprometida."
+        justification: "Tokens JWT ou SAML dependem de chaves de assinatura integras."
+      - category: "R"
+        description: "Eventos de autenticacao podem ser negados sem audit log."
+        justification: "Login, logout e falhas de autenticacao precisam de registro auditavel."
+      - category: "I"
+        description: "Metadados de autenticacao podem expor informacoes de usuarios."
+        justification: "Claims em tokens podem conter dados pessoais ou permissoes sensiveis."
+      - category: "D"
+        description: "IdP pode ser alvo de ataques de forca bruta ou volumetricos."
+        justification: "Indisponibilidade do IdP impede autenticacao em toda a plataforma."
+      - category: "E"
+        description: "Comprometimento do IdP permite acesso irrestrito a todos os servicos."
+        justification: "O IdP controla a emissao de credenciais para toda a infraestrutura."
+
+  security_key_management:
+    threats:
+      - category: "S"
+        description: "Chaves podem ser usadas por entidades nao autorizadas."
+        justification: "Servicos de chaves devem garantir que apenas entidades legitimas acessam segredos."
+      - category: "T"
+        description: "Chaves podem ser rotacionadas ou substituidas maliciosamente."
+        justification: "Alteracao de chaves pode comprometer criptografia de dados em repouso e transito."
+      - category: "I"
+        description: "Exfiltracao de chaves compromete toda a criptografia dependente."
+        justification: "Vazamento de chaves permite decifracao de dados protegidos."
+      - category: "E"
+        description: "Acesso ao KMS pode permitir controle total sobre segredos da plataforma."
+        justification: "Comprometimento do gerenciador de chaves amplifica impacto para todos os servicos."
+
+  # --- Observabilidade ---
+  obs_monitoring:
+    threats:
+      - category: "T"
+        description: "Metricas e alertas podem ser adulterados para ocultar incidentes."
+        justification: "Sistemas de monitoramento sao alvo para encobrir atividades maliciosas."
+      - category: "I"
+        description: "Dados de monitoramento podem expor topologia e comportamento interno."
+        justification: "Metricas detalhadas revelam arquitetura, volumes e padroes de uso."
+      - category: "D"
+        description: "Sistema de monitoramento pode ser desabilitado durante um ataque."
+        justification: "Atacantes podem tentar cegar a equipe de operacoes antes de agir."
+
+  obs_audit:
+    threats:
+      - category: "T"
+        description: "Logs de auditoria podem ser alterados ou apagados."
+        justification: "Trilhas de auditoria sao evidencia forense e precisam de imutabilidade."
+      - category: "R"
+        description: "Sem logs integros, acoes maliciosas podem ser negadas."
+        justification: "Auditoria e a base para responsabilizacao e investigacao de incidentes."
+      - category: "D"
+        description: "Volume excessivo de eventos pode saturar o sistema de auditoria."
+        justification: "Log flooding pode causar perda de eventos criticos ou indisponibilidade."
+
+  # --- Servicos Externos ---
+  external_backend_service:
+    threats:
+      - category: "S"
+        description: "Servico backend externo pode ser falsificado via DNS ou MITM."
+        justification: "Integracoes dependem da identidade correta do parceiro."
+      - category: "T"
+        description: "Respostas do servico externo podem ser adulteradas em transito."
+        justification: "Dados recebidos de terceiros influenciam processamento interno."
+      - category: "I"
+        description: "Dados podem vazar por integracao com servico externo."
+        justification: "Servicos externos recebem ou retornam dados fora do dominio interno."
+      - category: "D"
+        description: "Indisponibilidade do servico externo pode afetar o sistema."
+        justification: "Dependencias externas podem interromper jornadas internas quando falham."
+
+  external_saas_service:
+    threats:
+      - category: "S"
+        description: "Servico SaaS pode ser falsificado ou ter API keys comprometidas."
+        justification: "Integracoes SaaS dependem de credenciais e endpoints confiaveis."
+      - category: "T"
+        description: "Callbacks ou webhooks do SaaS podem ser adulterados."
+        justification: "Dados recebidos via webhook influenciam estado interno da aplicacao."
+      - category: "I"
+        description: "Dados compartilhados com SaaS podem ser acessados por terceiros."
+        justification: "Provedores SaaS operam em infraestrutura fora do controle do cliente."
+      - category: "D"
+        description: "Indisponibilidade do SaaS pode impactar funcionalidades dependentes."
+        justification: "Features que dependem de SaaS ficam indisponiveis junto com o provedor."
+
+  external_web_service:
+    threats:
+      - category: "S"
+        description: "Servico web externo pode ser impersonado via DNS spoofing."
+        justification: "APIs web externas sao acessadas por URL que pode ser redirecionada."
+      - category: "T"
+        description: "Respostas de APIs externas podem ser interceptadas e modificadas."
+        justification: "Comunicacao com servicos web externos atravessa redes nao confiaveis."
+      - category: "I"
+        description: "Dados enviados para servicos web externos podem ser interceptados."
+        justification: "Informacoes trafegadas para terceiros podem vazar em transito."
+      - category: "D"
+        description: "Servico web externo pode ficar indisponivel afetando o sistema."
+        justification: "Dependencias externas introduzem pontos de falha fora do controle interno."
+
+  # --- Servicos de Comunicacao e Backup ---
+  communication_service:
+    threats:
+      - category: "S"
+        description: "Mensagens podem ser enviadas por remetentes falsificados."
+        justification: "Servicos de comunicacao (email, SMS, push) dependem de identidade do remetente."
+      - category: "T"
+        description: "Conteudo de mensagens pode ser alterado em transito."
+        justification: "Mensagens transportam informacoes que podem ser manipuladas antes da entrega."
+      - category: "I"
+        description: "Mensagens podem conter ou expor dados sensiveis."
+        justification: "Comunicacoes frequentemente incluem tokens, links ou dados pessoais."
+      - category: "D"
+        description: "Servico de comunicacao pode ser saturado por spam ou flood."
+        justification: "Envio massivo pode esgotar cotas ou bloquear entregas legitimas."
+
+  backup_service:
+    threats:
+      - category: "T"
+        description: "Backups podem ser corrompidos ou substituidos por versoes adulteradas."
+        justification: "Backups sao a ultima linha de defesa e precisam de integridade garantida."
+      - category: "I"
+        description: "Backups podem conter dados sensiveis acessiveis sem autorizacao."
+        justification: "Copias de seguranca replicam dados que podem incluir informacoes confidenciais."
+      - category: "D"
+        description: "Falha no servico de backup pode impedir recuperacao de desastres."
+        justification: "Indisponibilidade de backups durante incidentes amplifica o impacto."
+      - category: "E"
+        description: "Acesso a backups pode permitir restaurar dados com privilegios elevados."
+        justification: "Restauracao de backups pode reintroduzir configuracoes com permissoes excessivas."
+
+  # --- Trust Boundaries ---
+  boundary_cloud:
+    threats:
+      - category: "S"
+        description: "Acesso a conta cloud pode ser comprometido."
+        justification: "Contas cloud sao a raiz de acesso a toda a infraestrutura."
+      - category: "E"
+        description: "Permissoes excessivas na conta cloud ampliam superficie de ataque."
+        justification: "IAM policies mal configuradas podem conceder acesso irrestrito."
+
+  boundary_region:
+    threats:
+      - category: "D"
+        description: "Falha regional pode causar indisponibilidade de servicos."
+        justification: "Recursos concentrados em uma regiao ficam indisponiveis durante outages."
+      - category: "I"
+        description: "Requisitos de residencia de dados podem ser violados entre regioes."
+        justification: "Dados podem ser replicados para regioes com legislacao diferente."
+
+  boundary_resource_group:
+    threats:
+      - category: "E"
+        description: "Permissoes no resource group podem vazar para recursos nao relacionados."
+        justification: "Agrupamentos logicos compartilham politicas de acesso."
+      - category: "I"
+        description: "Tags ou metadados do resource group podem expor informacoes de projeto."
+        justification: "Metadados organizacionais podem revelar estrutura interna."
+
+  boundary_vpc_or_vnet:
+    threats:
+      - category: "S"
+        description: "Trafego pode entrar na VPC/VNet por rotas mal configuradas."
+        justification: "Redes virtuais dependem de regras corretas para isolar trafego."
+      - category: "I"
+        description: "Flow logs podem expor padroes de comunicacao interna."
+        justification: "Logs de rede revelam quais servicos se comunicam e com qual frequencia."
+      - category: "D"
+        description: "Exaustao de IPs ou tabelas de rotas pode impactar conectividade."
+        justification: "Recursos de rede limitados podem ser esgotados por crescimento ou ataque."
+
+  boundary_subnet_public:
+    threats:
+      - category: "S"
+        description: "Recursos em subnet publica sao acessiveis da internet."
+        justification: "Subnets publicas expoe recursos diretamente a atacantes externos."
+      - category: "D"
+        description: "Recursos publicos sao alvo direto de ataques volumetricos."
+        justification: "Exposicao publica torna recursos alvos naturais de DDoS."
+      - category: "E"
+        description: "Comprometimento de recurso publico pode ser pivot para rede interna."
+        justification: "Recursos em subnet publica podem ter acesso a subnets privadas."
+
+  boundary_subnet_private:
+    threats:
+      - category: "T"
+        description: "Comunicacao lateral entre servicos na subnet privada pode ser interceptada."
+        justification: "Trafego east-west dentro da rede privada frequentemente nao e criptografado."
+      - category: "E"
+        description: "Movimento lateral pode escalar acesso dentro da subnet privada."
+        justification: "Comprometimento de um servico pode permitir acesso a outros na mesma rede."
+      - category: "I"
+        description: "Dados em transito na subnet privada podem ser capturados por sniffing."
+        justification: "Redes privadas podem ter trafego nao criptografado entre servicos."
+
+  boundary_autoscaling_group:
+    threats:
+      - category: "T"
+        description: "Politicas de scaling podem ser manipuladas para criar instancias maliciosas."
+        justification: "Autoscaling pode instanciar imagens comprometidas se o template for adulterado."
+      - category: "D"
+        description: "Scaling insuficiente pode causar indisponibilidade sob carga."
+        justification: "Limites mal configurados podem impedir escalacao durante picos."
+      - category: "E"
+        description: "Instancias auto-criadas herdam IAM roles que podem ser excessivos."
+        justification: "Roles associados ao autoscaling podem conceder permissoes amplas a novas instancias."
+
+# Ameacas para Data Flows (aplicadas a todos os fluxos inferidos entre componentes)
 data_flows:
   threats:
     - category: "T"
