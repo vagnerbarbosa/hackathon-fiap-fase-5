@@ -163,10 +163,7 @@ $RECYCLE.BIN/
 # -------------------------------
 
 # Model artifacts (large binaries — use Git LFS or release assets)
-models/*.pt
-models/*.onnx
-models/*.pth
-models/*.safetensors
+# Nota: best.pt e best.onnx são versionados no repositório para o MVP
 
 # Ultralytics training runs (checkpoints, plots, logs — not versioned)
 runs/
