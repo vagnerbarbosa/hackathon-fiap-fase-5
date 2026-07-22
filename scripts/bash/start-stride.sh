@@ -1,6 +1,6 @@
 #!/bin/bash
 # Start STRIDE System script for Linux/macOS
-# Usage: ./scripts/start-stride.sh [options]
+# Usage: ./scripts/bash/start-stride.sh [options]
 
 set -e
 
@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 # Default values
 SKIP_BUILD=false
@@ -22,7 +22,7 @@ RUN_MIGRATIONS=true
 
 # Help function
 show_help() {
-    echo "Usage: ./scripts/start-stride.sh [OPTIONS]"
+    echo "Usage: ./scripts/bash/start-stride.sh [OPTIONS]"
     echo ""
     echo "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     echo ""
@@ -33,8 +33,8 @@ show_help() {
     echo "  --no-migrations     Skip database migrations"
     echo ""
     echo "Examples:"
-    echo "  ./scripts/start-stride.sh              # Start all services"
-    echo "  ./scripts/start-stride.sh --no-build   # Use existing images"
+    echo "  ./scripts/bash/start-stride.sh              # Start all services"
+    echo "  ./scripts/bash/start-stride.sh --no-build   # Use existing images"
 }
 
 # Parse arguments

@@ -13,15 +13,15 @@ help: ## Show this help message
 
 start: ## Start all services (API + Frontend + Database)
 	@echo "🚀 Starting STRIDE System..."
-	@./scripts/start-stride.sh
+	@./scripts/bash/start-stride.sh
 
 start-quick: ## Start quickly (skip build)
 	@echo "🚀 Starting STRIDE System (quick mode)..."
-	@./scripts/start-stride.sh --no-build
+	@./scripts/bash/start-stride.sh --no-build
 
 start-fg: ## Start in foreground mode
 	@echo "🚀 Starting STRIDE System (foreground mode)..."
-	@./scripts/start-stride.sh --foreground
+	@./scripts/bash/start-stride.sh --foreground
 
 stop: ## Stop all containers
 	@echo "🛑 Stopping STRIDE System..."
@@ -76,7 +76,7 @@ clean: ## Clean up containers, volumes, and temp files
 # Windows support (use with make -f Makefile.windows if needed)
 start-windows: ## Start on Windows (PowerShell)
 	@echo "🚀 Starting STRIDE System (Windows)..."
-	@powershell -ExecutionPolicy Bypass -File scripts/start-stride.ps1
+	@powershell -ExecutionPolicy Bypass -File scripts/powershell/start-stride.ps1
 
 start-py: ## Start using Python script (universal)
 	@echo "🚀 Starting STRIDE System (Python)..."

@@ -4,13 +4,13 @@
 # locally before pushing or opening a PR.
 #
 # Usage:
-#   ./scripts/run_ci_checks.sh              # Run all checks
-#   ./scripts/run_ci_checks.sh --lint       # Lint + type check only
-#   ./scripts/run_ci_checks.sh --test       # Tests only
-#   ./scripts/run_ci_checks.sh --dataset    # Dataset validation only
-#   ./scripts/run_ci_checks.sh --docker     # Docker build + health check only
-#   ./scripts/run_ci_checks.sh --fix        # Auto-fix ruff issues then run all
-#   ./scripts/run_ci_checks.sh --help       # Show this help message
+#   ./scripts/bash/run_ci_checks.sh              # Run all checks
+#   ./scripts/bash/run_ci_checks.sh --lint       # Lint + type check only
+#   ./scripts/bash/run_ci_checks.sh --test       # Tests only
+#   ./scripts/bash/run_ci_checks.sh --dataset    # Dataset validation only
+#   ./scripts/bash/run_ci_checks.sh --docker     # Docker build + health check only
+#   ./scripts/bash/run_ci_checks.sh --fix        # Auto-fix ruff issues then run all
+#   ./scripts/bash/run_ci_checks.sh --help       # Show this help message
 # =============================================================================
 
 set -euo pipefail
@@ -19,7 +19,7 @@ set -euo pipefail
 # Configuration
 # ---------------------------------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 VENV_ACTIVATE="$PROJECT_ROOT/.venv/bin/activate"
 MIN_TRAIN_IMAGES=70
 MIN_VAL_IMAGES=20
@@ -340,9 +340,9 @@ Options:
   --help       Show this help message
 
 Examples:
-  ./scripts/run_ci_checks.sh            # Full CI check
-  ./scripts/run_ci_checks.sh --fix      # Fix formatting, then check all
-  ./scripts/run_ci_checks.sh --lint     # Quick lint check before committing
+  ./scripts/bash/run_ci_checks.sh            # Full CI check
+  ./scripts/bash/run_ci_checks.sh --fix      # Fix formatting, then check all
+  ./scripts/bash/run_ci_checks.sh --lint     # Quick lint check before committing
 EOF
 }
 

@@ -78,7 +78,7 @@ Implementação dos testes conforme TDD.
 
 Ajustes finais e configurações de qualidade.
 
-- [x] T029 Create `scripts/setup.sh` for initial setup automation
+- [x] T029 Create `scripts/bash/setup.sh` for initial setup automation
 - [x] T030 Verify `poetry.lock` generation and create `requirements.txt` export
 - [x] T031 Create placeholder `.github/workflows/ci.yml` for Spec 007
 - [x] T032 Add healthcheck to Dockerfile with curl

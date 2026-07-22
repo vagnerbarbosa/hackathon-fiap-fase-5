@@ -32,7 +32,7 @@ Configurar o pipeline de release automático em tags semânticas.
 
 Script para rodar os mesmos checks do CI localmente antes de fazer push.
 
-- [x] T003 Criar `scripts/run_ci_checks.sh`
+- [x] T003 Criar `scripts/bash/run_ci_checks.sh`
   - Suporte a flags: `--lint`, `--test`, `--dataset`, `--docker`, `--fix`, `--help`
   - Cores e relatório de resumo (pass/warn/fail counts)
   - Ativação automática do virtualenv Poetry
@@ -76,7 +76,7 @@ Configurações a serem aplicadas manualmente no GitHub após merge da spec.
 |---------|------------------|
 | `.github/workflows/ci.yml` | Lint, testes, validação de dataset, Docker build |
 | `.github/workflows/release.yml` | Build e push de imagem em tags `v*` |
-| `scripts/run_ci_checks.sh` | Script local para rodar os mesmos checks do CI |
+| `scripts/bash/run_ci_checks.sh` | Script local para rodar os mesmos checks do CI |
 
 ---
 

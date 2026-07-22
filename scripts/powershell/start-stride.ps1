@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 # Start STRIDE System script for Windows (PowerShell)
-# Usage: .\scripts\start-stride.ps1 [options]
+# Usage: .\scripts\powershell\start-stride.ps1 [options]
 
 param(
     [switch]$Help,
@@ -9,20 +9,13 @@ param(
     [switch]$NoMigrations
 )
 
-# Colors for output
-$Red = "`e[0;31m"
-$Green = "`e[0;32m"
-$Yellow = "`e[1;33m"
-$Blue = "`e[0;34m"
-$NC = "`e[0m"  # No Color
-
 # Script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$ProjectDir = Split-Path -Parent $ScriptDir
+$ProjectDir = Split-Path -Parent (Split-Path -Parent $ScriptDir)
 
 # Help function
 function Show-Help {
-    Write-Host "Usage: .\scripts\start-stride.ps1 [OPTIONS]"
+    Write-Host "Usage: .\scripts\powershell\start-stride.ps1 [OPTIONS]"
     Write-Host ""
     Write-Host "Start the complete STRIDE Threat Modeling System (API + Frontend + Database)"
     Write-Host ""
@@ -33,8 +26,8 @@ function Show-Help {
     Write-Host "  -NoMigrations      Skip database migrations"
     Write-Host ""
     Write-Host "Examples:"
-    Write-Host "  .\scripts\start-stride.ps1              # Start all services"
-    Write-Host "  .\scripts\start-stride.ps1 -NoBuild      # Use existing images"
+    Write-Host "  .\scripts\powershell\start-stride.ps1              # Start all services"
+    Write-Host "  .\scripts\powershell\start-stride.ps1 -NoBuild      # Use existing images"
 }
 
 # Show help if requested
@@ -45,7 +38,7 @@ if ($Help) {
 
 # Check if Docker is installed
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
-    Write-Host "${Red}Error: Docker is not installed${NC}"
+    Write-Host "ERROR: Docker is not installed" -ForegroundColor Red
     Write-Host "Please install Docker from: https://docs.docker.com/get-docker/"
     exit 1
 }
@@ -62,7 +55,7 @@ try {
 }
 
 if (-not $dockerComposeAvailable) {
-    Write-Host "${Red}Error: Docker Compose is not installed${NC}"
+    Write-Host "ERROR: Docker Compose is not installed" -ForegroundColor Red
     Write-Host "Please install Docker Compose from: https://docs.docker.com/compose/install/"
     exit 1
 }
@@ -72,12 +65,12 @@ Set-Location $ProjectDir
 
 # Check if .env file exists
 if (-not (Test-Path ".env")) {
-    Write-Host "${Yellow}Warning: .env file not found${NC}"
+    Write-Host "Warning: .env file not found" -ForegroundColor Yellow
     Write-Host "Creating .env from .env.example..."
     Copy-Item ".env.example" ".env"
-    Write-Host "${Green}✓ Created .env file${NC}"
+    Write-Host "[OK] Created .env file" -ForegroundColor Green
     Write-Host ""
-    Write-Host "${Yellow}Please edit .env file with your configuration:${NC}"
+    Write-Host "Please edit .env file with your configuration:" -ForegroundColor Yellow
     Write-Host "  - Set DATABASE_URL"
     Write-Host "  - Set API_KEY (for production)"
     Write-Host "  - Adjust other settings as needed"
@@ -89,8 +82,9 @@ if (-not (Test-Path ".env")) {
 New-Item -ItemType Directory -Force -Path "storage" | Out-Null
 New-Item -ItemType Directory -Force -Path "logs" | Out-Null
 
-Write-Host "${Blue}╔════════════════════════════════════════════════════════╗${NC}"
-Write-Host "${Blue}╚════════════════════════════════════════════════════════╝${NC}"
+Write-Host "========================================================" -ForegroundColor Blue
+Write-Host "  STRIDE Threat Modeling System - Starting..." -ForegroundColor Blue
+Write-Host "========================================================" -ForegroundColor Blue
 Write-Host ""
 
 # Determine docker compose command
@@ -103,24 +97,24 @@ try {
 
 # Build and start containers
 if (-not $NoBuild) {
-    Write-Host "${Blue}Building and starting containers...${NC}"
+    Write-Host "Building and starting containers..." -ForegroundColor Blue
     Invoke-Expression "$ComposeCmd up --build -d"
 } else {
-    Write-Host "${Blue}Starting containers (skipping build)...${NC}"
+    Write-Host "Starting containers (skipping build)..." -ForegroundColor Blue
     Invoke-Expression "$ComposeCmd up -d"
 }
 
 if ($Foreground) {
-    Write-Host "${Blue}Running in foreground mode. Press Ctrl+C to stop.${NC}"
+    Write-Host "Running in foreground mode. Press Ctrl+C to stop." -ForegroundColor Blue
     Invoke-Expression "$ComposeCmd logs -f"
     exit 0
 }
 
 # Wait for services to be ready
 Write-Host ""
-Write-Host "${Blue}Waiting for services to be ready...${NC}"
+Write-Host "Waiting for services to be ready..." -ForegroundColor Blue
 
-# Health check com timeout de 60 segundos
+# Health check with 60 second timeout
 $HealthCheckUrl = "http://localhost:8001/health"
 $MaxRetries = 30
 $RetryCount = 0
@@ -131,16 +125,16 @@ while ($RetryCount -lt $MaxRetries) {
         $response = Invoke-WebRequest -Uri $HealthCheckUrl -Method GET -TimeoutSec 2 -ErrorAction Stop
         if ($response.StatusCode -eq 200) {
             $ApiHealthy = $true
-            Write-Host "${Green}✓ API is ready!${NC}"
+            Write-Host "[OK] API is ready!" -ForegroundColor Green
             break
         }
     } catch {
-        # Continuar tentando
+        # Keep trying
     }
     $RetryCount++
     if ($RetryCount -eq $MaxRetries) {
-        Write-Host "${Red}✗ API failed to start within expected time${NC}"
-        Write-Host "Check logs with: ${ComposeCmd} logs api"
+        Write-Host "[FAIL] API failed to start within expected time" -ForegroundColor Red
+        Write-Host "Check logs with: $ComposeCmd logs api"
         exit 1
     }
     Write-Host -NoNewline "."
@@ -148,24 +142,29 @@ while ($RetryCount -lt $MaxRetries) {
 }
 
 if (-not $ApiHealthy) {
-    Write-Host "${Red}✗ API failed to start within expected time${NC}"
-    Write-Host "Check logs with: ${ComposeCmd} logs api"
+    Write-Host "[FAIL] API failed to start within expected time" -ForegroundColor Red
+    Write-Host "Check logs with: $ComposeCmd logs api"
     exit 1
 }
 
 # Run migrations if requested
 if (-not $NoMigrations) {
     Write-Host ""
-    Write-Host "${Blue}Running database migrations...${NC}"
+    Write-Host "Running database migrations..." -ForegroundColor Blue
     try {
         Invoke-Expression "$ComposeCmd exec api alembic upgrade head"
     } catch {
-        Write-Host "${Yellow}Warning: Migrations failed. Database may already be up to date.${NC}"
+        Write-Host "Warning: Migrations failed. Database may already be up to date." -ForegroundColor Yellow
     }
 }
 
 # Print success message
 Write-Host ""
-Write-Host "${Green}╔════════════════════════════════════════════════════════╗${NC}"
+Write-Host "========================================================" -ForegroundColor Green
+Write-Host "  STRIDE System is UP!" -ForegroundColor Green
+Write-Host "  API:      http://localhost:8001/health" -ForegroundColor Green
+Write-Host "  Docs:     http://localhost:8001/docs" -ForegroundColor Green
+Write-Host "  Frontend: http://localhost:5173" -ForegroundColor Green
+Write-Host "========================================================" -ForegroundColor Green
 Write-Host ""
-Write-Host "${Blue}Happy hacking! 🛡️🔍${NC}"
+Write-Host "Happy hacking!" -ForegroundColor Blue
