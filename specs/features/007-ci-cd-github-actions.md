@@ -272,7 +272,7 @@ jobs:
 | `.github/workflows/ci.yml` | Lint, testes, validação de dataset, Docker build |
 | `.github/workflows/release.yml` | Build e push de imagem em tags |
 | `.github/workflows/bump-version.yml` | Incrementa versão e cria tags automaticamente |
-| `scripts/run_ci_checks.sh` | Script local para rodar os mesmos checks do CI |
+| `scripts/bash/run_ci_checks.sh` | Script local para rodar os mesmos checks do CI |
 
 ## Checklist de Implementação
 

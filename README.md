@@ -183,7 +183,8 @@ O dataset inclui:
 - Docker + Docker Compose
 - Git
 - 8GB+ RAM (16GB recomendado para treinamento)
-- **Dataset baixado** (veja seção 📊 Dataset acima)
+
+> **Nota:** O dataset (seção 📊 acima) **não é necessário** para rodar o sistema. O modelo ONNX já treinado (`models/best.onnx`) está incluído no repositório. O download do dataset só é necessário caso queira re-treinar o modelo.
 
 ### 1. Clone o repositório
 
@@ -222,7 +223,12 @@ cp .env.example .env
 make start
 ```
 
-> 💡 Este script sobe: PostgreSQL, Redis, API (FastAPI) e Frontend (React) automaticamente.
+> 💡 Este script sobe: PostgreSQL, Redis, API (FastAPI) e Frontend (React) automaticamente, e executa as migrações do banco de dados.
+>
+> ⚠️ Se a migração automática falhar (ex.: primeiro uso), rode manualmente após a API estar saudável:
+> ```bash
+> docker exec fiap-api alembic upgrade head
+> ```
 
 **Opções do script:**
 ```bash

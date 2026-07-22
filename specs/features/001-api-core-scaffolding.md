@@ -158,7 +158,7 @@ Criar estrutura padrão do projeto:
 ### RNF-04: Reprodutibilidade
 - `poetry.lock` versionado.
 - `requirements.txt` exportado do Poetry para compatibilidade.
-- Scripts em `scripts/` para setup inicial (`scripts/setup.sh`).
+- Scripts em `scripts/bash/` para setup inicial (`scripts/bash/setup.sh`).
 
 ## Critérios de Aceitação
 
