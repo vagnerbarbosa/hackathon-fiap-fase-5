@@ -13,7 +13,6 @@ from src.core.stride_mappings import (
 from src.core.stride_rules import calculate_severity, category_name, severity_sort_rank
 from src.domain.models import ArchitectureGraph, DataFlow, Threat
 
-
 DATA_FLOW_COMPONENT_TYPE = "data_flow"
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,9 @@ TRUST_BOUNDARY_THREATS = [
     MappingThreat(
         category="I",
         description="Dados podem ser expostos ao cruzar trust boundary.",
-        justification="A fronteira pode separar dominios com politicas de confidencialidade diferentes.",
+        justification=(
+            "A fronteira pode separar dominios com politicas de confidencialidade diferentes."
+        ),
     ),
     MappingThreat(
         category="D",

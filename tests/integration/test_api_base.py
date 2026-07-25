@@ -1,6 +1,5 @@
 """Testes de integração para funcionalidade base da API."""
 
-import pytest
 from httpx import AsyncClient
 
 
@@ -89,7 +88,9 @@ class TestErrorHandling:
 
     async def test_401_unauthorized(self, async_client: AsyncClient):
         """Rotas protegidas sem API key devem retornar 401."""
-        from httpx import ASGITransport, AsyncClient as HttpxAsyncClient
+        from httpx import ASGITransport
+        from httpx import AsyncClient as HttpxAsyncClient
+
         from src.api.main import app
 
         async with HttpxAsyncClient(

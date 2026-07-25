@@ -1,18 +1,24 @@
 """Endpoints de análise de modelagem de ameaças (Spec 001 + 003)."""
 
 import asyncio
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.dependencies import ApiKeyDep, SessionDep, StorageDep
 from src.core.config import settings
 from src.core.logging import get_logger
-from src.domain.models import JobStatus
 from src.infrastructure.repositories.job_repository import JobRepository
-from src.services.component_detection import ComponentDetectionService, LowConfidenceError, ModelNotLoadedError
+from src.models.job import JobStatus
+from src.services.component_detection import (
+    ComponentDetectionService,
+    LowConfidenceError,
+    ModelNotLoadedError,
+)
 
 logger = get_logger(__name__)
 router = APIRouter(
@@ -23,6 +29,7 @@ router = APIRouter(
 
 # Inicializa serviço de detecção (singleton)
 # O modelo ONNX deve estar disponível em storage/models/best.onnx
+detection_service: ComponentDetectionService | None
 try:
     detection_service = ComponentDetectionService(
         model_path=str(Path(settings.storage_path) / "models" / "best.onnx")
@@ -44,7 +51,7 @@ async def analyze_image(
     session: SessionDep,
     storage: StorageDep,
     file: UploadFile = File(...),
-) -> dict:
+) -> dict[str, Any]:
     """Upload e inicia análise de imagem de arquitetura.
 
     Args:
@@ -68,7 +75,6 @@ async def analyze_image(
     job_repo = JobRepository(session)
 
     # Salvar arquivo temporariamente
-    file_ext = file.filename.split(".")[-1] if "." in file.filename else "png"
     content = await file.read()
     temp_relative = await storage.save(content, f"upload_{file.filename}")
     temp_path = str(await storage.get_path(temp_relative))
@@ -87,7 +93,11 @@ async def analyze_image(
     }
 
 
-async def _process_job(job_id: UUID, image_path: str, session) -> None:
+async def _process_job(
+    job_id: UUID | str,
+    image_path: str,
+    session: AsyncSession,
+) -> None:
     """Processa o job em background.
 
     Args:
@@ -169,7 +179,7 @@ async def get_analysis_status(
     job_id: UUID,
     api_key: ApiKeyDep,
     session: SessionDep,
-) -> dict:
+) -> dict[str, Any]:
     """Obtém status de um job de análise.
 
     Args:
@@ -246,7 +256,7 @@ async def get_report(
         - json  → resposta inline (application/json)
         - md / html / csv / pdf → download (Content-Disposition: attachment)
     """
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from fastapi.responses import JSONResponse, Response
 
@@ -293,12 +303,12 @@ async def get_report(
     from src.domain.models import JobStatus as DomainJobStatus
 
     domain_job = DomainJob(
-        id=db_job.id,
+        id=UUID(db_job.id),
         status=DomainJobStatus(db_job.status),
         input_image_path=db_job.input_image_path or "",
         output_report_path=db_job.output_report_path,
-        created_at=db_job.created_at or datetime.now(timezone.utc),
-        updated_at=db_job.updated_at or datetime.now(timezone.utc),
+        created_at=db_job.created_at or datetime.now(UTC),
+        updated_at=db_job.updated_at or datetime.now(UTC),
     )
 
     # ── Obter dados de ameaças (detecção → STRIDE → enriquecimento) ───────────

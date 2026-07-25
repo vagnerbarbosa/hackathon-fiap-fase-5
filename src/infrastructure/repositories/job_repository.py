@@ -1,6 +1,6 @@
 """Repositório de Jobs para análise de modelagem de ameaças."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
@@ -80,7 +80,7 @@ class JobRepository:
             return None
 
         job.status = status.value
-        job.updated_at = datetime.now(timezone.utc)
+        job.updated_at = datetime.now(UTC)
 
         if output_report_path:
             job.output_report_path = output_report_path

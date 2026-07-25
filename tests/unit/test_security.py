@@ -71,7 +71,9 @@ class TestAPIKeyAuth:
 
     async def test_missing_api_key_returns_401(self, async_client):
         """Requisição sem API key deve retornar 401."""
-        from httpx import ASGITransport, AsyncClient as HttpxAsyncClient
+        from httpx import ASGITransport
+        from httpx import AsyncClient as HttpxAsyncClient
+
         from src.api.main import app
 
         async with HttpxAsyncClient(
@@ -83,7 +85,9 @@ class TestAPIKeyAuth:
 
     async def test_invalid_api_key_returns_401(self, async_client):
         """Requisição com API key inválida deve retornar 401."""
-        from httpx import ASGITransport, AsyncClient as HttpxAsyncClient
+        from httpx import ASGITransport
+        from httpx import AsyncClient as HttpxAsyncClient
+
         from src.api.main import app
 
         async with HttpxAsyncClient(

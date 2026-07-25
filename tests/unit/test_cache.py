@@ -1,15 +1,16 @@
 """Testes para implementações de cache."""
 
-import pytest
-import tempfile
 import os
+import tempfile
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
+import pytest
+
+from src.domain.models import ArchitectureGraph, BoundingBox, DetectedComponent, Point
+from src.infrastructure.cache.cache_factory import CacheFactory
 from src.infrastructure.cache.cache_interface import CacheInterface
 from src.infrastructure.cache.in_memory_cache import InMemoryCache
-from src.infrastructure.cache.cache_factory import CacheFactory
-from src.domain.models import ArchitectureGraph, DetectedComponent, BoundingBox, Point
 
 
 class TestInMemoryCache:

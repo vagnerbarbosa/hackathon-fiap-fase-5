@@ -7,14 +7,12 @@ Para CI/CD, os testes usam o stub para garantir que o pipeline passe.
 from pathlib import Path
 
 import pytest
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 
 from src.domain.models import ArchitectureGraph
 from src.services.component_detector import (
     ComponentDetectionService,
-    NoComponentsDetectedError,
 )
-
 
 # Caminho para modelo YOLO real (se disponível)
 MODEL_PATH = Path("models/best.pt")
@@ -130,11 +128,10 @@ class TestDetectionE2E:
     @pytest.mark.asyncio
     async def test_detection_performance(self, service, test_diagram):
         """Testa se detecção completa em tempo razoável."""
-        import asyncio
         import time
 
         start = time.time()
-        graph = await service.detect(test_diagram)
+        await service.detect(test_diagram)
         elapsed = time.time() - start
 
         # Deve completar em menos de 10 segundos (stub é instantâneo)

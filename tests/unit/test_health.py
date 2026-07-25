@@ -1,6 +1,5 @@
 """Testes para endpoint de health check."""
 
-import pytest
 from httpx import AsyncClient
 
 
@@ -35,12 +34,14 @@ class TestHealthCheck:
         response = await async_client.get("/health")
         data = response.json()
 
-        assert data["version"] == "0.2.0"
+        assert data["version"] == "0.3.0"
 
     async def test_health_without_api_key(self, async_client: AsyncClient):
         """Health check deve ser acessível sem API key."""
         # Cria client sem API key
-        from httpx import ASGITransport, AsyncClient as HttpxAsyncClient
+        from httpx import ASGITransport
+        from httpx import AsyncClient as HttpxAsyncClient
+
         from src.api.main import app
 
         async with HttpxAsyncClient(
@@ -49,6 +50,34 @@ class TestHealthCheck:
         ) as client:
             response = await client.get("/health")
             assert response.status_code == 200
+
+    async def test_health_returns_503_when_database_is_down(
+        self,
+        async_client: AsyncClient,
+    ):
+        """Health check deve retornar 503 quando database falha."""
+        from src.api.dependencies import get_db
+        from src.api.main import app
+
+        class FailingSession:
+            async def execute(self, *_args, **_kwargs):
+                raise RuntimeError("database unreachable")
+
+            async def close(self):
+                pass
+
+        def get_failing_db():
+            return FailingSession()
+
+        app.dependency_overrides[get_db] = get_failing_db
+        try:
+            response = await async_client.get("/health")
+            assert response.status_code == 503
+            data = response.json()["detail"]
+            assert data["status"] == "unhealthy"
+            assert data["database"] == "disconnected"
+        finally:
+            app.dependency_overrides.pop(get_db, None)
 
     async def test_root_endpoint(self, async_client: AsyncClient):
         """Endpoint raiz deve retornar informações básicas."""

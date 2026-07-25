@@ -1,10 +1,10 @@
 """Testes para retry com backoff exponencial."""
 
-import pytest
-import asyncio
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
-from src.core.retry import retry, RetryConfig, with_retry, RETRY_FAST, RETRY_SLOW
+import pytest
+
+from src.core.retry import RETRY_FAST, RETRY_SLOW, RetryConfig, retry, with_retry
 
 
 class TestRetryConfig:

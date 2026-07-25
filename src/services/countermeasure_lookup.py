@@ -3,7 +3,6 @@
 from src.core.vulnerability_db import VulnerabilityMapping
 from src.domain.models import Countermeasure
 
-
 DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
     "S": (
         Countermeasure(

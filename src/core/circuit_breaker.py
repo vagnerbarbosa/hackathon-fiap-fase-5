@@ -6,11 +6,15 @@ Previne cascata de falhas quando serviços externos (IA) estão indisponíveis.
 import asyncio
 import logging
 import time
+from collections.abc import Callable, Coroutine
 from enum import Enum
 from functools import wraps
-from typing import Callable, Any, Optional
+from typing import Any, ParamSpec, TypeVar, cast
 
 logger = logging.getLogger(__name__)
+
+P = ParamSpec("P")
+T = TypeVar("T")
 
 
 class CircuitState(Enum):
@@ -41,7 +45,7 @@ class CircuitBreaker:
         failure_threshold: int = 5,
         recovery_timeout: float = 30.0,
         half_open_max_calls: int = 3,
-        expected_exception: type = Exception,
+        expected_exception: type[Exception] | tuple[type[Exception], ...] = Exception,
     ):
         """Inicializa Circuit Breaker.
 
@@ -61,7 +65,7 @@ class CircuitBreaker:
         self._state = CircuitState.CLOSED
         self._failure_count = 0
         self._success_count = 0
-        self._last_failure_time: Optional[float] = None
+        self._last_failure_time: float | None = None
         self._half_open_calls = 0
 
     @property
@@ -127,7 +131,9 @@ class CircuitBreaker:
         self._half_open_calls = 0
         self._last_failure_time = None
 
-    async def call(self, func: Callable, *args, **kwargs) -> Any:
+    async def call(
+        self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs
+    ) -> T:
         """Executa função protegida pelo circuit breaker.
 
         Args:
@@ -139,11 +145,11 @@ class CircuitBreaker:
             Resultado da função
 
         Raises:
-            CircuitBreakerOpen: Se circuito está aberto
+            CircuitBreakerOpenError: Se circuito está aberto
             Exception: Falha original se função falha
         """
         if not self._can_execute():
-            raise CircuitBreakerOpen(
+            raise CircuitBreakerOpenError(
                 f"Circuit {self.name} is OPEN - service unavailable"
             )
 
@@ -153,12 +159,14 @@ class CircuitBreaker:
             else:
                 result = func(*args, **kwargs)
             self._on_success()
-            return result
+            return cast(T, result)
         except self.expected_exception as e:
             self._on_failure(e)
             raise
 
-    def protect(self, func: Callable) -> Callable:
+    def protect(
+        self, func: Callable[P, T]
+    ) -> Callable[P, Coroutine[Any, Any, T]]:
         """Decorator para proteger função.
 
         Args:
@@ -168,11 +176,11 @@ class CircuitBreaker:
             Função wrapper protegida
         """
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             return await self.call(func, *args, **kwargs)
         return wrapper
 
 
-class CircuitBreakerOpen(Exception):
+class CircuitBreakerOpenError(Exception):
     """Exceção lançada quando circuit breaker está aberto."""
     pass

@@ -21,7 +21,6 @@ import random
 from pathlib import Path
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Taxonomy — espelha dataset/data.yaml (32 classes)
 # ---------------------------------------------------------------------------
@@ -84,11 +83,11 @@ class StubBox:
 
     # Attribute-style access (matches Ultralytics tensor-item interface)
     @property
-    def cls(self) -> "StubTensor":
+    def cls(self) -> StubTensor:
         return StubTensor(self._cls)
 
     @property
-    def conf(self) -> "StubTensor":
+    def conf(self) -> StubTensor:
         return StubTensor(self._conf)
 
     @property
@@ -183,7 +182,7 @@ class StubYOLOModel:
         self.names = CLASS_NAMES
 
     @classmethod
-    def from_file(cls, path: str | Path, **kwargs: Any) -> "StubYOLOModel":
+    def from_file(cls, path: str | Path, **kwargs: Any) -> StubYOLOModel:
         """Factory method — replaces YOLO('best.pt') in tests."""
         return cls(model_path=str(path), **kwargs)
 
@@ -207,7 +206,7 @@ class StubYOLOModel:
         returned (after filtering by `conf`).  Otherwise a small deterministic
         set of default boxes is returned.
         """
-        sources = [source] if isinstance(source, (str, Path)) else list(source)
+        sources = [source] if isinstance(source, str | Path) else list(source)
         results: list[StubResult] = []
 
         for src in sources:
@@ -222,7 +221,7 @@ class StubYOLOModel:
     # Val  (returns a minimal metrics stub)
     # ------------------------------------------------------------------
 
-    def val(self, **kwargs: Any) -> "StubMetrics":
+    def val(self, **kwargs: Any) -> StubMetrics:
         return StubMetrics()
 
     # ------------------------------------------------------------------

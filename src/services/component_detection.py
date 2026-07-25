@@ -1,6 +1,7 @@
 """Serviço de detecção de componentes de arquitetura (Spec 003)."""
 
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from src.core.logging import get_logger
@@ -40,7 +41,7 @@ class ComponentDetectionService:
         self,
         model_path: str | None = None,
         confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
-    ):
+    ) -> None:
         """Inicializa o serviço de detecção.
 
         Args:
@@ -53,9 +54,9 @@ class ComponentDetectionService:
         """
         self.model_path = model_path
         self.confidence_threshold = confidence_threshold
-        self.model = self._load_model()
+        self.model: Any = self._load_model()
 
-    def _load_model(self):
+    def _load_model(self) -> Any:
         """Carrega o modelo ONNX.
 
         Returns:
@@ -132,8 +133,8 @@ class ComponentDetectionService:
 
     async def _detect_with_onnx(self, image_path: Path) -> ArchitectureGraph:
         """Executa detecção com modelo ONNX."""
-        import numpy as np
         import cv2
+        import numpy as np
 
         logger.info(f"Executando inferência ONNX em {image_path.name}")
 

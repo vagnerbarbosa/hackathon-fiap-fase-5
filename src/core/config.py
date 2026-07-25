@@ -1,7 +1,7 @@
 """Configuração da aplicação usando Pydantic Settings."""
 
 from functools import lru_cache
-from typing import List
+from typing import Any
 
 from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     # Application
     app_name: str = Field(default="FIAP STRIDE API", description="Application name")
     app_version: str = Field(
-        default="0.0.0",
+        default="0.3.0",
         description="Application version (set via APP_VERSION env var or during build)",
     )
     debug: bool = Field(default=False, description="Debug mode")
@@ -57,12 +57,12 @@ class Settings(BaseSettings):
     api_key: str = Field(
         description="API Key for authentication",
     )
-    cors_origins: List[str] = Field(
+    cors_origins: list[str] = Field(
         default_factory=list,
         description="CORS allowed origins (comma-separated)",
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         # Parse CORS origins from comma-separated string before validation
         if "cors_origins" in kwargs and isinstance(kwargs["cors_origins"], str):
             origins = kwargs["cors_origins"]
@@ -87,7 +87,7 @@ def get_settings() -> Settings:
         for error in e.errors():
             field = ".".join(str(x) for x in error["loc"])
             print(f"  - {field}: {error['msg']}")
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 
 # Global settings instance for import

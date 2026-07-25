@@ -1,7 +1,7 @@
 """Exportação de ameaças enriquecidas para formato CSV via pandas (RF-04)."""
 
 import io
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from src.core.logging import get_logger
 from src.domain.models import EnrichedThreat
@@ -38,7 +38,7 @@ _STRIDE_NAMES: dict[str, str] = {
 }
 
 
-def _build_rows(threats: list[EnrichedThreat]) -> list[dict]:
+def _build_rows(threats: list[EnrichedThreat]) -> list[dict[str, Any]]:
     """Converte lista de EnrichedThreat em linhas flat para o DataFrame.
 
     Cada par (ameaça × contramedida) gera uma linha. Se a ameaça não tiver
@@ -50,7 +50,7 @@ def _build_rows(threats: list[EnrichedThreat]) -> list[dict]:
     Returns:
         list[dict]: Linhas prontas para construção do DataFrame.
     """
-    rows: list[dict] = []
+    rows: list[dict[str, Any]] = []
     for threat in threats:
         base = {
             "threat_id": threat.id,
@@ -104,11 +104,7 @@ def export_to_csv_string(threats: list[EnrichedThreat]) -> str:
         ) from exc
 
     rows = _build_rows(threats)
-
-    if not rows:
-        df = pd.DataFrame(columns=_COLUMNS)
-    else:
-        df = pd.DataFrame(rows, columns=_COLUMNS)
+    df = pd.DataFrame(columns=_COLUMNS) if not rows else pd.DataFrame(rows, columns=_COLUMNS)
 
     buffer = io.StringIO()
     df.to_csv(buffer, index=False, encoding="utf-8")
@@ -135,11 +131,7 @@ def export_to_csv_bytes(threats: list[EnrichedThreat]) -> bytes:
         ) from exc
 
     rows = _build_rows(threats)
-
-    if not rows:
-        df = pd.DataFrame(columns=_COLUMNS)
-    else:
-        df = pd.DataFrame(rows, columns=_COLUMNS)
+    df = pd.DataFrame(columns=_COLUMNS) if not rows else pd.DataFrame(rows, columns=_COLUMNS)
 
     buffer = io.BytesIO()
     df.to_csv(buffer, index=False, encoding="utf-8-sig")  # BOM para Excel

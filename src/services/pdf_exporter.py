@@ -45,7 +45,7 @@ def export_html_to_pdf(html_content: str) -> bytes:
             ou falhar durante a renderização.
     """
     try:
-        from weasyprint import HTML  # type: ignore[import-untyped]
+        from weasyprint import HTML
     except ImportError as exc:
         raise WeasyPrintUnavailableError(
             "WeasyPrint não está instalado. "

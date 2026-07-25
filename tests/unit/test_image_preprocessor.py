@@ -1,13 +1,12 @@
 """Testes para ImagePreprocessor com validações de segurança."""
 
-import pytest
 import tempfile
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import numpy as np
 
-from src.services.image_preprocessor import ImagePreprocessor, MAX_FILE_SIZE_MB
+import numpy as np
+import pytest
+
+from src.services.image_preprocessor import MAX_FILE_SIZE_MB, ImagePreprocessor
 
 
 class TestImagePreprocessor:

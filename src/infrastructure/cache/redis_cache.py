@@ -3,10 +3,10 @@
 import hashlib
 import logging
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
 
-from src.infrastructure.cache.cache_interface import CacheInterface
 from src.core.config import settings
+from src.infrastructure.cache.cache_interface import CacheInterface
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +16,14 @@ class RedisCache(CacheInterface):
 
     TTL_SECONDS = 3600  # 1 hour
 
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: str | None = None) -> None:
         """Inicializa cache Redis.
 
         Args:
             redis_url: URL do Redis. Se None, usa settings.REDIS_URL.
         """
         self._redis_url = redis_url or settings.redis_url
-        self._redis = None
+        self._redis: Any = None
         self._connect()
 
     def _connect(self) -> None:
@@ -31,7 +31,7 @@ class RedisCache(CacheInterface):
         try:
             import redis.asyncio as redis
 
-            self._redis = redis.from_url(
+            self._redis = redis.from_url(  # type: ignore[no-untyped-call]
                 self._redis_url,
                 decode_responses=True,
             )
@@ -52,7 +52,7 @@ class RedisCache(CacheInterface):
         """Cria chave de cache."""
         return f"detection:{image_hash}"
 
-    async def get(self, image_path: Path) -> Optional[Any]:
+    async def get(self, image_path: Path) -> Any | None:
         """Obtém do cache."""
         from src.domain.models import ArchitectureGraph
 

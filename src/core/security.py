@@ -1,8 +1,7 @@
 """Utilitários de segurança: rate limiting, headers, validação de arquivos."""
 
-import logging
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Callable, Optional
 
 import magic
 from fastapi import FastAPI, HTTPException, Request, status
@@ -11,6 +10,7 @@ from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from src.core.config import settings
 from src.core.logging import get_logger
@@ -18,7 +18,7 @@ from src.core.logging import get_logger
 logger = get_logger(__name__)
 
 # Initialize rate limiter with Redis if available, fallback to memory
-limiter: Optional[Limiter] = None
+limiter: Limiter | None = None
 
 
 def get_limiter() -> Limiter:
@@ -50,7 +50,9 @@ def get_limiter() -> Limiter:
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Adiciona headers de segurança OWASP em todas as respostas."""
 
-    async def dispatch(self, request: Request, call_next: Callable):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Adiciona headers de segurança na resposta."""
         response = await call_next(request)
 
@@ -93,7 +95,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 class RequestIdMiddleware(BaseHTTPMiddleware):
     """Adiciona ID de requisição em todas as requisições para rastreamento."""
 
-    async def dispatch(self, request: Request, call_next: Callable):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Adiciona ID de requisição ao estado e logs."""
         import uuid
 
@@ -163,7 +167,7 @@ def validate_file_type(content: bytes) -> str:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Could not determine file type",
-        )
+        ) from e
 
     if detected not in ALLOWED_MIME_TYPES:
         raise HTTPException(

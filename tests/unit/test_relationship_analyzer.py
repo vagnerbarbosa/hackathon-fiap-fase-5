@@ -4,7 +4,8 @@ Testa heurísticas espaciais para inferir data flows e trust boundaries.
 """
 
 import pytest
-from src.domain.models import DetectedComponent, BoundingBox, Point
+
+from src.domain.models import BoundingBox, DetectedComponent, Point
 from src.services.relationship_analyzer import RelationshipAnalyzer
 
 
@@ -273,7 +274,6 @@ class TestFlowDirection:
 
     def test_user_to_api_is_unidirectional(self, analyzer):
         """Flow de user para API é tipicamente unidirecional (request)."""
-        from src.domain.models import DataFlow
 
         user = DetectedComponent(
             id="user-1", type="user", confidence=0.95,

@@ -1,6 +1,6 @@
 """Mock Job for Spec 006 testing."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from src.domain.models import Job, JobStatus
@@ -10,8 +10,8 @@ fake_job = Job(
     status=JobStatus.COMPLETED,
     input_image_path="/uploads/diagrama.png",
     output_report_path="/reports/job-123/report.md",
-    created_at=datetime.now(timezone.utc),
-    updated_at=datetime.now(timezone.utc),
+    created_at=datetime.now(UTC),
+    updated_at=datetime.now(UTC),
 )
 
 if __name__ == "__main__":

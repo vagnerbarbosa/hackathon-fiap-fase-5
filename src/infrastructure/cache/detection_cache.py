@@ -9,11 +9,10 @@ Esta classe mantém compatibilidade, mas agora usa abstração.
 
 import logging
 from pathlib import Path
-from typing import Optional
 
-from src.infrastructure.cache.cache_interface import CacheInterface
-from src.infrastructure.cache.cache_factory import CacheFactory
 from src.domain.models import ArchitectureGraph
+from src.infrastructure.cache.cache_factory import CacheFactory
+from src.infrastructure.cache.cache_interface import CacheInterface
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,7 @@ class DetectionCache:
         >>> cache = CacheFactory.create_cache()
     """
 
-    def __init__(self, redis_url: Optional[str] = None):
+    def __init__(self, redis_url: str | None = None):
         """Inicializa cache usando factory.
 
         Args:
@@ -46,7 +45,7 @@ class DetectionCache:
         self._impl_name = type(self._cache).__name__
         logger.info(f"DetectionCache initialized with {self._impl_name}")
 
-    async def get(self, image_path: Path) -> Optional[ArchitectureGraph]:
+    async def get(self, image_path: Path) -> ArchitectureGraph | None:
         """Obtém resultado de detecção em cache.
 
         Args:

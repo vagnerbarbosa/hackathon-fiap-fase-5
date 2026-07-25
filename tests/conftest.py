@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures."""
 
-from typing import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator
+from typing import Any
 
 import pytest
 import pytest_asyncio
@@ -16,14 +17,33 @@ from src.models.base import Base
 # Test database URL (SQLite for tests)
 TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
+# Test engine and session factory to override PostgreSQL in tests
+_test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+_TestAsyncSessionLocal = sessionmaker(
+    _test_engine, class_=AsyncSession, expire_on_commit=False
+)
+
+
+@pytest_asyncio.fixture(autouse=True, scope="function")
+async def _create_test_tables() -> None:
+    """Create tables on the test engine for route-level DB access."""
+    async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with _test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
 
 @pytest.fixture(scope="session")
-def event_loop():
-    """Create event loop for async tests."""
+def event_loop_policy() -> Any:
+    """Provide the asyncio event loop policy for the test session.
+
+    Using event_loop_policy instead of event_loop avoids pytest-asyncio
+    deprecation warnings and event loop lifecycle issues across the suite.
+    """
     import asyncio
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
+
+    return asyncio.get_event_loop_policy()
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -52,7 +72,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 @pytest.fixture
-def override_settings() -> Generator[Settings, None, None]:
+def override_settings(monkeypatch: pytest.MonkeyPatch) -> Generator[Settings, None, None]:
     """Provide test settings override.
 
     Yields:
@@ -64,17 +84,16 @@ def override_settings() -> Generator[Settings, None, None]:
         api_rate_limit=100,
         debug=True,
     )
-    original_get_settings = get_settings
 
-    def get_test_settings():
+    def get_test_settings() -> Settings:
         return test_settings
 
-    # Override dependency
+    # Override dependency so FastAPI resolves test settings everywhere
     app.dependency_overrides[get_settings] = get_test_settings
     yield test_settings
 
     # Restore
-    del app.dependency_overrides[get_settings]
+    app.dependency_overrides.pop(get_settings, None)
 
 
 @pytest_asyncio.fixture

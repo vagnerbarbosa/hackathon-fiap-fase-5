@@ -3,18 +3,17 @@
 Testes usam mocks para evitar carregar pesos reais do modelo YOLO.
 """
 
-from pathlib import Path
-from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock, patch
+
+import contextlib
 
 import pytest
-from src.core.circuit_breaker import CircuitBreakerOpen
-from src.domain.models import ArchitectureGraph, BoundingBox, DetectedComponent, Point
+
+from src.domain.models import ArchitectureGraph, DetectedComponent
+from src.infrastructure.ml.yolo_model import DetectionResult
 from src.services.component_detector import (
     ComponentDetectionService,
     NoComponentsDetectedError,
 )
-from src.infrastructure.ml.yolo_model import DetectionResult
 
 
 class TestComponentDetectionService:
@@ -200,7 +199,7 @@ class TestCircuitBreakerIntegration:
     async def test_circuit_breaker_opens_after_failures(self, tmp_path):
         """Circuito deve abrir após múltiplas falhas."""
         from PIL import Image
-        from src.services.component_detector import ComponentDetectionService
+
         from src.core.circuit_breaker import CircuitBreaker
 
         img = Image.new("RGB", (640, 480), color="white")
@@ -223,10 +222,8 @@ class TestCircuitBreakerIntegration:
 
         # 3 falhas devem abrir o circuito
         for _ in range(3):
-            try:
+            with contextlib.suppress(RuntimeError):
                 await cb.call(failing_func)
-            except RuntimeError:
-                pass  # Esperado
 
         assert call_count[0] == 3
         assert cb.state.value == "open"
@@ -251,7 +248,6 @@ class TestCacheInjection:
     @pytest.mark.asyncio
     async def test_uses_cache_factory_by_default(self, service):
         """Service deve usar CacheFactory por padrão."""
-        from src.infrastructure.cache.cache_factory import CacheFactory
         assert service.cache is not None
 
     @pytest.mark.asyncio

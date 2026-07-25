@@ -7,10 +7,11 @@ Inclui validações rigorosas de segurança contra DoS.
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Any
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
@@ -55,21 +56,19 @@ class ImagePreprocessor:
         self.normalize = normalize
         self.apply_threshold = apply_threshold
 
-    def preprocess(self, image_path: Union[str, Path]) -> np.ndarray:
+    def preprocess(self, image_path: str | Path) -> NDArray[Any]:
         """Pré-processa arquivo de imagem para inferência YOLO.
 
         Args:
             image_path: Caminho para o arquivo de imagem (PNG, JPG, JPEG).
 
         Returns:
-            np.ndarray: Array de imagem pré-processada (HWC, RGB, float32).
+            NDArray[Any]: Array de imagem pré-processada (HWC, RGB, float32).
 
         Raises:
             FileNotFoundError: Se arquivo de imagem não existir.
             ValueError: Se imagem não puder ser carregada.
         """
-        image_path = Path(image_path)
-
         image_path = Path(image_path)
 
         # Validações de segurança (prevenção contra DoS)
@@ -154,7 +153,7 @@ class ImagePreprocessor:
                 f"Allowed: {', '.join(ALLOWED_MIME_TYPES)}"
             )
 
-    def _validate_image_dimensions(self, img: np.ndarray) -> None:
+    def _validate_image_dimensions(self, img: NDArray[Any]) -> None:
         """Valida dimensões da imagem carregada.
 
         Args:
@@ -188,7 +187,7 @@ class ImagePreprocessor:
                 f"Expected: 3 (RGB) or 4 (RGBA)"
             )
 
-    def _resize(self, img: np.ndarray) -> np.ndarray:
+    def _resize(self, img: NDArray[Any]) -> NDArray[Any]:
         """Redimensiona imagem para tamanho alvo mantendo aspect ratio.
 
         Usa técnica letterbox para preencher se necessário.
@@ -230,7 +229,7 @@ class ImagePreprocessor:
 
         return padded
 
-    def _apply_threshold(self, img: np.ndarray) -> np.ndarray:
+    def _apply_threshold(self, img: NDArray[Any]) -> NDArray[Any]:
         """Aplica thresholding adaptativo para melhoria de diagramas.
 
         Útil para diagramas com fundos variados.
@@ -258,7 +257,7 @@ class ImagePreprocessor:
         result = cv2.cvtColor(thresh, cv2.COLOR_GRAY2RGB)
         return result
 
-    def get_original_size(self, image_path: Union[str, Path]) -> tuple:
+    def get_original_size(self, image_path: str | Path) -> tuple[int, int]:
         """Obtém dimensões originais da imagem sem carregar imagem completa.
 
         Args:
@@ -271,4 +270,5 @@ class ImagePreprocessor:
         img = cv2.imread(str(image_path))
         if img is None:
             raise ValueError(f"Cannot load image: {image_path}")
-        return img.shape[:2]
+        h, w = img.shape[:2]
+        return int(h), int(w)

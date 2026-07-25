@@ -1,30 +1,32 @@
 """Provedores de injeção de dependência do FastAPI."""
 
-from typing import Annotated, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import Settings, get_settings, settings
+from src.core.config import Settings, get_settings
 from src.core.logging import get_logger
-from src.infrastructure.database import AsyncSessionLocal, test_connection
+from src.infrastructure.database import get_async_session_maker
 from src.infrastructure.storage import LocalFileStorage
 
 logger = get_logger(__name__)
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
+async def get_db(
+    settings: Settings = Depends(get_settings),
+) -> AsyncGenerator[AsyncSession, None]:
     """Fornece dependência de sessão do banco de dados.
+
+    Usa settings.database_url para permitir override em testes via
+    app.dependency_overrides[get_settings].
 
     Yields:
         AsyncSession: Sessão do banco de dados.
-
-    Exemplo:
-        @app.get("/items")
-        async def get_items(db: SessionDep):
-            ...
     """
-    async with AsyncSessionLocal() as session:
+    session_factory = get_async_session_maker(settings.database_url)
+    async with session_factory() as session:
         try:
             yield session
         finally:
@@ -40,11 +42,15 @@ async def get_storage() -> LocalFileStorage:
     return LocalFileStorage()
 
 
-async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None) -> str:
+async def verify_api_key(
+    x_api_key: Annotated[str | None, Header()] = None,
+    settings: Settings = Depends(get_settings),
+) -> str:
     """Verifica header de API Key.
 
     Args:
         x_api_key: API Key do header X-API-Key.
+        settings: Configurações da aplicação (injetadas).
 
     Returns:
         str: API Key validada.

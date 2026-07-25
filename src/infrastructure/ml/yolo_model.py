@@ -8,11 +8,10 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any
 
 import numpy as np
-
-from src.core.config import settings
+from numpy.typing import NDArray
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +23,8 @@ class DetectionResult:
         self,
         class_name: str,
         confidence: float,
-        bbox: List[float],  # [x_min, y_min, x_max, y_max]
-    ):
+        bbox: list[float],  # [x_min, y_min, x_max, y_max]
+    ) -> None:
         self.class_name = class_name
         self.confidence = confidence
         self.bbox = bbox
@@ -47,20 +46,20 @@ class YOLOModel:
         ...     print(f"{det.class_name}: {det.confidence:.2f}")
     """
 
-    _instance: Optional[YOLOModel] = None
+    _instance: YOLOModel | None = None
     _model: Any = None
     _using_stub: bool = False
-    _model_path: Optional[Path] = None
-    _class_names: dict = {}
+    _model_path: Path = Path("models/best.pt")
+    _class_names: dict[int, str] = {}
 
-    def __new__(cls, model_path: Optional[str] = None) -> YOLOModel:
+    def __new__(cls, model_path: str | None = None) -> YOLOModel:
         """Padrão Singleton - garante que o modelo seja carregado apenas uma vez."""
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance._initialize(model_path)
         return cls._instance
 
-    def _initialize(self, model_path: Optional[str] = None) -> None:
+    def _initialize(self, model_path: str | None = None) -> None:
         """Inicializa o wrapper do modelo."""
         self._model_path = Path(model_path) if model_path else Path("models/best.pt")
         self._load_model()
@@ -124,17 +123,19 @@ class YOLOModel:
         """Carrega implementação stub para desenvolvimento."""
         # Import stub from local module (not tests) for production compatibility
         try:
-            from tests.mocks.yolo_stub import YOLOStub
+            from tests.mocks.yolo_stub import YOLOStub as _TestsYOLOStub
+            stub_class: Any = _TestsYOLOStub
         except ImportError:
             # Fallback: define stub inline if tests not available
-            from src.infrastructure.ml.yolo_stub import YOLOStub
+            from src.infrastructure.ml.yolo_stub import YOLOStub as _SrcYOLOStub
+            stub_class = _SrcYOLOStub
 
-        self._model = YOLOStub(str(self._model_path))
+        self._model = stub_class(str(self._model_path))
         self._class_names = self._model.names
         self._using_stub = True
         logger.info("Using YOLO stub (model not available)")
 
-    def _load_class_names(self) -> dict:
+    def _load_class_names(self) -> dict[int, str]:
         """Carrega mapeamento de nomes de classes (30 classes do treinamento)."""
         return {
             0: "actor_user",
@@ -175,17 +176,17 @@ class YOLOModel:
         return self._using_stub
 
     @property
-    def class_names(self) -> dict:
+    def class_names(self) -> dict[int, str]:
         """Obtém mapeamento de nomes de classes."""
         return self._class_names
 
     def predict(
         self,
-        image: Union[str, Path, np.ndarray],
+        image: str | Path | NDArray[Any],
         conf: float = 0.15,
         iou: float = 0.45,
         imgsz: int = 640,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Executa inferência na imagem.
 
         Args:
@@ -208,22 +209,22 @@ class YOLOModel:
 
     def _predict_stub(
         self,
-        image: Union[str, Path, np.ndarray],
+        image: str | Path | NDArray[Any],
         conf: float,
         iou: float,
         imgsz: int,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Prediz usando stub."""
         results = self._model.predict(image, conf=conf, iou=iou, imgsz=imgsz)
         return self._parse_results(results)
 
     def _predict_pytorch(
         self,
-        image: Union[str, Path, np.ndarray],
+        image: str | Path | NDArray[Any],
         conf: float,
         iou: float,
         imgsz: int,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Prediz usando YOLO PyTorch."""
         results = self._model.predict(
             source=image,
@@ -236,18 +237,20 @@ class YOLOModel:
 
     def _predict_onnx(
         self,
-        image: Union[str, Path, np.ndarray],
+        image: str | Path | NDArray[Any],
         conf: float,
         iou: float,
         imgsz: int,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Prediz usando ONNX Runtime (formato YOLOv11)."""
         import cv2
 
         # Preprocess image
-        if isinstance(image, (str, Path)):
-            img = cv2.imread(str(image))
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        if isinstance(image, str | Path):
+            raw = cv2.imread(str(image))
+            if raw is None:
+                raise ValueError(f"Could not load image: {image}")
+            img = cv2.cvtColor(raw, cv2.COLOR_BGR2RGB)
         else:
             img = image
 
@@ -266,7 +269,7 @@ class YOLOModel:
         # Parse outputs (YOLOv11 format: [batch, 4+num_classes, num_anchors])
         return self._parse_onnx_outputs(outputs[0], conf, original_w, original_h, imgsz)
 
-    def _parse_results(self, results: Any) -> List[DetectionResult]:
+    def _parse_results(self, results: Any) -> list[DetectionResult]:
         """Analisa resultados YOLO em objetos DetectionResult."""
         detections = []
 
@@ -299,9 +302,9 @@ class YOLOModel:
         return detections
 
     def _parse_onnx_outputs(
-        self, output: np.ndarray, conf_threshold: float,
+        self, output: NDArray[Any], conf_threshold: float,
         original_w: int = 640, original_h: int = 640, imgsz: int = 640,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Analisa saídas do modelo ONNX no formato YOLOv11.
 
         YOLOv11 format: [batch, 4+num_classes, num_anchors]
@@ -354,15 +357,15 @@ class YOLOModel:
 class YOLOWrapper:
     """Wrapper de conveniência que fornece uma interface mais simples."""
 
-    def __init__(self, model_path: Optional[str] = None):
+    def __init__(self, model_path: str | None = None) -> None:
         """Inicializa wrapper."""
         self.model = YOLOModel(model_path)
 
     def detect(
         self,
-        image_path: Union[str, Path],
+        image_path: str | Path,
         conf: float = 0.25,
-    ) -> List[DetectionResult]:
+    ) -> list[DetectionResult]:
         """Detecta componentes na imagem.
 
         Args:

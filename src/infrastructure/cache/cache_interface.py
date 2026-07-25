@@ -6,7 +6,7 @@ Define contrato para operações de cache, permitindo múltiplas implementaçõe
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
 
 
 class CacheInterface(ABC):
@@ -17,7 +17,7 @@ class CacheInterface(ABC):
     """
 
     @abstractmethod
-    async def get(self, image_path: Path) -> Optional[Any]:
+    async def get(self, image_path: Path) -> Any | None:
         """Obtém resultado de detecção em cache.
 
         Args:

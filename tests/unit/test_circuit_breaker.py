@@ -1,8 +1,10 @@
 """Testes para o Circuit Breaker."""
 
-import pytest
 import asyncio
-from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpen
+
+import pytest
+
+from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
 
 
 class TestCircuitBreaker:
@@ -61,7 +63,7 @@ class TestCircuitBreaker:
         async def any_func():
             return "result"
 
-        with pytest.raises(CircuitBreakerOpen):
+        with pytest.raises(CircuitBreakerOpenError):
             await circuit_breaker.call(any_func)
 
     @pytest.mark.asyncio
