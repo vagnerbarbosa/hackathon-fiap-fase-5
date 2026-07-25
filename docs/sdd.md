@@ -74,7 +74,7 @@ Todas as specs estão em `specs/features/`:
 | **005** | **`005-vulnerability-contramedidas.md`** | **Vulnerabilidades e Contramedidas** | **Busca de CVEs/CWEs, contramedidas OWASP** | ✅ **Concluída** |
 | 006 | `006-report-generator.md` | Gerador de Relatórios | Templates Jinja2, Markdown/HTML/JSON/CSV/PDF | ✅ **Concluída** |
 | **007** | **`007-ci-cd-github-actions.md`** | **CI/CD** | **GitHub Actions, lint, testes, Docker build** | ✅ **Concluída** |
-| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ✅ **Implementado (MVP)** |
+| **008** | **`008-frontend-react.md`** | **Frontend React** | **Interface web para upload e visualização de relatórios** | ✅ **Concluída** |
 | **009** | **`009-video-demo-script.md`** | **Roteiro do Vídeo** | **Vídeo de apresentação publicado no YouTube** | ✅ **Concluída** |
 
 ---
@@ -237,7 +237,7 @@ Todas as specs estão em `specs/features/`:
 
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
-| **Documentação do fluxo** | **✅ Concluído** (este SDD + specs) | Equipe |
+| **Documentação do fluxo** | **✅ Concluído** (este SDD + [specs](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5/tree/main/specs/features)) | Equipe |
 | **Vídeo de até 15 min** | **✅ Publicado** — [Assista no YouTube](https://www.youtube.com/watch?v=cCUfbg_2VbY) | Equipe |
 | **Link do GitHub** | **✅ Criado**: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
 | **Frontend React** (complementar) | **✅ Implementado** - Layout completo com STRIDE e exportação de arquivos | Equipe |
