@@ -39,6 +39,12 @@ class Settings(BaseSettings):
         description="Path for file uploads",
     )
 
+    # ML Model
+    model_path: str = Field(
+        default="models/best.onnx",
+        description="Path to the ONNX model used for component detection",
+    )
+
     # Logging
     log_level: str = Field(
         default="INFO",

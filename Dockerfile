@@ -58,6 +58,7 @@ COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini .
 COPY config/ ./config/
+COPY models/ ./models/
 
 # Create storage directory and set permissions
 RUN mkdir -p /app/storage /app/logs && \

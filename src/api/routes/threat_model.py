@@ -44,11 +44,11 @@ router = APIRouter(
 )
 
 # Inicializa serviço de detecção (singleton)
-# O modelo ONNX deve estar disponível em storage/models/best.onnx
+# O modelo ONNX deve estar disponível em models/best.onnx
 detection_service: ComponentDetectionService | None
 try:
     detection_service = ComponentDetectionService(
-        model_path=str(Path(settings.storage_path) / "models" / "best.onnx")
+        model_path=str(Path(settings.model_path))
     )
     logger.info("Serviço de detecção inicializado com sucesso")
 except ModelNotLoadedError as e:
@@ -224,7 +224,7 @@ async def _process_job(
             if detection_service is None:
                 raise ModelNotLoadedError(
                     "Serviço de detecção não inicializado. "
-                    "Verifique se o modelo ONNX está disponível em storage/models/best.onnx"
+                    "Verifique se o modelo ONNX está disponível em models/best.onnx"
                 )
 
             # Atualizar status para PROCESSING
