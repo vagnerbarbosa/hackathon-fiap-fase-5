@@ -275,7 +275,7 @@ curl -H "X-API-Key: sua-api-key" \
 
 > 💡 **Dica**: Disponibilizamos coleções de API para importar em clientes como Postman, Bruno ou Insomnia. Veja [`docs/API-Collection-README.md`](docs/API-Collection-README.md) para mais detalhes.
 
-### 5. Acesse o Frontend
+### 5. Acesse o Frontend (Opcional)
 
 > ✅ **Se você executou o script na Etapa 3**, o frontend já está rodando! Acesse diretamente: **http://localhost:5173**
 
