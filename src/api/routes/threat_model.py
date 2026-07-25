@@ -143,8 +143,10 @@ async def _process_job(
                 output_report_path=f"reports/{job_id}.md",
             )
 
-            logger.info(f"Job {job_id} processado com sucesso. "
-                       f"Componentes detectados: {len(architecture_graph.components)}")
+            logger.info(
+                f"Job {job_id} processado com sucesso. "
+                f"Componentes detectados: {len(architecture_graph.components)}"
+            )
 
         except LowConfidenceError as e:
             logger.warning(f"Job {job_id}: falha de detecção - {e.message}")
@@ -329,17 +331,23 @@ async def get_report(
         architecture_graph = ArchitectureGraph(
             components=[
                 DetectedComponent(
-                    id="mock-web-1", type="web_server", confidence=0.95,
+                    id="mock-web-1",
+                    type="web_server",
+                    confidence=0.95,
                     bbox=BoundingBox(x_min=0, y_min=0, x_max=100, y_max=100),
                     center=Point(x=50, y=50),
                 ),
                 DetectedComponent(
-                    id="mock-api-1", type="api", confidence=0.92,
+                    id="mock-api-1",
+                    type="api",
+                    confidence=0.92,
                     bbox=BoundingBox(x_min=110, y_min=0, x_max=210, y_max=100),
                     center=Point(x=160, y=50),
                 ),
                 DetectedComponent(
-                    id="mock-db-1", type="database", confidence=0.88,
+                    id="mock-db-1",
+                    type="database",
+                    confidence=0.88,
                     bbox=BoundingBox(x_min=220, y_min=0, x_max=320, y_max=100),
                     center=Point(x=270, y=50),
                 ),
@@ -349,10 +357,14 @@ async def get_report(
         )
         enriched_threats = [
             EnrichedThreat(
-                id="threat-mock-1", category="I", component_id="mock-db-1",
-                component_type="database", severity=Severity.CRITICAL,
+                id="threat-mock-1",
+                category="I",
+                component_id="mock-db-1",
+                component_type="database",
+                severity=Severity.CRITICAL,
                 description="Dados sensíveis podem ser exfiltrados do banco de dados.",
-                cwe_id="CWE-200", cwe_name="Exposure of Sensitive Information",
+                cwe_id="CWE-200",
+                cwe_name="Exposure of Sensitive Information",
                 cve_ids=["CVE-2023-5678"],
                 countermeasures=[
                     Countermeasure(
@@ -363,10 +375,14 @@ async def get_report(
                 ],
             ),
             EnrichedThreat(
-                id="threat-mock-2", category="S", component_id="mock-web-1",
-                component_type="web_server", severity=Severity.HIGH,
+                id="threat-mock-2",
+                category="S",
+                component_id="mock-web-1",
+                component_type="web_server",
+                severity=Severity.HIGH,
                 description="Servidor web pode ser falsificado por atacantes.",
-                cwe_id="CWE-290", cwe_name="Authentication Bypass by Spoofing",
+                cwe_id="CWE-290",
+                cwe_name="Authentication Bypass by Spoofing",
                 cve_ids=[],
                 countermeasures=[
                     Countermeasure(
@@ -377,10 +393,14 @@ async def get_report(
                 ],
             ),
             EnrichedThreat(
-                id="threat-mock-3", category="T", component_id="mock-api-1",
-                component_type="api", severity=Severity.MEDIUM,
+                id="threat-mock-3",
+                category="T",
+                component_id="mock-api-1",
+                component_type="api",
+                severity=Severity.MEDIUM,
                 description="Payloads da API podem ser alterados em trânsito.",
-                cwe_id="CWE-345", cwe_name="Insufficient Verification of Data Authenticity",
+                cwe_id="CWE-345",
+                cwe_name="Insufficient Verification of Data Authenticity",
                 cve_ids=[],
                 countermeasures=[
                     Countermeasure(
@@ -426,10 +446,10 @@ async def get_report(
 
     # Mapeia formato → nome de arquivo para Content-Disposition
     filename_map = {
-        "md":   f"stride-report-{job_id}.md",
+        "md": f"stride-report-{job_id}.md",
         "html": f"stride-report-{job_id}.html",
-        "csv":  f"stride-report-{job_id}.csv",
-        "pdf":  f"stride-report-{job_id}.pdf",
+        "csv": f"stride-report-{job_id}.csv",
+        "pdf": f"stride-report-{job_id}.pdf",
     }
     filename = filename_map.get(fmt, f"stride-report-{job_id}.{fmt}")
 
@@ -442,6 +462,7 @@ async def get_report(
         body = content.encode("utf-8")
     elif isinstance(content, dict):
         import json as _json
+
         body = _json.dumps(content, ensure_ascii=False).encode("utf-8")
     else:
         body = content  # já bytes (CSV, PDF)

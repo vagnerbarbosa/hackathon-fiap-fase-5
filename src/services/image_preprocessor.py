@@ -19,8 +19,8 @@ logger = logging.getLogger(__name__)
 MAX_FILE_SIZE_MB = 50
 MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
 MAX_IMAGE_DIMENSION = 10000  # Max 10k pixels
-MIN_IMAGE_DIMENSION = 10     # Min 10 pixels
-ALLOWED_MIME_TYPES = {'image/png', 'image/jpeg', 'image/jpg'}
+MIN_IMAGE_DIMENSION = 10  # Min 10 pixels
+ALLOWED_MIME_TYPES = {"image/png", "image/jpeg", "image/jpg"}
 
 
 class ImagePreprocessor:
@@ -128,8 +128,7 @@ class ImagePreprocessor:
         size = image_path.stat().st_size
         if size > MAX_FILE_SIZE_BYTES:
             logger.error(
-                f"File too large: {image_path} ({size} bytes). "
-                f"Max: {MAX_FILE_SIZE_BYTES} bytes"
+                f"File too large: {image_path} ({size} bytes). Max: {MAX_FILE_SIZE_BYTES} bytes"
             )
             raise ValueError(
                 f"File size exceeds maximum allowed ({MAX_FILE_SIZE_MB}MB). "
@@ -149,8 +148,7 @@ class ImagePreprocessor:
         if mime_type not in ALLOWED_MIME_TYPES:
             logger.error(f"Invalid MIME type: {mime_type} for {image_path}")
             raise ValueError(
-                f"Invalid file type: {mime_type}. "
-                f"Allowed: {', '.join(ALLOWED_MIME_TYPES)}"
+                f"Invalid file type: {mime_type}. Allowed: {', '.join(ALLOWED_MIME_TYPES)}"
             )
 
     def _validate_image_dimensions(self, img: NDArray[Any]) -> None:
@@ -170,21 +168,18 @@ class ImagePreprocessor:
         # Validações de dimensão
         if h < MIN_IMAGE_DIMENSION or w < MIN_IMAGE_DIMENSION:
             raise ValueError(
-                f"Image too small: {w}x{h}. "
-                f"Minimum: {MIN_IMAGE_DIMENSION}x{MIN_IMAGE_DIMENSION}"
+                f"Image too small: {w}x{h}. Minimum: {MIN_IMAGE_DIMENSION}x{MIN_IMAGE_DIMENSION}"
             )
 
         if h > MAX_IMAGE_DIMENSION or w > MAX_IMAGE_DIMENSION:
             raise ValueError(
-                f"Image too large: {w}x{h}. "
-                f"Maximum: {MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION}"
+                f"Image too large: {w}x{h}. Maximum: {MAX_IMAGE_DIMENSION}x{MAX_IMAGE_DIMENSION}"
             )
 
         # Valida número de canais (3 para RGB)
         if len(img.shape) == 3 and img.shape[2] not in [3, 4]:
             raise ValueError(
-                f"Invalid number of channels: {img.shape[2]}. "
-                f"Expected: 3 (RGB) or 4 (RGBA)"
+                f"Invalid number of channels: {img.shape[2]}. Expected: 3 (RGB) or 4 (RGBA)"
             )
 
     def _resize(self, img: NDArray[Any]) -> NDArray[Any]:

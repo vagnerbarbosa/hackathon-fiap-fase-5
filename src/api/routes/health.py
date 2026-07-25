@@ -49,6 +49,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     # Return 503 if database is down
     if db_status == "disconnected":
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=response,

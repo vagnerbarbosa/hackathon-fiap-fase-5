@@ -25,16 +25,16 @@ from typing import Any
 # Taxonomy — espelha dataset/data.yaml (32 classes)
 # ---------------------------------------------------------------------------
 CLASS_NAMES: dict[int, str] = {
-    0:  "actor_user",
-    1:  "actor_admin",
-    2:  "edge_ddos_protection",
-    3:  "edge_cdn",
-    4:  "edge_waf",
-    5:  "edge_gateway",
-    6:  "edge_portal",
-    7:  "external_entry_point",
-    8:  "integration_orchestrator",
-    9:  "integration_messaging",
+    0: "actor_user",
+    1: "actor_admin",
+    2: "edge_ddos_protection",
+    3: "edge_cdn",
+    4: "edge_waf",
+    5: "edge_gateway",
+    6: "edge_portal",
+    7: "external_entry_point",
+    8: "integration_orchestrator",
+    9: "integration_messaging",
     10: "compute_load_balancer",
     11: "compute_service",
     12: "compute_worker",
@@ -61,17 +61,18 @@ CLASS_NAMES: dict[int, str] = {
 
 # Default detections returned when no fixture is set
 _DEFAULT_BOXES: list[dict[str, Any]] = [
-    {"cls": 0,  "conf": 0.92, "xyxy": [10,  10,  100, 100]},   # actor_user
-    {"cls": 11, "conf": 0.87, "xyxy": [200, 50,  340, 130]},   # compute_service
-    {"cls": 5,  "conf": 0.81, "xyxy": [120, 200, 260, 280]},   # edge_gateway
-    {"cls": 13, "conf": 0.78, "xyxy": [350, 200, 490, 290]},   # data_database
-    {"cls": 9,  "conf": 0.74, "xyxy": [200, 300, 340, 380]},   # integration_messaging
+    {"cls": 0, "conf": 0.92, "xyxy": [10, 10, 100, 100]},  # actor_user
+    {"cls": 11, "conf": 0.87, "xyxy": [200, 50, 340, 130]},  # compute_service
+    {"cls": 5, "conf": 0.81, "xyxy": [120, 200, 260, 280]},  # edge_gateway
+    {"cls": 13, "conf": 0.78, "xyxy": [350, 200, 490, 290]},  # data_database
+    {"cls": 9, "conf": 0.74, "xyxy": [200, 300, 340, 380]},  # integration_messaging
 ]
 
 
 # ---------------------------------------------------------------------------
 # Result / Boxes objects
 # ---------------------------------------------------------------------------
+
 
 class StubBox:
     """Mimics a single detection box from Ultralytics Results.boxes[i]."""
@@ -131,9 +132,7 @@ class StubResult:
         image_path: str = "",
     ) -> None:
         raw = boxes if boxes is not None else _DEFAULT_BOXES
-        self.boxes: list[StubBox] = [
-            StubBox(b["cls"], b["conf"], b["xyxy"]) for b in raw
-        ]
+        self.boxes: list[StubBox] = [StubBox(b["cls"], b["conf"], b["xyxy"]) for b in raw]
         self.path = image_path
         # Expose names dict (mirrors Ultralytics Results.names)
         self.names = CLASS_NAMES
@@ -148,6 +147,7 @@ class StubResult:
 # ---------------------------------------------------------------------------
 # Stub model
 # ---------------------------------------------------------------------------
+
 
 class StubYOLOModel:
     """
@@ -240,20 +240,20 @@ class StubYOLOModel:
 # Stub metrics (for .val() calls in tests)
 # ---------------------------------------------------------------------------
 
+
 class StubBoxMetrics:
     """Mimics ultralytics.utils.metrics.DetMetrics.box."""
+
     map50: float = 0.82
-    map: float = 0.61       # mAP@0.5:0.95
-    mp: float = 0.85        # mean precision
-    mr: float = 0.79        # mean recall
+    map: float = 0.61  # mAP@0.5:0.95
+    mp: float = 0.85  # mean precision
+    mr: float = 0.79  # mean recall
 
 
 class StubMetrics:
     """Mimics the object returned by model.val()."""
+
     box = StubBoxMetrics()
 
     def __repr__(self) -> str:
-        return (
-            f"StubMetrics(mAP@0.5={self.box.map50}, "
-            f"mAP@0.5:0.95={self.box.map})"
-        )
+        return f"StubMetrics(mAP@0.5={self.box.map50}, mAP@0.5:0.95={self.box.map})"

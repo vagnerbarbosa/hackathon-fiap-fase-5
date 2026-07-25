@@ -40,10 +40,7 @@ class InMemoryCache(CacheInterface):
     def _cleanup_expired(self) -> None:
         """Remove entradas expiradas do cache."""
         current_time = time.time()
-        expired_keys = [
-            key for key, (_, expiry) in self._cache.items()
-            if expiry < current_time
-        ]
+        expired_keys = [key for key, (_, expiry) in self._cache.items() if expiry < current_time]
         for key in expired_keys:
             del self._cache[key]
 

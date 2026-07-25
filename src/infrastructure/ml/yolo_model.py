@@ -124,10 +124,12 @@ class YOLOModel:
         # Import stub from local module (not tests) for production compatibility
         try:
             from tests.mocks.yolo_stub import YOLOStub as _TestsYOLOStub
+
             stub_class: Any = _TestsYOLOStub
         except ImportError:
             # Fallback: define stub inline if tests not available
             from src.infrastructure.ml.yolo_stub import YOLOStub as _SrcYOLOStub
+
             stub_class = _SrcYOLOStub
 
         self._model = stub_class(str(self._model_path))
@@ -302,8 +304,12 @@ class YOLOModel:
         return detections
 
     def _parse_onnx_outputs(
-        self, output: NDArray[Any], conf_threshold: float,
-        original_w: int = 640, original_h: int = 640, imgsz: int = 640,
+        self,
+        output: NDArray[Any],
+        conf_threshold: float,
+        original_w: int = 640,
+        original_h: int = 640,
+        imgsz: int = 640,
     ) -> list[DetectionResult]:
         """Analisa saídas do modelo ONNX no formato YOLOv11.
 
@@ -326,7 +332,7 @@ class YOLOModel:
 
         for det in data:
             # Class scores começam no índice 4
-            class_scores = det[4:4 + num_classes]
+            class_scores = det[4 : 4 + num_classes]
             confidence = float(np.max(class_scores))
 
             if confidence < conf_threshold:

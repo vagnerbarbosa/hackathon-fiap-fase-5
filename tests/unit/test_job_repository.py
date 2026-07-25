@@ -1,6 +1,5 @@
 """Testes para JobRepository."""
 
-
 from src.infrastructure.repositories.job_repository import JobRepository
 from src.models.job import Job, JobStatus
 

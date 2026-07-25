@@ -139,10 +139,7 @@ def test_trust_boundary_crossing_increases_flow_severity(
         "D",
         "E",
     }
-    assert all(
-        threat.severity in {Severity.HIGH, Severity.CRITICAL}
-        for threat in flow_threats
-    )
+    assert all(threat.severity in {Severity.HIGH, Severity.CRITICAL} for threat in flow_threats)
 
 
 def test_database_information_disclosure_is_critical(

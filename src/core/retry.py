@@ -119,15 +119,12 @@ async def retry(
             last_exception = e
 
             if attempt == cfg.max_attempts:
-                logger.error(
-                    f"Function failed after {cfg.max_attempts} attempts: {e}"
-                )
+                logger.error(f"Function failed after {cfg.max_attempts} attempts: {e}")
                 raise
 
             delay = cfg.calculate_delay(attempt)
             logger.warning(
-                f"Attempt {attempt}/{cfg.max_attempts} failed: {e}. "
-                f"Retrying in {delay:.2f}s..."
+                f"Attempt {attempt}/{cfg.max_attempts} failed: {e}. Retrying in {delay:.2f}s..."
             )
             await asyncio.sleep(delay)
 
@@ -163,7 +160,9 @@ def with_retry(
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
             return await retry(func, *args, config=config, **kwargs)
+
         return wrapper
+
     return decorator
 
 

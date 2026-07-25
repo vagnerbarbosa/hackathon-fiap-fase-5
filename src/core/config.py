@@ -25,9 +25,7 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, description="Debug mode")
 
     # Database
-    database_url: str = Field(
-        description="PostgreSQL connection URL (postgresql+asyncpg://...)"
-    )
+    database_url: str = Field(description="PostgreSQL connection URL (postgresql+asyncpg://...)")
 
     # Redis
     redis_url: str = Field(

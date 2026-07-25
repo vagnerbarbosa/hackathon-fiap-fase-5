@@ -35,9 +35,7 @@ def get_limiter() -> Limiter:
             logger.info("Rate limiter initialized with Redis backend")
         except Exception as e:
             # Fallback to memory backend
-            logger.warning(
-                f"Redis unavailable for rate limiting: {e}. Using in-memory fallback."
-            )
+            logger.warning(f"Redis unavailable for rate limiting: {e}. Using in-memory fallback.")
             limiter = Limiter(
                 key_func=get_remote_address,
                 default_limits=[f"{settings.api_rate_limit} per minute"],
@@ -60,9 +58,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Content-Type-Options"] = "nosniff"
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = (
-            "max-age=31536000; includeSubDomains"
-        )
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
         # Content-Security-Policy: allow CDN resources in debug mode for Swagger
         if settings.debug:
@@ -85,9 +81,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             )
 
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = (
-            "geolocation=(), microphone=(), camera=()"
-        )
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
 
         return response
 

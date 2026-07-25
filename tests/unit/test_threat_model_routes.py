@@ -164,9 +164,7 @@ class TestThreatModelResponses:
         response = await async_client.post("/api/v1/threat-model/analyze")
         assert response.status_code == 422
 
-    async def test_analyze_rejects_unsupported_image_type(
-        self, async_client: AsyncClient
-    ):
+    async def test_analyze_rejects_unsupported_image_type(self, async_client: AsyncClient):
         """Deve rejeitar tipos de imagem não suportados."""
         files = {"file": ("test.gif", BytesIO(b"GIF89a"), "image/gif")}
         response = await async_client.post(
@@ -253,9 +251,7 @@ class TestThreatModelStatus:
         """Status deve retornar erro para job falho."""
         job_repo = JobRepository(db_session)
         job = await job_repo.create(input_image_path="/uploads/test.png")
-        await job_repo.update_status(
-            job.id, JobStatus.FAILED, error_message="Erro simulado"
-        )
+        await job_repo.update_status(job.id, JobStatus.FAILED, error_message="Erro simulado")
 
         response = await async_client.get(f"/api/v1/threat-model/{job.id}")
         assert response.status_code == 200
@@ -312,7 +308,5 @@ class TestThreatModelReport:
         job = await job_repo.create(input_image_path="/uploads/test.png")
         await job_repo.update_status(job.id, JobStatus.COMPLETED)
 
-        response = await async_client.get(
-            f"/api/v1/threat-model/{job.id}/report?format=invalid"
-        )
+        response = await async_client.get(f"/api/v1/threat-model/{job.id}/report?format=invalid")
         assert response.status_code == 400

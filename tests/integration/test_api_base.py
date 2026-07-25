@@ -52,9 +52,7 @@ class TestAPIIntegration:
         import uuid
 
         job_id = uuid.uuid4()
-        response = await async_client.get(
-            f"/api/v1/threat-model/{job_id}/report?format=json"
-        )
+        response = await async_client.get(f"/api/v1/threat-model/{job_id}/report?format=json")
 
         # Primeiro valida API key (401) depois retorna 404
         assert response.status_code in [401, 404]
@@ -94,8 +92,7 @@ class TestErrorHandling:
         from src.api.main import app
 
         async with HttpxAsyncClient(
-            transport=ASGITransport(app=app),
-            base_url="http://test"
+            transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             response = await client.get("/api/v1/threat-model/analyze")
             assert response.status_code == 401

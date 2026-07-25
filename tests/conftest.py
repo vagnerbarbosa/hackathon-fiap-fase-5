@@ -19,9 +19,7 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
 # Test engine and session factory to override PostgreSQL in tests
 _test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-_TestAsyncSessionLocal = sessionmaker(
-    _test_engine, class_=AsyncSession, expire_on_commit=False
-)
+_TestAsyncSessionLocal = sessionmaker(_test_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 @pytest_asyncio.fixture(autouse=True, scope="function")
@@ -54,9 +52,7 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         AsyncSession: Test database session.
     """
     engine = create_async_engine(TEST_DATABASE_URL, echo=False)
-    async_session = sessionmaker(
-        engine, class_=AsyncSession, expire_on_commit=False
-    )
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     # Create tables
     async with engine.begin() as conn:

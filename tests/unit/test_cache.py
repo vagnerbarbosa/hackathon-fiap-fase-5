@@ -43,8 +43,8 @@ class TestInMemoryCache:
         """Cria arquivo temporário para testes."""
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             # Escreve header PNG mínimo
-            f.write(b'\x89PNG\r\n\x1a\n')
-            f.write(b'\x00' * 100)  # Conteúdo dummy
+            f.write(b"\x89PNG\r\n\x1a\n")
+            f.write(b"\x00" * 100)  # Conteúdo dummy
             path = f.name
         yield path
         os.unlink(path)
@@ -99,6 +99,7 @@ class TestInMemoryCache:
 
         # Aguarda expiração
         import asyncio
+
         await asyncio.sleep(0.02)
 
         # Deve estar expirado
@@ -122,12 +123,13 @@ class TestCacheFactory:
 
         # create_redis_cache tenta criar RedisCache
         from src.infrastructure.cache.redis_cache import RedisCache
+
         cache = CacheFactory.create_redis_cache("redis://invalid:9999")
 
         # Deve retornar RedisCache (a conexão só falha ao usar)
         assert isinstance(cache, RedisCache)
 
-    @patch('src.infrastructure.cache.cache_factory.RedisCache')
+    @patch("src.infrastructure.cache.cache_factory.RedisCache")
     def test_create_cache_fallback_to_memory(self, mock_redis):
         """Create_cache faz fallback para memória."""
         mock_redis.side_effect = Exception("Redis unavailable")

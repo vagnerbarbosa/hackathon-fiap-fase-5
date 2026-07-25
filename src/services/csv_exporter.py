@@ -99,8 +99,7 @@ def export_to_csv_string(threats: list[EnrichedThreat]) -> str:
         import pandas as pd  # lazy import — opcional em alguns ambientes
     except ImportError as exc:
         raise ImportError(
-            "pandas é necessário para exportação CSV. "
-            "Instale com: pip install pandas"
+            "pandas é necessário para exportação CSV. Instale com: pip install pandas"
         ) from exc
 
     rows = _build_rows(threats)
@@ -126,8 +125,7 @@ def export_to_csv_bytes(threats: list[EnrichedThreat]) -> bytes:
         import pandas as pd
     except ImportError as exc:
         raise ImportError(
-            "pandas é necessário para exportação CSV. "
-            "Instale com: pip install pandas"
+            "pandas é necessário para exportação CSV. Instale com: pip install pandas"
         ) from exc
 
     rows = _build_rows(threats)

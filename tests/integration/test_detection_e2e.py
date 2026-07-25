@@ -30,11 +30,11 @@ def create_test_diagram(output_path: Path, components: list) -> None:
     draw = ImageDraw.Draw(img)
 
     colors = {
-        "user": (255, 100, 100),      # Vermelho
-        "api": (100, 100, 255),       # Azul
-        "database": (100, 255, 100), # Verde
-        "cache": (255, 255, 100),     # Amarelo
-        "queue": (255, 100, 255),     # Roxo
+        "user": (255, 100, 100),  # Vermelho
+        "api": (100, 100, 255),  # Azul
+        "database": (100, 255, 100),  # Verde
+        "cache": (255, 255, 100),  # Amarelo
+        "queue": (255, 100, 255),  # Roxo
     }
 
     for comp_type, x, y, w, h in components:

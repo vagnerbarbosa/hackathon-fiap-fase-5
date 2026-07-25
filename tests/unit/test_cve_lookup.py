@@ -72,11 +72,7 @@ async def test_search_parses_cve_ids() -> None:
 
 @pytest.mark.asyncio
 async def test_search_limits_max_results() -> None:
-    payload = {
-        "vulnerabilities": [
-            {"cve": {"id": f"CVE-2024-{i:04d}"}} for i in range(1, 10)
-        ]
-    }
+    payload = {"vulnerabilities": [{"cve": {"id": f"CVE-2024-{i:04d}"}} for i in range(1, 10)]}
     client = CveLookupClient(
         api_key="secret",
         max_results=3,

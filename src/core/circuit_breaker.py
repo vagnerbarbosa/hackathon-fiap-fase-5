@@ -19,8 +19,9 @@ T = TypeVar("T")
 
 class CircuitState(Enum):
     """Estados do Circuit Breaker."""
-    CLOSED = "closed"      # Normal operation
-    OPEN = "open"          # Failing, rejecting requests
+
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing, rejecting requests
     HALF_OPEN = "half_open"  # Testing if service recovered
 
 
@@ -118,8 +119,7 @@ class CircuitBreaker:
             self._state = CircuitState.OPEN
         elif self._failure_count >= self.failure_threshold:
             logger.error(
-                f"Circuit {self.name}: Threshold reached ({self._failure_count}), "
-                f"opening circuit"
+                f"Circuit {self.name}: Threshold reached ({self._failure_count}), opening circuit"
             )
             self._state = CircuitState.OPEN
 
@@ -131,9 +131,7 @@ class CircuitBreaker:
         self._half_open_calls = 0
         self._last_failure_time = None
 
-    async def call(
-        self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs
-    ) -> T:
+    async def call(self, func: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
         """Executa função protegida pelo circuit breaker.
 
         Args:
@@ -149,9 +147,7 @@ class CircuitBreaker:
             Exception: Falha original se função falha
         """
         if not self._can_execute():
-            raise CircuitBreakerOpenError(
-                f"Circuit {self.name} is OPEN - service unavailable"
-            )
+            raise CircuitBreakerOpenError(f"Circuit {self.name} is OPEN - service unavailable")
 
         try:
             if asyncio.iscoroutinefunction(func):
@@ -164,9 +160,7 @@ class CircuitBreaker:
             self._on_failure(e)
             raise
 
-    def protect(
-        self, func: Callable[P, T]
-    ) -> Callable[P, Coroutine[Any, Any, T]]:
+    def protect(self, func: Callable[P, T]) -> Callable[P, Coroutine[Any, Any, T]]:
         """Decorator para proteger função.
 
         Args:
@@ -175,12 +169,15 @@ class CircuitBreaker:
         Returns:
             Função wrapper protegida
         """
+
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             return await self.call(func, *args, **kwargs)
+
         return wrapper
 
 
 class CircuitBreakerOpenError(Exception):
     """Exceção lançada quando circuit breaker está aberto."""
+
     pass

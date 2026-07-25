@@ -77,8 +77,7 @@ class TestAPIKeyAuth:
         from src.api.main import app
 
         async with HttpxAsyncClient(
-            transport=ASGITransport(app=app),
-            base_url="http://test"
+            transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
             response = await client.get("/api/v1/threat-model/analyze")
             assert response.status_code == 401

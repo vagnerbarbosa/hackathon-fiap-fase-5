@@ -90,10 +90,7 @@ class StrideEngine:
                 )
 
         for flow in graph.data_flows:
-            if (
-                flow.source_id not in component_by_id
-                or flow.target_id not in component_by_id
-            ):
+            if flow.source_id not in component_by_id or flow.target_id not in component_by_id:
                 continue
 
             crosses_trust_boundary = self._crosses_trust_boundary(
@@ -242,8 +239,7 @@ class StrideEngine:
             )
             current = deduplicated.get(key)
             if current is None or (
-                severity_sort_rank(threat.severity)
-                < severity_sort_rank(current.severity)
+                severity_sort_rank(threat.severity) < severity_sort_rank(current.severity)
             ):
                 deduplicated[key] = threat
 

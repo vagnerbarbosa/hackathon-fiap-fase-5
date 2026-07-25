@@ -139,8 +139,7 @@ class ComponentDetectionService:
             # Se circuit breaker abriu, retorna erro amigável
             if isinstance(e, CircuitBreakerOpenError):
                 raise CircuitBreakerOpenError(
-                    "Serviço de IA temporariamente indisponível. "
-                    "Tente novamente em alguns minutos."
+                    "Serviço de IA temporariamente indisponível. Tente novamente em alguns minutos."
                 ) from e
             raise
 

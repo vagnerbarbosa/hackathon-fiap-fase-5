@@ -38,10 +38,32 @@ class JSONFormatter(logging.Formatter):
 
         # Add extra fields from record (passed via extra= in logging call)
         # Standard logging extras are stored in record.__dict__
-        standard_keys = {"name", "msg", "args", "levelname", "levelno", "pathname", "filename",
-                        "module", "exc_info", "exc_text", "stack_info", "lineno", "funcName",
-                        "created", "msecs", "relativeCreated", "thread", "threadName",
-                        "processName", "process", "request_id", "message", "asctime", "exception"}
+        standard_keys = {
+            "name",
+            "msg",
+            "args",
+            "levelname",
+            "levelno",
+            "pathname",
+            "filename",
+            "module",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "lineno",
+            "funcName",
+            "created",
+            "msecs",
+            "relativeCreated",
+            "thread",
+            "threadName",
+            "processName",
+            "process",
+            "request_id",
+            "message",
+            "asctime",
+            "exception",
+        }
         extra_fields = {k: v for k, v in record.__dict__.items() if k not in standard_keys}
         log_data.update(extra_fields)
 

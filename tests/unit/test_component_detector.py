@@ -3,7 +3,6 @@
 Testes usam mocks para evitar carregar pesos reais do modelo YOLO.
 """
 
-
 import contextlib
 
 import pytest
@@ -94,6 +93,7 @@ class TestComponentDetectionService:
         """Detect deve retornar ArchitectureGraph com todos os campos."""
         # Cria arquivo de imagem dummy
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -109,6 +109,7 @@ class TestComponentDetectionService:
     async def test_detect_filters_by_confidence(self, service, tmp_path):
         """Detect deve retornar componentes com confiança válida."""
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -127,6 +128,7 @@ class TestComponentDetectionService:
     async def test_detect_caches_results(self, service, tmp_path):
         """Detect deve cachear resultados para mesma imagem."""
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -192,7 +194,7 @@ class TestCircuitBreakerIntegration:
     @pytest.mark.asyncio
     async def test_circuit_breaker_exists(self, service):
         """Service deve ter circuit breaker."""
-        assert hasattr(service, '_circuit_breaker')
+        assert hasattr(service, "_circuit_breaker")
         assert service._circuit_breaker.name == "yolo_inference"
 
     @pytest.mark.asyncio
@@ -254,6 +256,7 @@ class TestCacheInjection:
     async def test_allows_custom_cache(self, tmp_path):
         """Service deve aceitar cache customizado."""
         from src.infrastructure.cache.in_memory_cache import InMemoryCache
+
         custom_cache = InMemoryCache()
 
         service = ComponentDetectionService(
@@ -276,5 +279,5 @@ class TestRetryIntegration:
             confidence_threshold=0.25,
         )
 
-        assert hasattr(service, '_run_inference_with_circuit_breaker')
-        assert hasattr(service, '_run_inference_sync')
+        assert hasattr(service, "_run_inference_with_circuit_breaker")
+        assert hasattr(service, "_run_inference_sync")

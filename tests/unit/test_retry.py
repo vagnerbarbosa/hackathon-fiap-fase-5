@@ -62,9 +62,7 @@ class TestRetry:
     @pytest.mark.asyncio
     async def test_retry_on_failure(self):
         """Retry em caso de falha."""
-        mock_func = AsyncMock(
-            side_effect=[Exception("fail"), Exception("fail"), "success"]
-        )
+        mock_func = AsyncMock(side_effect=[Exception("fail"), Exception("fail"), "success"])
 
         config = RetryConfig(
             max_attempts=3,
@@ -161,6 +159,7 @@ class TestWithRetryDecorator:
     @pytest.mark.asyncio
     async def test_decorator_failure(self):
         """Decorator propaga falha após tentativas."""
+
         @with_retry(max_attempts=2, base_delay=0.01, exceptions=(ValueError,))
         async def failing_func():
             raise ValueError("always fails")

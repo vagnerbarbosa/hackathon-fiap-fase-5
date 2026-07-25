@@ -57,6 +57,7 @@ _TEMPLATES_DIR = Path(__file__).parent.parent / "core" / "templates"
 
 # ── Data classes auxiliares ───────────────────────────────────────────────────
 
+
 @dataclass
 class StrideMatrixRow:
     """Linha da matriz STRIDE para um componente."""
@@ -121,11 +122,12 @@ class GeneratedReport:
     """
 
     job_id: str
-    saved_paths: dict[str, Path]   # {"md": Path, "json": Path, ...}
+    saved_paths: dict[str, Path]  # {"md": Path, "json": Path, ...}
     json_data: dict[str, Any]
 
 
 # ── ReportGenerator ───────────────────────────────────────────────────────────
+
 
 class ReportGenerator:
     """Orquestra a geração de relatórios em todos os formatos suportados."""
@@ -196,9 +198,7 @@ class ReportGenerator:
             row.categories.add(threat.category)
             row.risk_score += SEVERITY_WEIGHT.get(threat.severity.value, 0)
 
-        stride_matrix = sorted(
-            matrix_map.values(), key=lambda r: r.risk_score, reverse=True
-        )
+        stride_matrix = sorted(matrix_map.values(), key=lambda r: r.risk_score, reverse=True)
 
         # Tabela consolidada de contramedidas (ordenada por severidade)
         severity_priority = {s: i for i, s in enumerate(SEVERITY_ORDER)}

@@ -101,8 +101,7 @@ class RelationshipAnalyzer:
                 flows.append(flow)
 
                 logger.debug(
-                    f"Inferred flow: {source.type} -> {target.type} "
-                    f"(distance={distance:.1f}px)"
+                    f"Inferred flow: {source.type} -> {target.type} (distance={distance:.1f}px)"
                 )
 
         logger.info(f"Inferred {len(flows)} data flows from {len(components)} components")

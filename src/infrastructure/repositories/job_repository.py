@@ -52,9 +52,7 @@ class JobRepository:
             Job | None: Job encontrado ou None.
         """
         job_id_str = str(job_id)
-        result = await self.session.execute(
-            select(Job).where(Job.id == job_id_str)
-        )
+        result = await self.session.execute(select(Job).where(Job.id == job_id_str))
         return result.scalar_one_or_none()
 
     async def update_status(
@@ -103,8 +101,6 @@ class JobRepository:
             list[Job]: Lista de jobs ordenados por data de criação.
         """
         result = await self.session.execute(
-            select(Job)
-            .order_by(Job.created_at.desc())
-            .limit(limit)
+            select(Job).order_by(Job.created_at.desc()).limit(limit)
         )
         return list(result.scalars().all())

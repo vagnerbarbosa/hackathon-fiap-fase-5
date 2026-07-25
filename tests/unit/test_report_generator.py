@@ -77,17 +77,23 @@ def sample_graph() -> ArchitectureGraph:
     return ArchitectureGraph(
         components=[
             DetectedComponent(
-                id="comp-web-01", type="web_server", confidence=0.95,
+                id="comp-web-01",
+                type="web_server",
+                confidence=0.95,
                 bbox=BoundingBox(x_min=0, y_min=0, x_max=100, y_max=100),
                 center=Point(x=50, y=50),
             ),
             DetectedComponent(
-                id="comp-api-01", type="api", confidence=0.91,
+                id="comp-api-01",
+                type="api",
+                confidence=0.91,
                 bbox=BoundingBox(x_min=110, y_min=0, x_max=210, y_max=100),
                 center=Point(x=160, y=50),
             ),
             DetectedComponent(
-                id="comp-db-01", type="database", confidence=0.88,
+                id="comp-db-01",
+                type="database",
+                confidence=0.88,
                 bbox=BoundingBox(x_min=220, y_min=0, x_max=320, y_max=100),
                 center=Point(x=270, y=50),
             ),
@@ -211,8 +217,16 @@ class TestGenerateFormatJson:
         sample_threats: list[EnrichedThreat],
     ) -> None:
         content, _ = generator.generate_format(sample_job, sample_graph, sample_threats, "json")
-        required = {"job_id", "timestamp", "image_name", "components", "data_flows",
-                    "trust_boundaries", "threats", "summary"}
+        required = {
+            "job_id",
+            "timestamp",
+            "image_name",
+            "components",
+            "data_flows",
+            "trust_boundaries",
+            "threats",
+            "summary",
+        }
         assert required.issubset(set(content.keys()))  # type: ignore[arg-type]
 
     def test_json_summary_counts_match_threats(
@@ -240,8 +254,14 @@ class TestGenerateFormatJson:
         content, _ = generator.generate_format(sample_job, sample_graph, sample_threats, "json")
         threat = content["threats"][0]  # type: ignore[index]
         required_fields = {
-            "id", "category", "category_name", "component_id",
-            "component_type", "severity", "description", "countermeasures",
+            "id",
+            "category",
+            "category_name",
+            "component_id",
+            "component_type",
+            "severity",
+            "description",
+            "countermeasures",
         }
         assert required_fields.issubset(set(threat.keys()))
 
@@ -698,9 +718,7 @@ class TestEmptyThreats:
         sample_job: Job,
         sample_graph: ArchitectureGraph,
     ) -> None:
-        content, media_type = generator.generate_format(
-            sample_job, sample_graph, [], "json"
-        )
+        content, media_type = generator.generate_format(sample_job, sample_graph, [], "json")
         assert content["summary"]["total_threats"] == 0  # type: ignore[index]
         assert content["threats"] == []  # type: ignore[index]
 
