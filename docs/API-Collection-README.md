@@ -150,5 +150,5 @@ X-API-Key: your-secure-api-key-here
 ## 📚 Mais Informações
 
 - [Documentação Swagger](../src/api/main.py) - Execute a API e acesse `/docs`
-- [SDD - Software Design Document](./sdd.md)
-- [Especificações](./features/)
+- [SDD - Software Design Document](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5/blob/main/docs/sdd.md)
+- [Especificações](https://github.com/vagnerbarbosa/hackathon-fiap-fase-5/tree/main/specs/features)
