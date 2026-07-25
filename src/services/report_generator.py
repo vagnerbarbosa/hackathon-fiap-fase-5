@@ -160,7 +160,6 @@ class ReportGenerator:
         else:
             self._reports_root = Path(reports_base_path)
 
-        _ensure_dir_writable(self._reports_root)
         self._jinja_env = self._build_jinja_env()
 
     # ── Jinja2 setup ─────────────────────────────────────────────────────────
@@ -351,6 +350,7 @@ class ReportGenerator:
         Returns:
             Path: Caminho absoluto do arquivo salvo.
         """
+        _ensure_dir_writable(self._reports_root)
         job_dir = self._reports_root / job_id
         _ensure_dir_writable(job_dir)
         file_path = job_dir / f"report.{ext}"
