@@ -51,6 +51,16 @@ Imagem de Arquitetura
 
 ---
 
+## 🎥 Vídeo de Apresentação
+
+Assista à apresentação completa da solução no YouTube:
+
+[![YouTube](https://img.shields.io/badge/YouTube-Apresentação%20Hackathon%20FIAP%20Fase%205-red?style=flat-square&logo=youtube)](https://www.youtube.com/watch?v=cCUfbg_2VbY)
+
+**Link:** https://www.youtube.com/watch?v=cCUfbg_2VbY
+
+---
+
 ## 🚀 Deploy
 
 [![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8001/health)
@@ -417,16 +427,6 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 - **Leticia Nepomucena** — [@LeticiaNepomucena](https://github.com/LeticiaNepomucena)
 - **Lucas Silva** — [@lucfsilva](https://github.com/lucfsilva)
 - **Vagner Barbosa** — [@vagnerbarbosa](https://github.com/vagnerbarbosa)
-
----
-
-## 🎥 Vídeo de Apresentação
-
-Assista à apresentação completa da solução no YouTube:
-
-[![YouTube](https://img.shields.io/badge/YouTube-Apresentação%20Hackathon%20FIAP%20Fase%205-red?style=flat-square&logo=youtube)](https://www.youtube.com/watch?v=cCUfbg_2VbY)
-
-**Link:** https://www.youtube.com/watch?v=cCUfbg_2VbY
 
 ---
 
