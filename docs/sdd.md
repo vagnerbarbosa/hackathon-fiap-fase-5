@@ -237,10 +237,10 @@ Todas as specs estão em `specs/features/`:
 
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
-| **Documentação do fluxo** | **✅ Concluído**(este SDD + specs) | Equipe |
-| **Frontend React** (complementar) | **✅ Implementado** - Layout completo com STRIDE e exportação de arquivos | Equipe |
+| **Documentação do fluxo** | **✅ Concluído** (este SDD + specs) | Equipe |
 | **Vídeo de até 15 min** | **✅ Publicado** — [Assista no YouTube](https://www.youtube.com/watch?v=cCUfbg_2VbY) | Equipe |
 | **Link do GitHub** | **✅ Criado**: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
+| **Frontend React** (complementar) | **✅ Implementado** - Layout completo com STRIDE e exportação de arquivos | Equipe |
 
 ---
 
