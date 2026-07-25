@@ -382,8 +382,8 @@ frontend/
 - [x] Criar Dockerfile para frontend
 - [x] Criar nginx.conf com proxy para API
 - [x] Adicionar ao docker-compose.yml principal
-- [ ] Implementar integração real com API (upload, polling, relatório)
-- [ ] Implementar botões de exportação (JSON, MD, HTML, PDF, CSV)
+- [x] Implementar integração real com API (upload, polling, relatório)
+- [x] Implementar botões de exportação (JSON, MD, HTML, PDF, CSV)
 - [ ] Testes E2E com Cypress ou Playwright
 
 ## Notas
@@ -397,6 +397,6 @@ frontend/
 
 ---
 
-*Spec atualizada em: 2026-07-11*
+*Spec atualizada em: 2026-07-25*
 *Implementado: Layout completo, identidade FIAP, STRIDE, Grupo 27*
 *Depende de: Spec 001 (API Core), Spec 006 (Report Generator)*
