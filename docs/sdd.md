@@ -244,6 +244,6 @@ Todas as specs estão em `specs/features/`:
 
 ---
 
-*SDD consolidado em: 2026-07-11*
-*Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*
-*Frontend implementado: React + TypeScript + Vite + Tailwind CSS com identidade FIAP*
+- *SDD consolidado em: 2026-07-11*
+- *Baseado em: Context7 (FastAPI, PyTorch, OpenCV, STRIDE) + requisitos do PDF do hackathon*
+- *Frontend complementar implementado: React + TypeScript + Vite + Tailwind CSS com identidade FIAP*
