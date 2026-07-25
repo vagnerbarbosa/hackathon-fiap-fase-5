@@ -321,9 +321,9 @@ npm run test:watch
 | `/health` | GET | ❌ | Health check com status do DB |
 | `/docs` | GET | ❌ | Swagger UI (documentação) |
 | `/version` | GET | ❌ | Versão da API |
-| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise (placeholder) |
-| `/api/v1/threat-model/{id}` | GET | ✅ | Status da análise (placeholder) |
-| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório (placeholder) |
+| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise de imagem e retorna job_id |
+| `/api/v1/threat-model/{id}` | GET | ✅ | Status e progresso da análise |
+| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório nos formatos md, json, html, csv ou pdf |
 
 > **Nota**: Autenticação via header `X-API-Key`. Defina em `.env`.
 

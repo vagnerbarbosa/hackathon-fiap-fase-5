@@ -279,5 +279,5 @@ dataset/test/labels.cache
 .claude/
 coverage.json
 
-# Local coverage analysis report
-docs/coverage-analysis-report.md
+# Local coverage analysis report is now versioned so the team can track progress.
+# docs/coverage-analysis-report.md
