@@ -1,5 +1,6 @@
 """Serviço de armazenamento de arquivos para uploads."""
 
+import os
 import shutil
 from pathlib import Path
 from uuid import uuid4
@@ -8,6 +9,29 @@ from src.core.config import settings
 from src.core.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+def _ensure_dir_writable(path: Path) -> None:
+    """Garante que um diretório existe e pode ser escrito.
+
+    Args:
+        path: Caminho do diretório a criar.
+
+    Raises:
+        PermissionError: Se não conseguir criar o diretório.
+    """
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except PermissionError as e:
+        logger.error(f"Não é possível criar {path}: {e}")
+        raise
+
+    try:
+        os.chmod(path, 0o777)
+    except PermissionError:
+        logger.warning(f"Não foi possível alterar permissões de {path} para 0o777 (volume Docker, OK)")
+    except Exception as e:
+        logger.warning(f"Erro ao alterar permissões de {path}: {e}")
 
 
 class LocalFileStorage:
@@ -20,7 +44,7 @@ class LocalFileStorage:
             base_path: Diretório base para armazenamento. Padrão é settings.storage_path.
         """
         self.base_path = Path(base_path or settings.storage_path)
-        self.base_path.mkdir(parents=True, exist_ok=True)
+        _ensure_dir_writable(self.base_path)
 
     async def save(self, content: bytes, filename: str | None = None) -> str:
         """Salva arquivo no armazenamento.
