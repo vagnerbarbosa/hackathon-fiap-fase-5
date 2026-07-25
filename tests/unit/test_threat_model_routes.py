@@ -1,6 +1,9 @@
 """Testes para rotas de threat model da API."""
 
+import asyncio
+import json
 from io import BytesIO
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 from uuid import UUID, uuid4
 
@@ -9,6 +12,7 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from src.api.main import app
+from src.api.routes.threat_model import _process_job
 from src.domain.models import (
     ArchitectureGraph,
     BoundingBox,
@@ -19,8 +23,11 @@ from src.domain.models import (
     JobStatus,
     Point,
     Severity,
+    Threat,
 )
+from src.infrastructure.database import AsyncSessionLocal
 from src.infrastructure.repositories.job_repository import JobRepository
+from src.services.report_generator import GeneratedReport
 
 
 @pytest_asyncio.fixture
@@ -63,6 +70,29 @@ def sample_graph() -> ArchitectureGraph:
         ],
         trust_boundaries=[["comp-web-1"], ["comp-api-1"]],
     )
+
+
+@pytest.fixture
+def sample_threats() -> list[Threat]:
+    """Ameaças STRIDE mock para testes."""
+    return [
+        Threat(
+            id="threat-s-1",
+            category="S",
+            component_id="comp-web-1",
+            component_type="web_server",
+            severity=Severity.HIGH,
+            description="Spoofing do servidor web.",
+        ),
+        Threat(
+            id="threat-t-1",
+            category="T",
+            component_id="comp-api-1",
+            component_type="api",
+            severity=Severity.MEDIUM,
+            description="Tampering na API.",
+        ),
+    ]
 
 
 @pytest.fixture
@@ -116,6 +146,98 @@ def mock_report_generator(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
         mock_gen,
     )
     return mock_gen
+
+
+@pytest.fixture
+def patched_storage_path(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
+    """Redireciona storage_path para tmp_path durante o teste."""
+    monkeypatch.setattr(
+        "src.api.routes.threat_model.settings.storage_path",
+        str(tmp_path),
+    )
+    return tmp_path
+
+
+def _make_generated_report(
+    job_id: str,
+    base_dir: Path,
+    threats: list[dict] | None = None,
+) -> GeneratedReport:
+    """Cria um GeneratedReport com arquivos de relatório em base_dir."""
+    report_dir = base_dir / "reports" / job_id
+    report_dir.mkdir(parents=True, exist_ok=True)
+
+    threats_data = threats if threats is not None else []
+    json_data = {
+        "job_id": job_id,
+        "threats": threats_data,
+        "summary": {"total_threats": len(threats_data)},
+    }
+    json_path = report_dir / "report.json"
+    json_path.write_text(json.dumps(json_data), encoding="utf-8")
+
+    md_path = report_dir / "report.md"
+    md_path.write_text(f"# Report {job_id}", encoding="utf-8")
+
+    html_path = report_dir / "report.html"
+    html_path.write_text(f"<html>{job_id}</html>", encoding="utf-8")
+
+    csv_path = report_dir / "report.csv"
+    csv_path.write_bytes(b"id,category\n")
+
+    pdf_path = report_dir / "report.pdf"
+    pdf_path.write_bytes(b"%PDF")
+
+    return GeneratedReport(
+        job_id=job_id,
+        saved_paths={
+            "json": json_path,
+            "md": md_path,
+            "html": html_path,
+            "csv": csv_path,
+            "pdf": pdf_path,
+        },
+        json_data=json_data,
+    )
+
+
+@pytest.fixture
+def mock_pipeline_services(
+    monkeypatch: pytest.MonkeyPatch,
+    sample_graph: ArchitectureGraph,
+    sample_enriched_threats: list[EnrichedThreat],
+) -> dict[str, MagicMock]:
+    """Mocka os serviços do pipeline end-to-end (detecção, STRIDE, vuln)."""
+    detection_service = MagicMock()
+    detection_service.detect = AsyncMock(return_value=sample_graph)
+    monkeypatch.setattr(
+        "src.api.routes.threat_model.detection_service",
+        detection_service,
+    )
+
+    stride_instance = MagicMock()
+    stride_instance.analyze = AsyncMock(return_value=[])
+    stride_cls = MagicMock(return_value=stride_instance)
+    monkeypatch.setattr(
+        "src.api.routes.threat_model.StrideEngine",
+        stride_cls,
+    )
+
+    vuln_instance = MagicMock()
+    vuln_instance.enrich = AsyncMock(return_value=sample_enriched_threats)
+    vuln_cls = MagicMock(return_value=vuln_instance)
+    monkeypatch.setattr(
+        "src.api.routes.threat_model.VulnerabilityService",
+        vuln_cls,
+    )
+
+    return {
+        "detection_service": detection_service,
+        "stride_cls": stride_cls,
+        "stride_instance": stride_instance,
+        "vuln_cls": vuln_cls,
+        "vuln_instance": vuln_instance,
+    }
 
 
 class TestThreatModelAuth:
@@ -310,3 +432,244 @@ class TestThreatModelReport:
 
         response = await async_client.get(f"/api/v1/threat-model/{job.id}/report?format=invalid")
         assert response.status_code == 400
+
+
+class TestThreatModelPipeline:
+    """Testes de integração end-to-end do pipeline assíncrono."""
+
+    async def test_process_job_full_pipeline(
+        self,
+        db_session,
+        mock_pipeline_services: dict[str, MagicMock],
+        sample_graph: ArchitectureGraph,
+        sample_threats: list[Threat],
+        tmp_path: Path,
+    ):
+        """_process_job deve executar detecção → STRIDE → vuln → relatório e completar."""
+        mock_pipeline_services["stride_instance"].analyze = AsyncMock(return_value=sample_threats)
+
+        job_repo = JobRepository(db_session)
+        job = await job_repo.create(input_image_path="/uploads/diagram.png")
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.settings.storage_path",
+            str(tmp_path),
+        )
+
+        def fake_generate_all(*, job, architecture_graph, threats):  # noqa: ARG001
+            return _make_generated_report(str(job.id), tmp_path)
+
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_all",
+            fake_generate_all,
+        )
+
+        try:
+            await _process_job(job.id, job.input_image_path, db_session)
+        finally:
+            monkeypatch.undo()
+
+        async with AsyncSessionLocal() as check_session:
+            check_repo = JobRepository(check_session)
+            updated_job = await check_repo.get_by_id(job.id)
+            assert updated_job is not None
+            assert updated_job.status == JobStatus.COMPLETED.value
+        assert updated_job.output_report_path is not None
+        assert "report.json" in updated_job.output_report_path
+
+        mock_pipeline_services["detection_service"].detect.assert_awaited_once_with(
+            job.input_image_path
+        )
+        mock_pipeline_services["stride_instance"].analyze.assert_awaited_once_with(sample_graph)
+        mock_pipeline_services["vuln_instance"].enrich.assert_awaited_once_with(sample_threats)
+
+    async def test_status_reflects_real_threat_count(
+        self,
+        async_client: AsyncClient,
+        db_session,
+        mock_pipeline_services: dict[str, MagicMock],
+        sample_threats: list[Threat],
+        sample_enriched_threats: list[EnrichedThreat],
+        tmp_path: Path,
+    ):
+        """Status deve retletir o número real de ameaças do relatório JSON."""
+        mock_pipeline_services["stride_instance"].analyze = AsyncMock(return_value=sample_threats)
+        mock_pipeline_services["vuln_instance"].enrich = AsyncMock(
+            return_value=sample_enriched_threats
+        )
+
+        job_repo = JobRepository(db_session)
+        job = await job_repo.create(input_image_path="/uploads/diagram.png")
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.settings.storage_path",
+            str(tmp_path),
+        )
+
+        def fake_generate_all(*, job, architecture_graph, threats):  # noqa: ARG001
+            return _make_generated_report(
+                str(job.id),
+                tmp_path,
+                threats=[{"id": t.id, "category": t.category} for t in threats],
+            )
+
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_all",
+            fake_generate_all,
+        )
+
+        try:
+            await _process_job(job.id, job.input_image_path, db_session)
+        finally:
+            monkeypatch.undo()
+
+        response = await async_client.get(f"/api/v1/threat-model/{job.id}")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["status"] == "completed"
+        assert data["result"]["threats_count"] == len(sample_enriched_threats)
+
+    async def test_report_reads_generated_file(
+        self,
+        async_client: AsyncClient,
+        db_session,
+        mock_pipeline_services: dict[str, MagicMock],
+        sample_threats: list[Threat],
+        tmp_path: Path,
+    ):
+        """GET /report deve ler relatório já gerado em storage."""
+        mock_pipeline_services["stride_instance"].analyze = AsyncMock(return_value=sample_threats)
+
+        job_repo = JobRepository(db_session)
+        job = await job_repo.create(input_image_path="/uploads/diagram.png")
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.settings.storage_path",
+            str(tmp_path),
+        )
+
+        expected_data = {"job_id": str(job.id), "threats": [{"id": "t1"}]}
+
+        def fake_generate_all(*, job, architecture_graph, threats):  # noqa: ARG001
+            report = _make_generated_report(str(job.id), tmp_path, threats=expected_data["threats"])
+            report.json_data = expected_data
+            report.saved_paths["json"].write_text(
+                json.dumps(expected_data),
+                encoding="utf-8",
+            )
+            return report
+
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_all",
+            fake_generate_all,
+        )
+
+        # Garante que generate_format NÃO seja chamado (relatório existe)
+        generate_format_spy = MagicMock(side_effect=AssertionError("deve usar arquivo existente"))
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_format",
+            generate_format_spy,
+        )
+
+        try:
+            await _process_job(job.id, job.input_image_path, db_session)
+        finally:
+            monkeypatch.undo()
+
+        response = await async_client.get(f"/api/v1/threat-model/{job.id}/report?format=json")
+        assert response.status_code == 200
+        assert response.json() == expected_data
+        generate_format_spy.assert_not_called()
+
+    async def test_report_fallback_on_missing_file(
+        self,
+        async_client: AsyncClient,
+        db_session,
+        tmp_path: Path,
+    ):
+        """GET /report deve gerar sob demanda quando arquivo não existe."""
+        job_repo = JobRepository(db_session)
+        job = await job_repo.create(input_image_path="/uploads/diagram.png")
+        await job_repo.update_status(job.id, JobStatus.COMPLETED)
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.settings.storage_path",
+            str(tmp_path),
+        )
+
+        expected_data = {"job_id": str(job.id), "threats": []}
+        generate_format_spy = MagicMock(return_value=(expected_data, "application/json"))
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_format",
+            generate_format_spy,
+        )
+
+        try:
+            response = await async_client.get(f"/api/v1/threat-model/{job.id}/report?format=json")
+        finally:
+            monkeypatch.undo()
+
+        assert response.status_code == 200
+        assert response.json() == expected_data
+        generate_format_spy.assert_called_once()
+
+    async def test_analyze_starts_background_job(
+        self,
+        async_client: AsyncClient,
+        mock_pipeline_services: dict[str, MagicMock],
+        tmp_path: Path,
+    ):
+        """POST /analyze deve retornar 202 e iniciar job de processamento."""
+        mock_pipeline_services["stride_instance"].analyze = AsyncMock(return_value=[])
+
+        monkeypatch = pytest.MonkeyPatch()
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.settings.storage_path",
+            str(tmp_path),
+        )
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.report_generator.generate_all",
+            lambda *, job, architecture_graph, threats: _make_generated_report(  # noqa: ARG001
+                str(job.id), tmp_path
+            ),
+        )
+
+        # Torna a tarefa em background síncrona para testar o resultado final.
+        created_tasks: list[asyncio.Task] = []
+        original_create_task = asyncio.create_task
+
+        def tracked_create_task(coro, *, name=None):  # noqa: ARG001
+            task = original_create_task(coro, name=name)
+            created_tasks.append(task)
+            return task
+
+        monkeypatch.setattr(
+            "src.api.routes.threat_model.asyncio.create_task",
+            tracked_create_task,
+        )
+
+        try:
+            fake_png = BytesIO(b"\x89PNG\r\n\x1a\n" + b"fake content")
+            files = {"file": ("diagram.png", fake_png, "image/png")}
+            response = await async_client.post(
+                "/api/v1/threat-model/analyze",
+                files=files,
+            )
+
+            assert response.status_code == 202
+            data = response.json()
+            job_id = data["job_id"]
+
+            # Aguarda a tarefa em background concluir antes de consultar status.
+            if created_tasks:
+                await asyncio.gather(*created_tasks, return_exceptions=True)
+
+            status_response = await async_client.get(f"/api/v1/threat-model/{job_id}")
+            status_data = status_response.json()
+            assert status_data["status"] in {"completed", "failed"}
+        finally:
+            monkeypatch.undo()

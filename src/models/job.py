@@ -1,7 +1,7 @@
 """Modelo de Job para análise de modelagem de ameaças."""
 
 from datetime import UTC, datetime
-from enum import Enum as PyEnum
+from enum import StrEnum
 from uuid import uuid4
 
 from sqlalchemy import DateTime, String
@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.models.base import Base
 
 
-class JobStatus(str, PyEnum):
+class JobStatus(StrEnum):
     """Status de processamento do Job."""
 
     PENDING = "pending"

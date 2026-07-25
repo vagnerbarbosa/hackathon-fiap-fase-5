@@ -5,7 +5,7 @@ Estes modelos servem como a "lingua franca" entre todos os módulos do projeto.
 """
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Literal
 from uuid import UUID, uuid4
 
@@ -60,7 +60,7 @@ class ArchitectureGraph(BaseModel):
 # ── STRIDE (Spec 004 produz) ─────────────────────────────
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     """Níveis de severidade de ameaças."""
 
     CRITICAL = "critical"
@@ -115,7 +115,7 @@ class EnrichedThreat(BaseModel):
 # ── Jobs (Spec 001 produz / Spec 006 consome) ────────────
 
 
-class JobStatus(str, Enum):
+class JobStatus(StrEnum):
     """Status de processamento."""
 
     PENDING = "pending"

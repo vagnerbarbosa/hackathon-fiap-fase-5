@@ -1,24 +1,40 @@
 """Endpoints de análise de modelagem de ameaças (Spec 001 + 003)."""
 
 import asyncio
-from datetime import UTC
+import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.dependencies import ApiKeyDep, SessionDep, StorageDep
 from src.core.config import settings
 from src.core.logging import get_logger
+from src.domain.models import (
+    ArchitectureGraph,
+    BoundingBox,
+    Countermeasure,
+    DetectedComponent,
+    EnrichedThreat,
+    Point,
+    Severity,
+)
+from src.domain.models import Job as DomainJob
+from src.domain.models import JobStatus as DomainJobStatus
 from src.infrastructure.repositories.job_repository import JobRepository
-from src.models.job import JobStatus
+from src.models.job import Job, JobStatus
 from src.services.component_detection import (
     ComponentDetectionService,
     LowConfidenceError,
     ModelNotLoadedError,
 )
+from src.services.report_generator import report_generator
+from src.services.stride_engine import StrideEngine
+from src.services.vulnerability_service import VulnerabilityService
 
 logger = get_logger(__name__)
 router = APIRouter(
@@ -38,6 +54,88 @@ try:
 except ModelNotLoadedError as e:
     logger.error(f"Falha ao inicializar serviço de detecção: {e.message}")
     detection_service = None
+
+# Mapeamento de formato para media type usado na resposta HTTP.
+_REPORT_FORMAT_TO_MEDIA_TYPE: dict[str, str] = {
+    "json": "application/json",
+    "md": "text/markdown",
+    "html": "text/html",
+    "csv": "text/csv",
+    "pdf": "application/pdf",
+}
+
+
+def _domain_job_from_orm(job: Job) -> DomainJob:
+    """Converte o modelo ORM de Job para o contrato de domínio Pydantic."""
+    return DomainJob(
+        id=UUID(job.id),
+        status=DomainJobStatus(job.status),
+        input_image_path=job.input_image_path or "",
+        output_report_path=job.output_report_path,
+        created_at=job.created_at or datetime.now(UTC),
+        updated_at=job.updated_at or datetime.now(UTC),
+    )
+
+
+def _find_report_path(
+    job_id: str,
+    fmt: str,
+    output_report_path: str | None,
+) -> Path | None:
+    """Localiza o arquivo de relatório persistido para um job e formato.
+
+    A busca prioriza o caminho padrão ``storage/reports/{job_id}/report.{fmt}``;
+    caso não exista, procura entre os caminhos salvos em ``output_report_path``.
+
+    Args:
+        job_id: UUID do job em formato string.
+        fmt: Extensão/formato do relatório.
+        output_report_path: Caminhos salvos no job (separados por ``;``).
+
+    Returns:
+        Path | None: Caminho do arquivo encontrado ou ``None``.
+    """
+    storage_root = Path(settings.storage_path)
+    default_path = storage_root / "reports" / job_id / f"report.{fmt}"
+    if default_path.exists():
+        return default_path
+
+    if output_report_path:
+        for path_str in output_report_path.split(";"):
+            candidate = Path(path_str)
+            if candidate.suffix == f".{fmt}" and candidate.exists():
+                return candidate
+
+    return None
+
+
+def _count_threats_from_report(output_report_path: str | None) -> int:
+    """Conta ameaças a partir do relatório JSON persistido.
+
+    Args:
+        output_report_path: Caminhos salvos no job (separados por ``;``).
+
+    Returns:
+        int: Número de ameaças no relatório JSON, ou ``0`` se não encontrado.
+    """
+    if not output_report_path:
+        return 0
+
+    for path_str in output_report_path.split(";"):
+        candidate = Path(path_str)
+        if candidate.suffix != ".json" or not candidate.exists():
+            continue
+
+        try:
+            data = json.loads(candidate.read_text(encoding="utf-8"))
+        except Exception:
+            return 0
+
+        threats = data.get("threats")
+        if isinstance(threats, list):
+            return len(threats)
+
+    return 0
 
 
 @router.post(
@@ -98,12 +196,17 @@ async def _process_job(
     image_path: str,
     session: AsyncSession,
 ) -> None:
-    """Processa o job em background.
+    """Processa o job em background executando o pipeline end-to-end.
+
+    Pipeline: detecção de componentes -> STRIDE -> enriquecimento de
+    vulnerabilidades -> geração de relatórios -> persistência dos caminhos
+    no job.
 
     Args:
         job_id: ID do job.
         image_path: Caminho da imagem.
-        session: Sessão do banco de dados.
+        session: Sessão do banco de dados (mantida para compatibilidade de
+            assinatura; a tarefa cria sua própria sessão).
     """
     from src.infrastructure.database import AsyncSessionLocal
 
@@ -112,6 +215,11 @@ async def _process_job(
         job_repo = JobRepository(bg_session)
 
         try:
+            db_job = await job_repo.get_by_id(job_id)
+            if db_job is None:
+                logger.error(f"Job {job_id} não encontrado para processamento")
+                return
+
             # Verificar se o serviço de detecção está disponível
             if detection_service is None:
                 raise ModelNotLoadedError(
@@ -129,23 +237,41 @@ async def _process_job(
             logger.info(f"Processando job {job_id}: detectando componentes...")
             architecture_graph = await detection_service.detect(image_path)
 
-            # TODO: Integrar com Spec 004 (STRIDE Engine) quando disponível
-            # TODO: Integrar com Spec 005 (Vulnerabilidades) quando disponível
-            # TODO: Integrar com Spec 006 (Relatórios) quando disponível
+            # Converter job ORM para contrato de domínio
+            domain_job = _domain_job_from_orm(db_job)
 
-            # Por enquanto, simular processamento
-            await asyncio.sleep(2)  # Simular tempo de processamento
+            # Análise STRIDE (Spec 004)
+            logger.info(f"Processando job {job_id}: aplicando STRIDE...")
+            stride_engine = StrideEngine()
+            threats = await stride_engine.analyze(architecture_graph)
 
-            # Atualizar status para COMPLETED
+            # Enriquecimento de vulnerabilidades (Spec 005)
+            logger.info(f"Processando job {job_id}: enriquecendo vulnerabilidades...")
+            vuln_service = VulnerabilityService()
+            enriched_threats = await vuln_service.enrich(threats)
+
+            # Geração de relatórios (Spec 006)
+            logger.info(f"Processando job {job_id}: gerando relatórios...")
+            generated_report = report_generator.generate_all(
+                job=domain_job,
+                architecture_graph=architecture_graph,
+                threats=enriched_threats,
+            )
+
+            # Persistir caminhos dos relatórios gerados
+            saved_paths = generated_report.saved_paths
+            output_report_path = ";".join(str(path) for path in saved_paths.values())
             await job_repo.update_status(
                 job_id=job_id,
                 status=JobStatus.COMPLETED,
-                output_report_path=f"reports/{job_id}.md",
+                output_report_path=output_report_path,
             )
 
             logger.info(
                 f"Job {job_id} processado com sucesso. "
-                f"Componentes detectados: {len(architecture_graph.components)}"
+                f"Componentes detectados: {len(architecture_graph.components)}. "
+                f"Ameaças identificadas: {len(enriched_threats)}. "
+                f"Artefatos: {list(saved_paths.keys())}"
             )
 
         except LowConfidenceError as e:
@@ -209,7 +335,7 @@ async def get_analysis_status(
         JobStatus.FAILED.value: 0,
     }
 
-    response = {
+    response: dict[str, Any] = {
         "job_id": str(job.id),
         "status": job.status,
         "progress": progress_map.get(job.status, 0),
@@ -220,7 +346,7 @@ async def get_analysis_status(
     # Incluir resultado se completado
     if job.status == JobStatus.COMPLETED.value:
         response["result"] = {
-            "threats_count": 6,  # TODO: Calcular real após Spec 004/005/006
+            "threats_count": _count_threats_from_report(job.output_report_path),
             "report_url": f"/api/v1/threat-model/{job_id}/report",
         }
 
@@ -258,25 +384,8 @@ async def get_report(
         - json  → resposta inline (application/json)
         - md / html / csv / pdf → download (Content-Disposition: attachment)
     """
-    from datetime import datetime
-
-    from fastapi.responses import JSONResponse, Response
-
-    from src.domain.models import (
-        ArchitectureGraph,
-        BoundingBox,
-        Countermeasure,
-        DetectedComponent,
-        EnrichedThreat,
-        Point,
-        Severity,
-    )
-    from src.services.report_generator import report_generator
-    from src.services.stride_engine import StrideEngine
-    from src.services.vulnerability_service import VulnerabilityService
-
     # ── Validar formato ───────────────────────────────────────────────────────
-    supported_formats = {"json", "md", "html", "csv", "pdf"}
+    supported_formats = set(_REPORT_FORMAT_TO_MEDIA_TYPE.keys())
     fmt = format.lower().strip()
     if fmt not in supported_formats:
         raise HTTPException(
@@ -300,18 +409,34 @@ async def get_report(
             detail=f"Job ainda não completado. Status atual: {db_job.status}",
         )
 
-    # ── Construir objeto Job de domínio (Pydantic) a partir do modelo ORM ─────
-    from src.domain.models import Job as DomainJob
-    from src.domain.models import JobStatus as DomainJobStatus
+    # ── Tentar ler relatório já gerado em storage ─────────────────────────────
+    report_path = _find_report_path(str(job_id), fmt, db_job.output_report_path)
+    if report_path is not None and report_path.exists():
+        content_bytes = report_path.read_bytes()
 
-    domain_job = DomainJob(
-        id=UUID(db_job.id),
-        status=DomainJobStatus(db_job.status),
-        input_image_path=db_job.input_image_path or "",
-        output_report_path=db_job.output_report_path,
-        created_at=db_job.created_at or datetime.now(UTC),
-        updated_at=db_job.updated_at or datetime.now(UTC),
-    )
+        if fmt == "json":
+            try:
+                data = json.loads(content_bytes.decode("utf-8"))
+            except Exception as exc:
+                logger.error(f"Erro ao ler relatório JSON de {report_path}: {exc}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Relatório JSON corrompido.",
+                ) from exc
+            return JSONResponse(content=data, media_type="application/json")
+
+        media_type = _REPORT_FORMAT_TO_MEDIA_TYPE[fmt]
+        filename = _report_filename(job_id, fmt)
+        return Response(
+            content=content_bytes,
+            media_type=media_type,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+    # ── Fallback: gerar sob demanda quando o arquivo não existe ───────────────
+    logger.warning(f"Job {job_id}: relatório {fmt} não encontrado em storage, gerando sob demanda")
+
+    domain_job = _domain_job_from_orm(db_job)
 
     # ── Obter dados de ameaças (detecção → STRIDE → enriquecimento) ───────────
     try:
@@ -444,14 +569,7 @@ async def get_report(
     if fmt == "json":
         return JSONResponse(content=content, media_type="application/json")
 
-    # Mapeia formato → nome de arquivo para Content-Disposition
-    filename_map = {
-        "md": f"stride-report-{job_id}.md",
-        "html": f"stride-report-{job_id}.html",
-        "csv": f"stride-report-{job_id}.csv",
-        "pdf": f"stride-report-{job_id}.pdf",
-    }
-    filename = filename_map.get(fmt, f"stride-report-{job_id}.{fmt}")
+    filename = _report_filename(job_id, fmt)
 
     # Se media_type for text/html (fallback do PDF), ajusta o nome do arquivo
     if fmt == "pdf" and media_type == "text/html":
@@ -461,9 +579,7 @@ async def get_report(
     if isinstance(content, str):
         body = content.encode("utf-8")
     elif isinstance(content, dict):
-        import json as _json
-
-        body = _json.dumps(content, ensure_ascii=False).encode("utf-8")
+        body = json.dumps(content, ensure_ascii=False).encode("utf-8")
     else:
         body = content  # já bytes (CSV, PDF)
 
@@ -472,3 +588,11 @@ async def get_report(
         media_type=media_type,
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+def _report_filename(job_id: UUID, fmt: str) -> str:
+    """Monta o nome do arquivo para o header Content-Disposition."""
+    if fmt == "pdf":
+        # report_generator pode retornar fallback HTML; o nome é ajustado pelo caller.
+        return f"stride-report-{job_id}.pdf"
+    return f"stride-report-{job_id}.{fmt}"
