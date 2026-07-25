@@ -212,6 +212,14 @@ jobs:
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-ansi
 
+      - name: Generate synthetic dataset
+        run: |
+          echo "→ Generating synthetic dataset for CI validation..."
+          poetry run python scripts/generate_synthetic_diagrams.py \
+            --output dataset/train --count 75 --seed 1
+          poetry run python scripts/generate_synthetic_diagrams.py \
+            --output dataset/val --count 25 --seed 2
+
       - name: Check dataset/data.yaml exists and is valid
         run: |
           echo "→ Checking dataset/data.yaml..."
