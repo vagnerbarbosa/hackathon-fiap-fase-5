@@ -36,7 +36,6 @@ class LocalFileStorage:
             base_path: Diretório base para armazenamento. Padrão é settings.storage_path.
         """
         self.base_path = Path(base_path or settings.storage_path)
-        _ensure_dir_writable(self.base_path)
 
     async def save(self, content: bytes, filename: str | None = None) -> str:
         """Salva arquivo no armazenamento.
@@ -48,9 +47,9 @@ class LocalFileStorage:
         Returns:
             str: Caminho do arquivo salvo (relativo ao base_path).
         """
-        # Generate unique filename
+        _ensure_dir_writable(self.base_path)
+
         if filename:
-            # Sanitize filename
             safe_name = Path(filename).name.replace("..", "").replace("/", "").replace("\\", "")
             unique_name = f"{uuid4()}_{safe_name}"
         else:
@@ -58,7 +57,6 @@ class LocalFileStorage:
 
         file_path = self.base_path / unique_name
 
-        # Save file
         with open(file_path, "wb") as f:
             f.write(content)
 
