@@ -112,6 +112,7 @@ jobs:
       API_KEY: test-api-key-ci
       API_RATE_LIMIT: "9999"
       DEBUG: "false"
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -167,7 +168,7 @@ jobs:
 
       # Opcional: enviar para Codecov se o token estiver configurado
       - name: Upload to Codecov
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
