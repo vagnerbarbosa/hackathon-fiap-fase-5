@@ -177,6 +177,7 @@ dataset/**
 !dataset/
 !dataset/.gitkeep
 !dataset/README.md
+!dataset/data.yaml
 
 *.zip
 *.tar.gz

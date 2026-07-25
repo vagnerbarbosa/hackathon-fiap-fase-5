@@ -1,0 +1,14 @@
+# YOLO Dataset Configuration
+# This is a template file for the dataset structure.
+# Actual data is generated at CI time via scripts/generate_synthetic_diagrams.py
+
+path: ./dataset
+train: train
+val: val
+test: test
+
+nc: 3
+names:
+  0: Database
+  1: Server
+  2: User
