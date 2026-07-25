@@ -47,9 +47,7 @@ router = APIRouter(
 # O modelo ONNX deve estar disponível em models/best.onnx
 detection_service: ComponentDetectionService | None
 try:
-    detection_service = ComponentDetectionService(
-        model_path=str(Path(settings.model_path))
-    )
+    detection_service = ComponentDetectionService(model_path=str(Path(settings.model_path)))
     logger.info("Serviço de detecção inicializado com sucesso")
 except ModelNotLoadedError as e:
     logger.error(f"Falha ao inicializar serviço de detecção: {e.message}")
