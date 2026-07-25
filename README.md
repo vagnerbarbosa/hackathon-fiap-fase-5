@@ -394,7 +394,7 @@ make help
 - [x] **Spec 006**: Gerador de Relatórios (✅ Concluída)
 - [x] **Spec 007**: CI/CD GitHub Actions (✅ Concluída)
 - [x] **Spec 008**: Frontend React (✅ Concluída)
-- [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
+- [x] **Spec 009**: Roteiro do Vídeo (✅ Concluída)
 
 ---
 
@@ -417,6 +417,16 @@ Este projeto segue o fluxo de **Pull Requests** rigoroso:
 - **Leticia Nepomucena** — [@LeticiaNepomucena](https://github.com/LeticiaNepomucena)
 - **Lucas Silva** — [@lucfsilva](https://github.com/lucfsilva)
 - **Vagner Barbosa** — [@vagnerbarbosa](https://github.com/vagnerbarbosa)
+
+---
+
+## 🎥 Vídeo de Apresentação
+
+Assista à apresentação completa da solução no YouTube:
+
+[![YouTube](https://img.shields.io/badge/YouTube-Apresentação%20Hackathon%20FIAP%20Fase%205-red?style=flat-square&logo=youtube)](https://www.youtube.com/watch?v=cCUfbg_2VbY)
+
+**Link:** https://www.youtube.com/watch?v=cCUfbg_2VbY
 
 ---
 

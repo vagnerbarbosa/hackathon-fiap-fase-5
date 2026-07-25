@@ -2,6 +2,16 @@
 
 ---
 
+## Status
+
+✅ **Concluída**
+
+O vídeo de apresentação foi gravado, editado e publicado no YouTube.
+
+- **Link do vídeo:** https://www.youtube.com/watch?v=cCUfbg_2VbY
+
+---
+
 ## Contexto / Motivação
 
 O hackathon exige um **vídeo de até 15 minutos** explicando a solução proposta. Um roteiro bem estruturado garante que todas as partes importantes sejam cobertas e que o vídeo seja persuasivo para os avaliadores.
@@ -175,7 +185,12 @@ disponível no GitHub. Obrigado!"
 - [ ] Upload para Google Drive / YouTube (não listado) / outro serviço
 - [ ] Link anotado no README do projeto
 
+## Entregável
+
+- **Vídeo de apresentação (≤ 15 min):** https://www.youtube.com/watch?v=cCUfbg_2VbY
+
 ---
 
 *Spec criada em: 2026-06-21*
+*Atualizada em: 2026-07-25 — vídeo publicado no YouTube.*
 *Nota: Esta spec é mais leve (não tem código), mas é crítica para o entregável do hackathon.*
