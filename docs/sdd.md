@@ -237,10 +237,10 @@ Todas as specs estão em `specs/features/`:
 
 | Entregável | Status | Responsável |
 |------------|--------|-------------|
-| Documentação do fluxo | Em progresso (este SDD + specs) | Equipe |
+| Documentação do fluxo | **✅ Concluído**(este SDD + specs) | Equipe |
 | **Frontend React** | **✅ Implementado** - Layout completo com STRIDE e Grupo 27 | Equipe |
 | **Vídeo de até 15 min** | **✅ Publicado** — [Assista no YouTube](https://www.youtube.com/watch?v=cCUfbg_2VbY) | Equipe |
-| Link do GitHub | ✅ Criado: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
+| Link do GitHub | **✅ Criado**: github.com/vagnerbarbosa/hackathon-fiap-fase-5 | Equipe |
 
 ---
 
