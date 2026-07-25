@@ -162,8 +162,12 @@ $RECYCLE.BIN/
 # Project specific
 # -------------------------------
 
-# Model artifacts (large binaries — use Git LFS or release assets)
-# Nota: best.pt e best.onnx são versionados no repositório para o MVP
+# Model artifacts (small binaries — versionados no repositório para o MVP)
+# best.pt (~5MB) e best.onnx (~10MB) são versionados diretamente em models/
+!models/
+!models/best.pt
+!models/best.onnx
+!models/metrics.yaml
 
 # Ultralytics training runs (checkpoints, plots, logs — not versioned)
 runs/
@@ -275,5 +279,5 @@ dataset/test/labels.cache
 .claude/
 coverage.json
 
-# Local coverage analysis report
-docs/coverage-analysis-report.md
+# Local coverage analysis report is now versioned so the team can track progress.
+# docs/coverage-analysis-report.md

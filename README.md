@@ -51,6 +51,16 @@ Imagem de Arquitetura
 
 ---
 
+## 🎥 Vídeo de Apresentação
+
+Assista à apresentação completa da solução no YouTube:
+
+[![YouTube](https://img.shields.io/badge/YouTube-Apresentação%20Hackathon%20FIAP%20Fase%205-red?style=flat-square&logo=youtube)](https://www.youtube.com/watch?v=cCUfbg_2VbY)
+
+**Link:** https://www.youtube.com/watch?v=cCUfbg_2VbY
+
+---
+
 ## 🚀 Deploy
 
 [![Deploy Status](https://img.shields.io/badge/Deploy-Local%20Dev-2ea44f?style=flat-square&logo=docker)](http://localhost:8001/health)
@@ -321,9 +331,9 @@ npm run test:watch
 | `/health` | GET | ❌ | Health check com status do DB |
 | `/docs` | GET | ❌ | Swagger UI (documentação) |
 | `/version` | GET | ❌ | Versão da API |
-| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise (placeholder) |
-| `/api/v1/threat-model/{id}` | GET | ✅ | Status da análise (placeholder) |
-| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório (placeholder) |
+| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise de imagem e retorna job_id |
+| `/api/v1/threat-model/{id}` | GET | ✅ | Status e progresso da análise |
+| `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório nos formatos md, json, html, csv ou pdf |
 
 > **Nota**: Autenticação via header `X-API-Key`. Defina em `.env`.
 
@@ -394,7 +404,7 @@ make help
 - [x] **Spec 006**: Gerador de Relatórios (✅ Concluída)
 - [x] **Spec 007**: CI/CD GitHub Actions (✅ Concluída)
 - [x] **Spec 008**: Frontend React (✅ Concluída)
-- [ ] **Spec 009**: Roteiro do Vídeo (bloqueado)
+- [x] **Spec 009**: Roteiro do Vídeo (✅ Concluída)
 
 ---
 

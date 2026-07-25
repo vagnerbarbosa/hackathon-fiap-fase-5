@@ -10,6 +10,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/fiap_stride
       - REDIS_URL=redis://redis:6379/0
       - STORAGE_PATH=/app/storage
+      - MODEL_PATH=/app/models/best.onnx
       - LOG_LEVEL=INFO
       - API_RATE_LIMIT=60
       - API_KEY=${API_KEY:-dev-api-key-change-in-production}

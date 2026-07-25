@@ -1,5 +1,6 @@
 """Pytest configuration and fixtures."""
 
+import asyncio
 from collections.abc import AsyncGenerator, Generator
 from typing import Any
 
@@ -45,8 +46,14 @@ def event_loop_policy() -> Any:
 
 
 @pytest_asyncio.fixture(scope="function")
-async def db_session() -> AsyncGenerator[AsyncSession, None]:
+async def db_session(
+    override_settings: Settings,
+) -> AsyncGenerator[AsyncSession, None]:
     """Create test database session.
+
+    Args:
+        override_settings: Test settings fixture (ensures AsyncSessionLocal
+            resolves to the test database URL).
 
     Yields:
         AsyncSession: Test database session.
@@ -84,12 +91,46 @@ def override_settings(monkeypatch: pytest.MonkeyPatch) -> Generator[Settings, No
     def get_test_settings() -> Settings:
         return test_settings
 
+    # Clear cached settings so direct calls (e.g. AsyncSessionLocal) pick the test URL
+    get_settings.cache_clear()
+    # Override the imported get_settings inside infrastructure.database so the
+    # dynamic AsyncSessionLocal factory and get_engine use the test database URL.
+    monkeypatch.setattr("src.infrastructure.database.get_settings", get_test_settings)
     # Override dependency so FastAPI resolves test settings everywhere
     app.dependency_overrides[get_settings] = get_test_settings
     yield test_settings
 
     # Restore
     app.dependency_overrides.pop(get_settings, None)
+    get_settings.cache_clear()
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def _await_route_background_tasks(
+    override_settings: Settings,
+    monkeypatch: pytest.MonkeyPatch,
+) -> AsyncGenerator[None, None]:
+    """Aguarda tarefas em background iniciadas pela rota de análise.
+
+    Garante que ``asyncio.create_task`` usado em ``analyze_image`` seja
+    concluído antes do encerramento do loop de eventos do teste, evitando
+    ``RuntimeError: no running event loop`` e acesso a banco fora do escopo.
+    """
+    background_tasks: list[asyncio.Task] = []
+    original_create_task = asyncio.create_task
+
+    def tracked_create_task(coro, *, name=None):  # noqa: ANN001
+        task = original_create_task(coro, name=name)
+        background_tasks.append(task)
+        return task
+
+    monkeypatch.setattr(
+        "src.api.routes.threat_model.asyncio.create_task",
+        tracked_create_task,
+    )
+    yield
+    if background_tasks:
+        await asyncio.gather(*background_tasks, return_exceptions=True)
 
 
 @pytest_asyncio.fixture

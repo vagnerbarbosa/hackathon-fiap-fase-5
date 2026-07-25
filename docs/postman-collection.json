@@ -192,7 +192,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"detail\": \"Serviço de detecção não inicializado. Verifique se o modelo ONNX está disponível em storage/models/best.onnx\"\n}"
+              "body": "{\n  \"detail\": \"Serviço de detecção não inicializado. Verifique se o modelo ONNX está disponível em models/best.onnx\"\n}"
             }
           ]
         },

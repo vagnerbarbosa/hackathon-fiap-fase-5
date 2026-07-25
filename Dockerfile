@@ -58,10 +58,12 @@ COPY src/ ./src/
 COPY alembic/ ./alembic/
 COPY alembic.ini .
 COPY config/ ./config/
+COPY models/ ./models/
 
 # Create storage directory and set permissions
 RUN mkdir -p /app/storage /app/logs && \
-    chown -R appuser:appgroup /app
+    chown -R appuser:appgroup /app && \
+    chmod -R 777 /app/storage /app/logs
 
 # Switch to non-root user
 USER appuser

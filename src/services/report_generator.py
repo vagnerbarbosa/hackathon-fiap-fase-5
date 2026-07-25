@@ -55,6 +55,22 @@ SEVERITY_WEIGHT: dict[str, int] = {
 _TEMPLATES_DIR = Path(__file__).parent.parent / "core" / "templates"
 
 
+def _ensure_dir_writable(path: Path) -> None:
+    """Garante que um diretório existe e pode ser escrito.
+
+    Args:
+        path: Caminho do diretório a criar.
+
+    Raises:
+        PermissionError: Se não conseguir criar o diretório.
+    """
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except PermissionError as e:
+        logger.error(f"Não é possível criar {path}: {e}")
+        raise
+
+
 # ── Data classes auxiliares ───────────────────────────────────────────────────
 
 
@@ -144,7 +160,7 @@ class ReportGenerator:
         else:
             self._reports_root = Path(reports_base_path)
 
-        self._reports_root.mkdir(parents=True, exist_ok=True)
+        _ensure_dir_writable(self._reports_root)
         self._jinja_env = self._build_jinja_env()
 
     # ── Jinja2 setup ─────────────────────────────────────────────────────────
@@ -336,7 +352,7 @@ class ReportGenerator:
             Path: Caminho absoluto do arquivo salvo.
         """
         job_dir = self._reports_root / job_id
-        job_dir.mkdir(parents=True, exist_ok=True)
+        _ensure_dir_writable(job_dir)
         file_path = job_dir / f"report.{ext}"
 
         if isinstance(content, str):

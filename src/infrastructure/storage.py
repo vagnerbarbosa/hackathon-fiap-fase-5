@@ -10,6 +10,22 @@ from src.core.logging import get_logger
 logger = get_logger(__name__)
 
 
+def _ensure_dir_writable(path: Path) -> None:
+    """Garante que um diretório existe e pode ser escrito.
+
+    Args:
+        path: Caminho do diretório a criar.
+
+    Raises:
+        PermissionError: Se não conseguir criar o diretório.
+    """
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except PermissionError as e:
+        logger.error(f"Não é possível criar {path}: {e}")
+        raise
+
+
 class LocalFileStorage:
     """Implementação de armazenamento em sistema de arquivos local."""
 
@@ -20,7 +36,7 @@ class LocalFileStorage:
             base_path: Diretório base para armazenamento. Padrão é settings.storage_path.
         """
         self.base_path = Path(base_path or settings.storage_path)
-        self.base_path.mkdir(parents=True, exist_ok=True)
+        _ensure_dir_writable(self.base_path)
 
     async def save(self, content: bytes, filename: str | None = None) -> str:
         """Salva arquivo no armazenamento.
