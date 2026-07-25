@@ -328,8 +328,8 @@ npm run test:watch
 
 | Endpoint | Método | Auth | Descrição |
 |----------|--------|------|-----------|
-| `/docs` | GET | ✅ | Swagger UI (documentação) 
-| `/api/v1/threat-model/analyze` | POST | c | Inicia análise de imagem e retorna job_id |
+| `/docs` | GET | ❌ | Swagger UI (documentação) 
+| `/api/v1/threat-model/analyze` | POST | ✅ | Inicia análise de imagem e retorna job_id |
 | `/api/v1/threat-model/{id}` | GET | ✅ | Status e progresso da análise |
 | `/api/v1/threat-model/{id}/report` | GET | ✅ | Relatório nos formatos md, json, html, csv ou pdf |
 
