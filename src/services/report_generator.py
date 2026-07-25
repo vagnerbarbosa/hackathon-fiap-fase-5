@@ -15,7 +15,6 @@ Também:
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -70,13 +69,6 @@ def _ensure_dir_writable(path: Path) -> None:
     except PermissionError as e:
         logger.error(f"Não é possível criar {path}: {e}")
         raise
-
-    try:
-        os.chmod(path, 0o777)
-    except PermissionError:
-        logger.warning(f"Não foi possível alterar permissões de {path} para 0o777 (volume Docker, OK)")
-    except Exception as e:
-        logger.warning(f"Erro ao alterar permissões de {path}: {e}")
 
 
 # ── Data classes auxiliares ───────────────────────────────────────────────────

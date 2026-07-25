@@ -1,6 +1,5 @@
 """Serviço de armazenamento de arquivos para uploads."""
 
-import os
 import shutil
 from pathlib import Path
 from uuid import uuid4
@@ -25,13 +24,6 @@ def _ensure_dir_writable(path: Path) -> None:
     except PermissionError as e:
         logger.error(f"Não é possível criar {path}: {e}")
         raise
-
-    try:
-        os.chmod(path, 0o777)
-    except PermissionError:
-        logger.warning(f"Não foi possível alterar permissões de {path} para 0o777 (volume Docker, OK)")
-    except Exception as e:
-        logger.warning(f"Erro ao alterar permissões de {path}: {e}")
 
 
 class LocalFileStorage:
