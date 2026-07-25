@@ -13,7 +13,6 @@ from src.core.stride_mappings import (
 from src.core.stride_rules import calculate_severity, category_name, severity_sort_rank
 from src.domain.models import ArchitectureGraph, DataFlow, Threat
 
-
 DATA_FLOW_COMPONENT_TYPE = "data_flow"
 logger = logging.getLogger(__name__)
 
@@ -36,7 +35,9 @@ TRUST_BOUNDARY_THREATS = [
     MappingThreat(
         category="I",
         description="Dados podem ser expostos ao cruzar trust boundary.",
-        justification="A fronteira pode separar dominios com politicas de confidencialidade diferentes.",
+        justification=(
+            "A fronteira pode separar dominios com politicas de confidencialidade diferentes."
+        ),
     ),
     MappingThreat(
         category="D",
@@ -89,10 +90,7 @@ class StrideEngine:
                 )
 
         for flow in graph.data_flows:
-            if (
-                flow.source_id not in component_by_id
-                or flow.target_id not in component_by_id
-            ):
+            if flow.source_id not in component_by_id or flow.target_id not in component_by_id:
                 continue
 
             crosses_trust_boundary = self._crosses_trust_boundary(
@@ -241,8 +239,7 @@ class StrideEngine:
             )
             current = deduplicated.get(key)
             if current is None or (
-                severity_sort_rank(threat.severity)
-                < severity_sort_rank(current.severity)
+                severity_sort_rank(threat.severity) < severity_sort_rank(current.severity)
             ):
                 deduplicated[key] = threat
 

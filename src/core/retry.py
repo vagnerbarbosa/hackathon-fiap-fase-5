@@ -7,10 +7,13 @@ por razões transientes.
 import asyncio
 import logging
 import random
+from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
-from typing import Callable, Any, Optional, Tuple, Type
+from typing import Any, TypeVar, overload
 
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T")
 
 
 class RetryConfig:
@@ -32,7 +35,7 @@ class RetryConfig:
         max_delay: float = 60.0,
         exponential_base: float = 2.0,
         jitter: bool = True,
-        exceptions: Tuple[Type[Exception], ...] = (Exception,),
+        exceptions: tuple[type[Exception], ...] = (Exception,),
     ):
         self.max_attempts = max_attempts
         self.base_delay = base_delay
@@ -60,11 +63,29 @@ class RetryConfig:
         return delay
 
 
+@overload
 async def retry(
-    func: Callable,
-    *args,
-    config: Optional[RetryConfig] = None,
-    **kwargs
+    func: Callable[..., Awaitable[T]],
+    *args: Any,
+    config: RetryConfig | None = None,
+    **kwargs: Any,
+) -> T: ...
+
+
+@overload
+async def retry(
+    func: Callable[..., T],
+    *args: Any,
+    config: RetryConfig | None = None,
+    **kwargs: Any,
+) -> T: ...
+
+
+async def retry(
+    func: Callable[..., Any],
+    *args: Any,
+    config: RetryConfig | None = None,
+    **kwargs: Any,
 ) -> Any:
     """Executa função com retentativas.
 
@@ -98,18 +119,16 @@ async def retry(
             last_exception = e
 
             if attempt == cfg.max_attempts:
-                logger.error(
-                    f"Function failed after {cfg.max_attempts} attempts: {e}"
-                )
+                logger.error(f"Function failed after {cfg.max_attempts} attempts: {e}")
                 raise
 
             delay = cfg.calculate_delay(attempt)
             logger.warning(
-                f"Attempt {attempt}/{cfg.max_attempts} failed: {e}. "
-                f"Retrying in {delay:.2f}s..."
+                f"Attempt {attempt}/{cfg.max_attempts} failed: {e}. Retrying in {delay:.2f}s..."
             )
             await asyncio.sleep(delay)
 
+    assert last_exception is not None
     raise last_exception
 
 
@@ -117,8 +136,8 @@ def with_retry(
     max_attempts: int = 3,
     base_delay: float = 1.0,
     max_delay: float = 60.0,
-    exceptions: Tuple[Type[Exception], ...] = (Exception,),
-):
+    exceptions: tuple[type[Exception], ...] = (Exception,),
+) -> Callable[[Callable[..., T]], Callable[..., Coroutine[Any, Any, T]]]:
     """Decorator para adicionar retry a função.
 
     Args:
@@ -137,11 +156,13 @@ def with_retry(
         exceptions=exceptions,
     )
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[..., T]) -> Callable[..., Coroutine[Any, Any, T]]:
         @wraps(func)
-        async def wrapper(*args, **kwargs):
+        async def wrapper(*args: Any, **kwargs: Any) -> T:
             return await retry(func, *args, config=config, **kwargs)
+
         return wrapper
+
     return decorator
 
 

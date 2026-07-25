@@ -10,16 +10,14 @@ Orquestra o pipeline completo de detecção:
 
 import logging
 from pathlib import Path
-from typing import Union
+from typing import Any, cast
 from uuid import uuid4
 
-from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpen
-from src.core.config import settings
-from src.core.retry import retry, RETRY_AI_SERVICE
+from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
+from src.core.retry import RETRY_AI_SERVICE, retry
 from src.domain.models import (
     ArchitectureGraph,
     BoundingBox,
-    DataFlow,
     DetectedComponent,
     Point,
 )
@@ -54,8 +52,8 @@ class ComponentDetectionService:
         self,
         model_path: str = "models/best.pt",
         confidence_threshold: float = 0.25,
-        cache: CacheInterface = None,
-    ):
+        cache: CacheInterface | None = None,
+    ) -> None:
         """Inicializa o serviço de detecção.
 
         Args:
@@ -82,7 +80,7 @@ class ComponentDetectionService:
         )
 
         logger.info(
-            f"Initialized ComponentDetectionService",
+            "Initialized ComponentDetectionService",
             extra={
                 "model_path": str(model_path),
                 "using_stub": self.model.is_stub,
@@ -91,7 +89,7 @@ class ComponentDetectionService:
             },
         )
 
-    async def detect(self, image_path: Union[str, Path]) -> ArchitectureGraph:
+    async def detect(self, image_path: str | Path) -> ArchitectureGraph:
         """Detecta componentes na imagem.
 
         Pipeline completo:
@@ -118,12 +116,12 @@ class ComponentDetectionService:
         cached = await self.cache.get(image_path)
         if cached:
             logger.info(f"Returning cached result for {image_path.name}")
-            return cached
+            return cast(ArchitectureGraph, cached)
 
         # Step 2: Preprocess (com validação rigorosa)
         logger.debug(f"Preprocessing {image_path.name}")
         try:
-            preprocessed = self.preprocessor.preprocess(image_path)
+            self.preprocessor.preprocess(image_path)
         except ValueError as e:
             logger.error(f"Invalid image: {e}")
             raise
@@ -139,11 +137,10 @@ class ComponentDetectionService:
         except Exception as e:
             logger.error(f"Inference failed after retries: {e}")
             # Se circuit breaker abriu, retorna erro amigável
-            if isinstance(e, CircuitBreakerOpen):
-                raise CircuitBreakerOpen(
-                    "Serviço de IA temporariamente indisponível. "
-                    "Tente novamente em alguns minutos."
-                )
+            if isinstance(e, CircuitBreakerOpenError):
+                raise CircuitBreakerOpenError(
+                    "Serviço de IA temporariamente indisponível. Tente novamente em alguns minutos."
+                ) from e
             raise
 
         # Step 4: Convert to domain models
@@ -174,7 +171,7 @@ class ComponentDetectionService:
 
         return graph
 
-    def _convert_detections(self, detections: list) -> list[DetectedComponent]:
+    def _convert_detections(self, detections: list[Any]) -> list[DetectedComponent]:
         """Converte detecções YOLO para modelos de domínio.
 
         Args:
@@ -205,7 +202,7 @@ class ComponentDetectionService:
 
         return components
 
-    async def _run_inference_with_circuit_breaker(self, image_path: Path) -> list:
+    async def _run_inference_with_circuit_breaker(self, image_path: Path) -> list[Any]:
         """Executa inferência protegida por circuit breaker.
 
         Args:
@@ -215,7 +212,7 @@ class ComponentDetectionService:
             Lista de detecções do modelo.
 
         Raises:
-            CircuitBreakerOpen: Se circuito está aberto.
+            CircuitBreakerOpenError: Se circuito está aberto.
             Exception: Falhas na inferência.
         """
         return await self._circuit_breaker.call(
@@ -223,7 +220,7 @@ class ComponentDetectionService:
             image_path,
         )
 
-    def _run_inference_sync(self, image_path: Path) -> list:
+    def _run_inference_sync(self, image_path: Path) -> list[Any]:
         """Wrapper síncrono para inferência.
 
         Args:
@@ -246,11 +243,11 @@ class ComponentDetectionService:
 class NoComponentsDetectedError(Exception):
     """Lançado quando nenhum componente é detectado na imagem."""
 
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Converte erro para formato de resposta da API."""
         return {
             "error": "NO_COMPONENTS_DETECTED",

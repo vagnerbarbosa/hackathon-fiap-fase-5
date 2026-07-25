@@ -8,12 +8,8 @@ from src.core.stride_mappings import StrideMappingError, StrideMappings
 def test_loads_component_and_data_flow_mappings() -> None:
     mappings = StrideMappings.from_file(Path("config/stride_mappings.yaml"))
 
-    api_categories = {
-        threat.category for threat in mappings.get_component_threats("api")
-    }
-    data_flow_categories = {
-        threat.category for threat in mappings.get_data_flow_threats()
-    }
+    api_categories = {threat.category for threat in mappings.get_component_threats("api")}
+    data_flow_categories = {threat.category for threat in mappings.get_data_flow_threats()}
 
     assert api_categories == {"S", "T", "R", "I", "D", "E"}
     assert data_flow_categories == {"T", "I", "D"}

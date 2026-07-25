@@ -1,6 +1,7 @@
 """Endpoint de verificação de saúde da API."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import text
@@ -20,7 +21,7 @@ router = APIRouter(tags=["health"])
     summary="Health check",
     description="Check API and database health status.",
 )
-async def health_check(db: AsyncSession = Depends(get_db)) -> dict:
+async def health_check(db: AsyncSession = Depends(get_db)) -> dict[str, Any]:
     """Verifica status de saúde da API.
 
     Returns:
@@ -42,12 +43,13 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> dict:
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "version": settings.app_version,
         "database": db_status,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     # Return 503 if database is down
     if db_status == "disconnected":
         from fastapi import HTTPException
+
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=response,
@@ -62,7 +64,7 @@ async def health_check(db: AsyncSession = Depends(get_db)) -> dict:
     summary="Root endpoint",
     include_in_schema=False,
 )
-async def root() -> dict:
+async def root() -> dict[str, Any]:
     """Endpoint raiz que redireciona para documentação."""
     return {
         "message": "FIAP STRIDE API",

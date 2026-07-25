@@ -3,18 +3,16 @@
 Testes usam mocks para evitar carregar pesos reais do modelo YOLO.
 """
 
-from pathlib import Path
-from uuid import uuid4
-from unittest.mock import AsyncMock, MagicMock, patch
+import contextlib
 
 import pytest
-from src.core.circuit_breaker import CircuitBreakerOpen
-from src.domain.models import ArchitectureGraph, BoundingBox, DetectedComponent, Point
+
+from src.domain.models import ArchitectureGraph, DetectedComponent
+from src.infrastructure.ml.yolo_model import DetectionResult
 from src.services.component_detector import (
     ComponentDetectionService,
     NoComponentsDetectedError,
 )
-from src.infrastructure.ml.yolo_model import DetectionResult
 
 
 class TestComponentDetectionService:
@@ -95,6 +93,7 @@ class TestComponentDetectionService:
         """Detect deve retornar ArchitectureGraph com todos os campos."""
         # Cria arquivo de imagem dummy
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -110,6 +109,7 @@ class TestComponentDetectionService:
     async def test_detect_filters_by_confidence(self, service, tmp_path):
         """Detect deve retornar componentes com confiança válida."""
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -128,6 +128,7 @@ class TestComponentDetectionService:
     async def test_detect_caches_results(self, service, tmp_path):
         """Detect deve cachear resultados para mesma imagem."""
         from PIL import Image
+
         img = Image.new("RGB", (640, 480), color="white")
         test_path = tmp_path / "test.png"
         img.save(test_path)
@@ -193,14 +194,14 @@ class TestCircuitBreakerIntegration:
     @pytest.mark.asyncio
     async def test_circuit_breaker_exists(self, service):
         """Service deve ter circuit breaker."""
-        assert hasattr(service, '_circuit_breaker')
+        assert hasattr(service, "_circuit_breaker")
         assert service._circuit_breaker.name == "yolo_inference"
 
     @pytest.mark.asyncio
     async def test_circuit_breaker_opens_after_failures(self, tmp_path):
         """Circuito deve abrir após múltiplas falhas."""
         from PIL import Image
-        from src.services.component_detector import ComponentDetectionService
+
         from src.core.circuit_breaker import CircuitBreaker
 
         img = Image.new("RGB", (640, 480), color="white")
@@ -223,10 +224,8 @@ class TestCircuitBreakerIntegration:
 
         # 3 falhas devem abrir o circuito
         for _ in range(3):
-            try:
+            with contextlib.suppress(RuntimeError):
                 await cb.call(failing_func)
-            except RuntimeError:
-                pass  # Esperado
 
         assert call_count[0] == 3
         assert cb.state.value == "open"
@@ -251,13 +250,13 @@ class TestCacheInjection:
     @pytest.mark.asyncio
     async def test_uses_cache_factory_by_default(self, service):
         """Service deve usar CacheFactory por padrão."""
-        from src.infrastructure.cache.cache_factory import CacheFactory
         assert service.cache is not None
 
     @pytest.mark.asyncio
     async def test_allows_custom_cache(self, tmp_path):
         """Service deve aceitar cache customizado."""
         from src.infrastructure.cache.in_memory_cache import InMemoryCache
+
         custom_cache = InMemoryCache()
 
         service = ComponentDetectionService(
@@ -280,5 +279,5 @@ class TestRetryIntegration:
             confidence_threshold=0.25,
         )
 
-        assert hasattr(service, '_run_inference_with_circuit_breaker')
-        assert hasattr(service, '_run_inference_sync')
+        assert hasattr(service, "_run_inference_with_circuit_breaker")
+        assert hasattr(service, "_run_inference_sync")

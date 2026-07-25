@@ -4,7 +4,7 @@ import hashlib
 import logging
 import time
 from pathlib import Path
-from typing import Optional, Any, Dict, Tuple
+from typing import Any
 
 from src.infrastructure.cache.cache_interface import CacheInterface
 
@@ -20,9 +20,9 @@ class InMemoryCache(CacheInterface):
 
     TTL_SECONDS = 3600  # 1 hour
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Inicializa cache em memória."""
-        self._cache: Dict[str, Tuple[str, float]] = {}  # key: (data, expiry_time)
+        self._cache: dict[str, tuple[str, float]] = {}  # key: (data, expiry_time)
         logger.info("Initialized in-memory cache")
 
     def _compute_hash(self, image_path: Path) -> str:
@@ -40,14 +40,11 @@ class InMemoryCache(CacheInterface):
     def _cleanup_expired(self) -> None:
         """Remove entradas expiradas do cache."""
         current_time = time.time()
-        expired_keys = [
-            key for key, (_, expiry) in self._cache.items()
-            if expiry < current_time
-        ]
+        expired_keys = [key for key, (_, expiry) in self._cache.items() if expiry < current_time]
         for key in expired_keys:
             del self._cache[key]
 
-    async def get(self, image_path: Path) -> Optional[Any]:
+    async def get(self, image_path: Path) -> Any | None:
         """Obtém do cache."""
         from src.domain.models import ArchitectureGraph
 

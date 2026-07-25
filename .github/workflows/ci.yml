@@ -112,6 +112,7 @@ jobs:
       API_KEY: test-api-key-ci
       API_RATE_LIMIT: "9999"
       DEBUG: "false"
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -167,7 +168,7 @@ jobs:
 
       # Opcional: enviar para Codecov se o token estiver configurado
       - name: Upload to Codecov
-        if: ${{ secrets.CODECOV_TOKEN != '' }}
+        if: ${{ env.CODECOV_TOKEN != '' }}
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -210,6 +211,14 @@ jobs:
       - name: Install dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
         run: poetry install --no-interaction --no-ansi
+
+      - name: Generate synthetic dataset
+        run: |
+          echo "→ Generating synthetic dataset for CI validation..."
+          poetry run python scripts/generate_synthetic_diagrams.py \
+            --output dataset/train --count 75 --seed 1
+          poetry run python scripts/generate_synthetic_diagrams.py \
+            --output dataset/val --count 25 --seed 2
 
       - name: Check dataset/data.yaml exists and is valid
         run: |

@@ -3,7 +3,6 @@
 from src.core.vulnerability_db import VulnerabilityMapping
 from src.domain.models import Countermeasure
 
-
 DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
     "S": (
         Countermeasure(
@@ -27,8 +26,7 @@ DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
         Countermeasure(
             title="Proteger integridade dos dados",
             description=(
-                "Usar TLS 1.3, HMAC ou assinatura digital para detectar "
-                "alteracoes de mensagens."
+                "Usar TLS 1.3, HMAC ou assinatura digital para detectar alteracoes de mensagens."
             ),
             owasp_ref="OWASP Cryptographic Storage Cheat Sheet",
         ),
@@ -45,8 +43,7 @@ DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
         Countermeasure(
             title="Centralizar auditoria",
             description=(
-                "Registrar acoes sensiveis com usuario, origem, resultado e "
-                "timestamp confiavel."
+                "Registrar acoes sensiveis com usuario, origem, resultado e timestamp confiavel."
             ),
             owasp_ref="OWASP Logging Cheat Sheet",
         ),
@@ -75,17 +72,13 @@ DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
         Countermeasure(
             title="Aplicar controle de consumo",
             description=(
-                "Usar rate limiting, timeouts, limites de payload e quotas por "
-                "usuario ou origem."
+                "Usar rate limiting, timeouts, limites de payload e quotas por usuario ou origem."
             ),
             owasp_ref="OWASP Denial of Service Cheat Sheet",
         ),
         Countermeasure(
             title="Isolar falhas de dependencias",
-            description=(
-                "Aplicar circuit breaker, retries com backoff e degradacao "
-                "controlada."
-            ),
+            description=("Aplicar circuit breaker, retries com backoff e degradacao controlada."),
             owasp_ref="NIST SP 800-160",
         ),
     ),
@@ -101,8 +94,7 @@ DEFAULT_COUNTERMEASURES: dict[str, tuple[Countermeasure, ...]] = {
         Countermeasure(
             title="Isolar execucao sensivel",
             description=(
-                "Usar RBAC, sandboxing e separacao de papeis para conter "
-                "escalacao de privilegios."
+                "Usar RBAC, sandboxing e separacao de papeis para conter escalacao de privilegios."
             ),
             owasp_ref="OWASP Authorization Cheat Sheet",
         ),

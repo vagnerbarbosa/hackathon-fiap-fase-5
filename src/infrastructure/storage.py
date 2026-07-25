@@ -1,9 +1,7 @@
 """Serviço de armazenamento de arquivos para uploads."""
 
-import os
 import shutil
 from pathlib import Path
-from typing import Optional
 from uuid import uuid4
 
 from src.core.config import settings
@@ -15,7 +13,7 @@ logger = get_logger(__name__)
 class LocalFileStorage:
     """Implementação de armazenamento em sistema de arquivos local."""
 
-    def __init__(self, base_path: Optional[str] = None):
+    def __init__(self, base_path: str | None = None):
         """Inicializa o armazenamento com o caminho base.
 
         Args:
@@ -24,7 +22,7 @@ class LocalFileStorage:
         self.base_path = Path(base_path or settings.storage_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
 
-    async def save(self, content: bytes, filename: Optional[str] = None) -> str:
+    async def save(self, content: bytes, filename: str | None = None) -> str:
         """Salva arquivo no armazenamento.
 
         Args:

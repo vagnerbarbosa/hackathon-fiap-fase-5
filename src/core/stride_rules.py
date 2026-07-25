@@ -2,7 +2,6 @@
 
 from src.domain.models import Severity
 
-
 SEVERITY_ORDER = {
     Severity.CRITICAL: 0,
     Severity.HIGH: 1,

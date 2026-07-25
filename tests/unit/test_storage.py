@@ -1,7 +1,8 @@
 """Testes para LocalFileStorage."""
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from src.infrastructure.storage import LocalFileStorage
 

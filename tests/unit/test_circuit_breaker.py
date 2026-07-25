@@ -1,8 +1,10 @@
 """Testes para o Circuit Breaker."""
 
-import pytest
 import asyncio
-from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpen
+
+import pytest
+
+from src.core.circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
 
 
 class TestCircuitBreaker:
@@ -26,6 +28,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_successful_call_increments_success(self, circuit_breaker):
         """Chamada bem-sucedida mantém estado CLOSED."""
+
         async def success_func():
             return "success"
 
@@ -36,6 +39,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_failures_open_circuit(self, circuit_breaker):
         """Falhas consecutivas abrem o circuito."""
+
         async def fail_func():
             raise RuntimeError("error")
 
@@ -49,6 +53,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_open_circuit_rejects_calls(self, circuit_breaker):
         """Circuito aberto rejeita chamadas."""
+
         async def fail_func():
             raise RuntimeError("error")
 
@@ -61,12 +66,13 @@ class TestCircuitBreaker:
         async def any_func():
             return "result"
 
-        with pytest.raises(CircuitBreakerOpen):
+        with pytest.raises(CircuitBreakerOpenError):
             await circuit_breaker.call(any_func)
 
     @pytest.mark.asyncio
     async def test_recovery_to_half_open(self, circuit_breaker):
         """Após timeout, circuito vai para HALF_OPEN."""
+
         async def fail_func():
             raise RuntimeError("error")
 
@@ -91,6 +97,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_success_in_half_open_closes_circuit(self, circuit_breaker):
         """Sucessos em HALF_OPEN fecham o circuito."""
+
         async def fail_func():
             raise RuntimeError("error")
 
@@ -115,6 +122,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_failure_in_half_open_reopens_circuit(self, circuit_breaker):
         """Falha em HALF_OPEN reabre o circuito."""
+
         async def fail_func():
             raise RuntimeError("error")
 
@@ -135,6 +143,7 @@ class TestCircuitBreaker:
     @pytest.mark.asyncio
     async def test_protect_decorator(self, circuit_breaker):
         """Testa decorator protect."""
+
         @circuit_breaker.protect
         async def protected_func():
             return "protected"

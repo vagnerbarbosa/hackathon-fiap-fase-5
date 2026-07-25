@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -56,6 +56,7 @@ _TEMPLATES_DIR = Path(__file__).parent.parent / "core" / "templates"
 
 
 # ── Data classes auxiliares ───────────────────────────────────────────────────
+
 
 @dataclass
 class StrideMatrixRow:
@@ -121,11 +122,12 @@ class GeneratedReport:
     """
 
     job_id: str
-    saved_paths: dict[str, Path]   # {"md": Path, "json": Path, ...}
+    saved_paths: dict[str, Path]  # {"md": Path, "json": Path, ...}
     json_data: dict[str, Any]
 
 
 # ── ReportGenerator ───────────────────────────────────────────────────────────
+
 
 class ReportGenerator:
     """Orquestra a geração de relatórios em todos os formatos suportados."""
@@ -154,15 +156,14 @@ class ReportGenerator:
             trim_blocks=True,
             lstrip_blocks=True,
         )
-        # Template MD não deve ter auto-escape (markdown usa < > livremente)
         env.globals["enumerate"] = enumerate
         return env
 
     def _get_md_env(self) -> Environment:
-        """Retorna ambiente Jinja2 sem autoescape para templates Markdown."""
+        """Retorna ambiente Jinja2 com autoescape seletivo para templates Markdown/HTML."""
         env = Environment(
             loader=FileSystemLoader(str(_TEMPLATES_DIR)),
-            autoescape=False,
+            autoescape=select_autoescape(["html", "xml"]),
             trim_blocks=True,
             lstrip_blocks=True,
         )
@@ -179,7 +180,7 @@ class ReportGenerator:
     ) -> ReportContext:
         """Monta o contexto de template a partir dos dados de entrada."""
         image_name = Path(job.input_image_path).name if job.input_image_path else "N/A"
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
         # Grupos por severidade
         critical = [t for t in threats if t.severity == Severity.CRITICAL]
@@ -197,9 +198,7 @@ class ReportGenerator:
             row.categories.add(threat.category)
             row.risk_score += SEVERITY_WEIGHT.get(threat.severity.value, 0)
 
-        stride_matrix = sorted(
-            matrix_map.values(), key=lambda r: r.risk_score, reverse=True
-        )
+        stride_matrix = sorted(matrix_map.values(), key=lambda r: r.risk_score, reverse=True)
 
         # Tabela consolidada de contramedidas (ordenada por severidade)
         severity_priority = {s: i for i, s in enumerate(SEVERITY_ORDER)}
@@ -374,7 +373,11 @@ class ReportGenerator:
 
         # JSON
         json_data = self._render_json(ctx, threats)
-        saved["json"] = self._save(job_id, "json", json.dumps(json_data, ensure_ascii=False, indent=2))
+        saved["json"] = self._save(
+            job_id,
+            "json",
+            json.dumps(json_data, ensure_ascii=False, indent=2),
+        )
 
         # Markdown
         md_content = self._render_markdown(ctx)
@@ -404,7 +407,7 @@ class ReportGenerator:
         architecture_graph: ArchitectureGraph,
         threats: list[EnrichedThreat],
         fmt: str,
-    ) -> tuple[bytes | str | dict, str]:
+    ) -> tuple[bytes | str | dict[str, Any], str]:
         """Gera apenas o formato solicitado e persiste o arquivo.
 
         Args:

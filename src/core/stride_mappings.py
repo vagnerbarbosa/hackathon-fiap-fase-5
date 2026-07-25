@@ -6,7 +6,6 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, ValidationError
 
-
 VALID_STRIDE_CATEGORIES = {"S", "T", "R", "I", "D", "E"}
 STRIDE_MAPPINGS_PATH_ENV = "STRIDE_MAPPINGS_PATH"
 DEFAULT_STRIDE_MAPPINGS_PATH = (

@@ -3,8 +3,8 @@
 import json
 import logging
 import sys
-from datetime import datetime, timezone
-from typing import Any, Dict
+from datetime import UTC, datetime
+from typing import Any
 
 from src.core.config import settings
 
@@ -21,8 +21,8 @@ class JSONFormatter(logging.Formatter):
         Returns:
             str: Entrada de log formatada em JSON.
         """
-        log_data: Dict[str, Any] = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+        log_data: dict[str, Any] = {
+            "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "module": record.name,
             "message": record.getMessage(),
@@ -38,10 +38,32 @@ class JSONFormatter(logging.Formatter):
 
         # Add extra fields from record (passed via extra= in logging call)
         # Standard logging extras are stored in record.__dict__
-        standard_keys = {"name", "msg", "args", "levelname", "levelno", "pathname", "filename",
-                        "module", "exc_info", "exc_text", "stack_info", "lineno", "funcName",
-                        "created", "msecs", "relativeCreated", "thread", "threadName",
-                        "processName", "process", "request_id", "message", "asctime", "exception"}
+        standard_keys = {
+            "name",
+            "msg",
+            "args",
+            "levelname",
+            "levelno",
+            "pathname",
+            "filename",
+            "module",
+            "exc_info",
+            "exc_text",
+            "stack_info",
+            "lineno",
+            "funcName",
+            "created",
+            "msecs",
+            "relativeCreated",
+            "thread",
+            "threadName",
+            "processName",
+            "process",
+            "request_id",
+            "message",
+            "asctime",
+            "exception",
+        }
         extra_fields = {k: v for k, v in record.__dict__.items() if k not in standard_keys}
         log_data.update(extra_fields)
 
@@ -83,11 +105,11 @@ def get_logger(name: str) -> logging.Logger:
 class RequestIdFilter(logging.Filter):
     """Filtro que adiciona request_id aos registros de log."""
 
-    def __init__(self, request_id: str = ""):
+    def __init__(self, request_id: str = "") -> None:
         super().__init__()
         self.request_id = request_id
 
     def filter(self, record: logging.LogRecord) -> bool:
         """Adiciona request_id ao registro."""
-        record.request_id = self.request_id  # type: ignore
+        record.request_id = self.request_id
         return True

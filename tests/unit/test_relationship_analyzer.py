@@ -4,7 +4,8 @@ Testa heurísticas espaciais para inferir data flows e trust boundaries.
 """
 
 import pytest
-from src.domain.models import DetectedComponent, BoundingBox, Point
+
+from src.domain.models import BoundingBox, DetectedComponent, Point
 from src.services.relationship_analyzer import RelationshipAnalyzer
 
 
@@ -273,15 +274,18 @@ class TestFlowDirection:
 
     def test_user_to_api_is_unidirectional(self, analyzer):
         """Flow de user para API é tipicamente unidirecional (request)."""
-        from src.domain.models import DataFlow
 
         user = DetectedComponent(
-            id="user-1", type="user", confidence=0.95,
+            id="user-1",
+            type="user",
+            confidence=0.95,
             bbox=BoundingBox(x_min=10, y_min=50, x_max=60, y_max=100),
             center=Point(x=35, y=75),
         )
         api = DetectedComponent(
-            id="api-1", type="api", confidence=0.91,
+            id="api-1",
+            type="api",
+            confidence=0.91,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
             center=Point(x=250, y=85),
         )
@@ -292,12 +296,16 @@ class TestFlowDirection:
     def test_api_to_database_is_bidirectional(self, analyzer):
         """Flow entre API e database é tipicamente bidirecional."""
         api = DetectedComponent(
-            id="api-1", type="api", confidence=0.91,
+            id="api-1",
+            type="api",
+            confidence=0.91,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
             center=Point(x=250, y=85),
         )
         db = DetectedComponent(
-            id="db-1", type="database", confidence=0.88,
+            id="db-1",
+            type="database",
+            confidence=0.88,
             bbox=BoundingBox(x_min=400, y_min=60, x_max=500, y_max=140),
             center=Point(x=450, y=100),
         )
@@ -308,12 +316,16 @@ class TestFlowDirection:
     def test_api_to_cache_is_bidirectional(self, analyzer):
         """Flow entre API e cache é bidirecional."""
         api = DetectedComponent(
-            id="api-1", type="api", confidence=0.91,
+            id="api-1",
+            type="api",
+            confidence=0.91,
             bbox=BoundingBox(x_min=200, y_min=50, x_max=300, y_max=120),
             center=Point(x=250, y=85),
         )
         cache = DetectedComponent(
-            id="cache-1", type="cache", confidence=0.75,
+            id="cache-1",
+            type="cache",
+            confidence=0.75,
             bbox=BoundingBox(x_min=350, y_min=200, x_max=420, y_max=260),
             center=Point(x=385, y=230),
         )

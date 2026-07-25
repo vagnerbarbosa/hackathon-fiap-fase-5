@@ -5,7 +5,7 @@ Infere data flows e trust boundaries baseado em posições espaciais.
 
 import logging
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import Literal
 
 from src.domain.models import DataFlow, DetectedComponent
 
@@ -39,7 +39,7 @@ class RelationshipAnalyzer:
         self,
         proximity_threshold: float = 150.0,
         alignment_tolerance: float = 50.0,
-    ):
+    ) -> None:
         """Inicializa o analisador.
 
         Args:
@@ -51,8 +51,8 @@ class RelationshipAnalyzer:
 
     def infer_data_flows(
         self,
-        components: List[DetectedComponent],
-    ) -> List[DataFlow]:
+        components: list[DetectedComponent],
+    ) -> list[DataFlow]:
         """Infere data flows baseado na proximidade dos componentes.
 
         Cria flows entre componentes que estão:
@@ -101,8 +101,7 @@ class RelationshipAnalyzer:
                 flows.append(flow)
 
                 logger.debug(
-                    f"Inferred flow: {source.type} -> {target.type} "
-                    f"(distance={distance:.1f}px)"
+                    f"Inferred flow: {source.type} -> {target.type} (distance={distance:.1f}px)"
                 )
 
         logger.info(f"Inferred {len(flows)} data flows from {len(components)} components")
@@ -110,8 +109,8 @@ class RelationshipAnalyzer:
 
     def infer_trust_boundaries(
         self,
-        components: List[DetectedComponent],
-    ) -> List[List[str]]:
+        components: list[DetectedComponent],
+    ) -> list[list[str]]:
         """Agrupa componentes em trust boundaries por tipo.
 
         Regras:
@@ -192,7 +191,7 @@ class RelationshipAnalyzer:
         """
         dx = comp1.center.x - comp2.center.x
         dy = comp1.center.y - comp2.center.y
-        return (dx**2 + dy**2) ** 0.5
+        return float((dx**2 + dy**2) ** 0.5)
 
     def _is_aligned(
         self,
@@ -215,16 +214,13 @@ class RelationshipAnalyzer:
 
         # Check vertical alignment (similar X)
         dx = abs(comp1.center.x - comp2.center.x)
-        if dx <= self.alignment_tolerance:
-            return True
-
-        return False
+        return dx <= self.alignment_tolerance
 
     def _infer_direction(
         self,
         source: DetectedComponent,
         target: DetectedComponent,
-    ) -> str:
+    ) -> Literal["unidirectional", "bidirectional"]:
         """Infere direção do flow baseado nos tipos de componentes.
 
         Args:
@@ -258,8 +254,8 @@ class RelationshipAnalyzer:
 
     def _group_by_proximity(
         self,
-        components: List[DetectedComponent],
-    ) -> List[List[str]]:
+        components: list[DetectedComponent],
+    ) -> list[list[str]]:
         """Agrupa componentes por proximidade espacial.
 
         Clustering simples: se dentro do limiar, mesmo grupo.

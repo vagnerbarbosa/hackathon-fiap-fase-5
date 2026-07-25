@@ -1,13 +1,12 @@
 """Testes para ImagePreprocessor com validações de segurança."""
 
-import pytest
 import tempfile
-import os
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import numpy as np
 
-from src.services.image_preprocessor import ImagePreprocessor, MAX_FILE_SIZE_MB
+import numpy as np
+import pytest
+
+from src.services.image_preprocessor import MAX_FILE_SIZE_MB, ImagePreprocessor
 
 
 class TestImagePreprocessor:
@@ -54,10 +53,12 @@ class TestImagePreprocessorValidations:
     @pytest.fixture
     def create_temp_image(self):
         """Factory para criar imagens temporárias."""
+
         def _create(content: bytes, suffix: str = ".png") -> str:
             with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
                 f.write(content)
                 return f.name
+
         return _create
 
     def test_validate_file_exists_raises_when_not_found(self, preprocessor):
@@ -86,7 +87,7 @@ class TestImagePreprocessorValidations:
         """Aceita arquivos PNG."""
         # PNG header
         png_file = tmp_path / "test.png"
-        png_file.write_bytes(b'\x89PNG\r\n\x1a\n')
+        png_file.write_bytes(b"\x89PNG\r\n\x1a\n")
 
         # Não deve lançar
         preprocessor._validate_mime_type(png_file)
@@ -132,8 +133,9 @@ class TestImagePreprocessorSecurity:
         """Preprocess executa todas as validações."""
         # Cria arquivo PNG válido
         from PIL import Image
+
         img_path = tmp_path / "test.png"
-        img = Image.new('RGB', (100, 100), color='red')
+        img = Image.new("RGB", (100, 100), color="red")
         img.save(img_path)
 
         # Não deve lançar exceção

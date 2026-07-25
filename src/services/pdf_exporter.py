@@ -45,17 +45,14 @@ def export_html_to_pdf(html_content: str) -> bytes:
             ou falhar durante a renderização.
     """
     try:
-        from weasyprint import HTML  # type: ignore[import-untyped]
+        from weasyprint import HTML
     except ImportError as exc:
         raise WeasyPrintUnavailableError(
-            "WeasyPrint não está instalado. "
-            "Instale com: pip install weasyprint"
+            "WeasyPrint não está instalado. Instale com: pip install weasyprint"
         ) from exc
     except Exception as exc:
         # Captura erros de inicialização do GTK / Pango / Cairo em Linux headless
-        raise WeasyPrintUnavailableError(
-            f"Falha ao inicializar WeasyPrint: {exc}"
-        ) from exc
+        raise WeasyPrintUnavailableError(f"Falha ao inicializar WeasyPrint: {exc}") from exc
 
     try:
         pdf_bytes: bytes = HTML(string=html_content).write_pdf()
@@ -63,9 +60,7 @@ def export_html_to_pdf(html_content: str) -> bytes:
         return pdf_bytes
     except Exception as exc:
         logger.warning(f"WeasyPrint falhou ao gerar PDF: {exc}")
-        raise WeasyPrintUnavailableError(
-            f"Falha na geração do PDF: {exc}"
-        ) from exc
+        raise WeasyPrintUnavailableError(f"Falha na geração do PDF: {exc}") from exc
 
 
 def export_html_to_pdf_with_fallback(html_content: str) -> tuple[bytes, str]:
@@ -84,8 +79,7 @@ def export_html_to_pdf_with_fallback(html_content: str) -> tuple[bytes, str]:
         return pdf_bytes, "application/pdf"
     except WeasyPrintUnavailableError as exc:
         logger.warning(
-            f"Usando fallback HTML para PDF: {exc}. "
-            "Retornando HTML com instruções de impressão."
+            f"Usando fallback HTML para PDF: {exc}. Retornando HTML com instruções de impressão."
         )
         # Injeta o aviso logo após o <body>
         fallback_html = html_content.replace(

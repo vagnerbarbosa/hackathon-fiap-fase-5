@@ -1,6 +1,7 @@
 """Serviço de detecção de componentes de arquitetura (Spec 003)."""
 
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 from src.core.logging import get_logger
@@ -40,7 +41,7 @@ class ComponentDetectionService:
         self,
         model_path: str | None = None,
         confidence_threshold: float = DEFAULT_CONFIDENCE_THRESHOLD,
-    ):
+    ) -> None:
         """Inicializa o serviço de detecção.
 
         Args:
@@ -53,9 +54,9 @@ class ComponentDetectionService:
         """
         self.model_path = model_path
         self.confidence_threshold = confidence_threshold
-        self.model = self._load_model()
+        self.model: Any = self._load_model()
 
-    def _load_model(self):
+    def _load_model(self) -> Any:
         """Carrega o modelo ONNX.
 
         Returns:
@@ -75,13 +76,13 @@ class ComponentDetectionService:
 
         try:
             import onnxruntime as ort
+
             model = ort.InferenceSession(self.model_path)
             logger.info(f"Modelo ONNX carregado de {self.model_path}")
             return model
         except Exception as e:
             raise ModelNotLoadedError(
-                f"Erro ao carregar modelo ONNX: {e}. "
-                "Verifique se o arquivo best.onnx está correto."
+                f"Erro ao carregar modelo ONNX: {e}. Verifique se o arquivo best.onnx está correto."
             ) from e
 
     async def detect(self, image_path: str | Path) -> ArchitectureGraph:
@@ -132,8 +133,8 @@ class ComponentDetectionService:
 
     async def _detect_with_onnx(self, image_path: Path) -> ArchitectureGraph:
         """Executa detecção com modelo ONNX."""
-        import numpy as np
         import cv2
+        import numpy as np
 
         logger.info(f"Executando inferência ONNX em {image_path.name}")
 
@@ -213,7 +214,7 @@ class ComponentDetectionService:
             x_center, y_center, width, height = detection[0:4]
 
             # Extrair class scores (índices 4 em diante)
-            class_scores = detection[4:4 + num_classes]
+            class_scores = detection[4 : 4 + num_classes]
 
             # A confiança no YOLOv11 é o valor máximo dos class scores
             confidence = float(np.max(class_scores))
@@ -285,12 +286,14 @@ class ComponentDetectionService:
             source = sorted_by_x[i]
             target = sorted_by_x[i + 1]
 
-            flows.append(DataFlow(
-                source_id=source.id,
-                target_id=target.id,
-                direction="unidirectional",
-                inferred=True,
-            ))
+            flows.append(
+                DataFlow(
+                    source_id=source.id,
+                    target_id=target.id,
+                    direction="unidirectional",
+                    inferred=True,
+                )
+            )
 
         return flows
 
@@ -299,13 +302,29 @@ class ComponentDetectionService:
         # Zonas: externa (usuário/entry points), fronteira (edge/gateway), interna (compute/data)
         boundaries: dict[str, list[str]] = {"external": [], "boundary": [], "internal": []}
 
-        external_types = {"actor_user", "external_entry_point", "external_backend_service",
-                          "external_saas_service", "external_web_service"}
-        boundary_types = {"edge_ddos_protection", "edge_cdn", "edge_waf", "edge_gateway",
-                          "edge_portal", "compute_load_balancer", "integration_orchestrator",
-                          "boundary_cloud", "boundary_region", "boundary_resource_group",
-                          "boundary_vpc_or_vnet", "boundary_subnet_public",
-                          "boundary_subnet_private", "boundary_autoscaling_group"}
+        external_types = {
+            "actor_user",
+            "external_entry_point",
+            "external_backend_service",
+            "external_saas_service",
+            "external_web_service",
+        }
+        boundary_types = {
+            "edge_ddos_protection",
+            "edge_cdn",
+            "edge_waf",
+            "edge_gateway",
+            "edge_portal",
+            "compute_load_balancer",
+            "integration_orchestrator",
+            "boundary_cloud",
+            "boundary_region",
+            "boundary_resource_group",
+            "boundary_vpc_or_vnet",
+            "boundary_subnet_public",
+            "boundary_subnet_private",
+            "boundary_autoscaling_group",
+        }
 
         for comp in components:
             if comp.type in external_types:

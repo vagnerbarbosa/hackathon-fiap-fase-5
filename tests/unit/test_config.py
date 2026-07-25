@@ -40,15 +40,30 @@ class TestSettings:
         assert settings.database_url == "postgresql+asyncpg://user:pass@localhost/db"
         assert settings.api_key == "test-key"
 
-    def test_settings_defaults(self):
-        """Settings deve ter defaults corretos."""
+    def test_settings_defaults(self, monkeypatch):
+        """Settings deve ter defaults corretos independentemente do ambiente."""
+        # Remove variáveis de ambiente que sobrescrevem os defaults
+        for env_name in (
+            "APP_NAME",
+            "APP_VERSION",
+            "DEBUG",
+            "DATABASE_URL",
+            "REDIS_URL",
+            "STORAGE_PATH",
+            "LOG_LEVEL",
+            "API_RATE_LIMIT",
+            "API_KEY",
+            "CORS_ORIGINS",
+        ):
+            monkeypatch.delenv(env_name, raising=False)
+
         settings = Settings(
             database_url="postgresql+asyncpg://user:pass@localhost/db",
             api_key="test-key",
         )
 
         assert settings.app_name == "FIAP STRIDE API"
-        assert settings.app_version == "0.2.0"
+        assert settings.app_version == "0.3.0"
         assert settings.debug is False
         assert settings.api_rate_limit == 60
         assert settings.log_level == "INFO"

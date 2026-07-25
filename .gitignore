@@ -270,3 +270,10 @@ EOF
 dataset/train/labels.cache
 dataset/val/labels.cache
 dataset/test/labels.cache
+
+# Claude / local tooling
+.claude/
+coverage.json
+
+# Local coverage analysis report
+docs/coverage-analysis-report.md

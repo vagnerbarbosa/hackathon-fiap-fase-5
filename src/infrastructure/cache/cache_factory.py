@@ -5,12 +5,11 @@ da sua utilização, permitindo injeção de dependências.
 """
 
 import logging
-from typing import Optional
 
-from src.infrastructure.cache.cache_interface import CacheInterface
-from src.infrastructure.cache.redis_cache import RedisCache
-from src.infrastructure.cache.in_memory_cache import InMemoryCache
 from src.core.config import settings
+from src.infrastructure.cache.cache_interface import CacheInterface
+from src.infrastructure.cache.in_memory_cache import InMemoryCache
+from src.infrastructure.cache.redis_cache import RedisCache
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class CacheFactory:
     """
 
     @staticmethod
-    def create_cache(redis_url: Optional[str] = None) -> CacheInterface:
+    def create_cache(redis_url: str | None = None) -> CacheInterface:
         """Cria e retorna uma implementação de cache.
 
         Tenta Redis primeiro, se falhar usa in-memory.
@@ -44,7 +43,7 @@ class CacheFactory:
             return InMemoryCache()
 
     @staticmethod
-    def create_redis_cache(redis_url: Optional[str] = None) -> CacheInterface:
+    def create_redis_cache(redis_url: str | None = None) -> CacheInterface:
         """Cria cache Redis (lança exceção se falhar).
 
         Args:

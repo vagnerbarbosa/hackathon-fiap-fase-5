@@ -6,9 +6,9 @@ permitindo o desenvolvimento da Spec 003 sem aguardar a Spec 002 (treinamento do
 Quando Lucas finalizar a Spec 002, substitua YOLOStub pelo modelo YOLO real.
 """
 
+from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Any, List, Optional
-from uuid import uuid4
+from typing import Any, cast
 
 
 @dataclass
@@ -17,10 +17,10 @@ class MockBox:
 
     cls: str  # nome da classe, ex: "user", "api", "database"
     conf: float  # confidence 0.0-1.0
-    xyxy: List[float]  # [x_min, y_min, x_max, y_max]
+    xyxy: list[float]  # [x_min, y_min, x_max, y_max]
 
     @property
-    def xywh(self) -> List[float]:
+    def xywh(self) -> list[float]:
         """Converte xyxy para xywh (centro x, centro y, largura, altura)."""
         x_min, y_min, x_max, y_max = self.xyxy
         w = x_max - x_min
@@ -34,9 +34,9 @@ class MockBox:
 class MockResult:
     """Resultado mock YOLO contendo detecções."""
 
-    boxes: List[MockBox] = field(default_factory=list)
+    boxes: list[MockBox] = field(default_factory=list)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[MockBox]:
         """Permite iteração sobre as caixas."""
         return iter(self.boxes)
 
@@ -69,7 +69,7 @@ class YOLOStub:
         9: "storage",
     }
 
-    def __init__(self, model_path: Optional[str] = None, task: Optional[str] = None):
+    def __init__(self, model_path: str | None = None, task: str | None = None):
         """Inicializa stub (sem carregamento real do modelo).
 
         Args:
@@ -86,7 +86,7 @@ class YOLOStub:
         iou: float = 0.45,
         imgsz: int = 640,
         **kwargs: Any,
-    ) -> List[MockResult]:
+    ) -> list[MockResult]:
         """Predição mock retornando detecções simuladas.
 
         Args:
@@ -113,7 +113,7 @@ class YOLOStub:
 
         return [MockResult(boxes=filtered_boxes)]
 
-    def __call__(self, source: Any, **kwargs: Any) -> List[MockResult]:
+    def __call__(self, source: Any, **kwargs: Any) -> list[MockResult]:
         """Permite sintaxe model(source)."""
         return self.predict(source, **kwargs)
 
@@ -130,7 +130,7 @@ class YOLOWrapper:
             model_path: Caminho para arquivo do modelo (.pt ou .onnx).
         """
         self.model_path = model_path
-        self._model = None
+        self._model: Any = None
         self._using_stub = False
 
         self._load_model()
@@ -154,9 +154,9 @@ class YOLOWrapper:
         return self._using_stub
 
     @property
-    def names(self) -> dict:
+    def names(self) -> dict[int, str]:
         """Obtém mapeamento de nomes de classes."""
-        return self._model.names
+        return cast(dict[int, str], self._model.names)
 
     def predict(self, *args: Any, **kwargs: Any) -> Any:
         """Executa predição (delega para modelo ou stub)."""

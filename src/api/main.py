@@ -1,6 +1,8 @@
 """Ponto de entrada da aplicação FastAPI."""
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,7 +17,7 @@ logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Gerencia o ciclo de vida da aplicação.
 
     Configuração na inicialização, limpeza no desligamento.
@@ -64,7 +66,7 @@ app.include_router(threat_model.router)
 
 
 @app.get("/version")
-async def get_version() -> dict:
+async def get_version() -> dict[str, Any]:
     """Obtém informações da versão da API."""
     return {
         "name": settings.app_name,

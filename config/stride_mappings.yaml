@@ -167,6 +167,58 @@ components:
         description: "Worker pode executar codigo arbitrario se payload nao for validado."
         justification: "Payloads de jobs podem conter instrucoes que escapam do sandbox esperado."
 
+  # --- Tipos canonicos usados nos testes e pelo motor de deteccao ---
+  api:
+    threats:
+      - category: "S"
+        description: "Spoofing de identidade da API via token forjado."
+        justification: "APIs expoe endpoints que autenticam clientes por tokens ou credenciais."
+      - category: "T"
+        description: "Payloads ou parametros da API podem ser alterados em transito."
+        justification: "Requests e responses passam por redes e proxies que podem manipular dados."
+      - category: "R"
+        description: "Chamadas a API podem ser negadas sem logs de auditoria."
+        justification: "APIs processam operacoes de negocio que precisam de rastreabilidade."
+      - category: "I"
+        description: "Dados sensiveis podem vazar em responses ou logs da API."
+        justification: "APIs manipulam dados de clientes e podem expor campos nao autorizados."
+      - category: "D"
+        description: "API pode ser sobrecarregada por requisicoes excessivas."
+        justification: "Endpoints publicos sao alvos naturais de ataques de negacao de servico."
+      - category: "E"
+        description: "Falhas de autorizacao na API podem permitir escalacao de privilegios."
+        justification: "Controle de acesso mal implementado expoe funcionalidades restritas."
+
+  database:
+    threats:
+      - category: "T"
+        description: "Registros do banco podem ser alterados sem autorizacao."
+        justification: "Bancos armazenam estado critico e precisam proteger integridade de registros."
+      - category: "R"
+        description: "Transacoes podem ser negadas sem logs e trilhas confiaveis."
+        justification: "Operacoes em dados persistentes precisam de trilha auditavel."
+      - category: "I"
+        description: "Dados sensiveis podem ser exfiltrados do banco."
+        justification: "Bancos concentram dados persistidos, incluindo informacoes sensiveis."
+      - category: "D"
+        description: "Consultas abusivas podem indisponibilizar o banco."
+        justification: "Consultas pesadas ou concorrentes podem esgotar conexoes e recursos."
+      - category: "E"
+        description: "Permissoes excessivas podem permitir escalacao no banco."
+        justification: "Contas e roles de banco podem conceder acesso alem do necessario."
+
+  cache:
+    threats:
+      - category: "T"
+        description: "Entradas do cache podem ser envenenadas."
+        justification: "Dados cacheados podem substituir respostas legitimas para varios consumidores."
+      - category: "I"
+        description: "Dados sensiveis mantidos em cache podem vazar."
+        justification: "Caches podem reter dados sensiveis por tempo maior que o necessario."
+      - category: "D"
+        description: "Cache busting pode aumentar carga e causar indisponibilidade."
+        justification: "Falhas no cache podem repassar carga excessiva para servicos de origem."
+
   # --- Camada de Dados ---
   data_database:
     threats:
