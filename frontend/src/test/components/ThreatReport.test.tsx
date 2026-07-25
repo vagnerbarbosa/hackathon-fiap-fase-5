@@ -48,14 +48,25 @@ describe('ThreatReport', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // Por padrão, simula falha na API para que o componente use reportData/mock fallback.
+    vi.mocked(fetch).mockImplementation(() =>
+      Promise.reject(new Error('Network error'))
+    )
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
+  // Helper para aguardar o useEffect resolver e sair do estado de loading
+  const waitForReportLoaded = async () => {
+    await waitFor(() => {
+      expect(screen.queryByText('Carregando relatório...')).not.toBeInTheDocument()
+    })
+  }
+
   describe('Renderização', () => {
-    it('deve renderizar o relatório com dados mockados', () => {
+    it('deve renderizar o relatório com dados mockados', async () => {
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -63,6 +74,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Usar getAllByText para elementos que aparecem múltiplas vezes
       expect(screen.getByText('Análise Concluída!')).toBeInTheDocument()
@@ -73,7 +86,7 @@ describe('ThreatReport', () => {
       expect(jobIdElements.length).toBeGreaterThan(0)
     })
 
-    it('deve renderizar contadores de ameaças corretamente', () => {
+    it('deve renderizar contadores de ameaças corretamente', async () => {
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -81,13 +94,15 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Verificar cards de contagem de ameaças
       expect(screen.getByText('Ameaças Críticas')).toBeInTheDocument()
       expect(screen.getByText('Ameaças Altas')).toBeInTheDocument()
     })
 
-    it('deve mostrar aviso de dados mockados quando reportData não é fornecido', () => {
+    it('deve mostrar aviso de dados mockados quando reportData não é fornecido', async () => {
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -95,12 +110,35 @@ describe('ThreatReport', () => {
         />
       )
 
-      // Verificar banner de aviso
-      expect(screen.getByText('Relatório de Demonstração')).toBeInTheDocument()
-      expect(screen.getByText(/Os dados exibidos são simulados/)).toBeInTheDocument()
+      await waitForReportLoaded()
+
+      // Verificar banner de aviso (fetch falha, então usa fallback de demonstração)
+      expect(screen.getAllByText('Usando dados de demonstração').length).toBeGreaterThan(0)
     })
 
-    it('deve esconder aviso de dados mockados quando reportData é fornecido', () => {
+    it('deve esconder aviso de dados mockados quando reportData é fornecido', async () => {
+      // Quando reportData é fornecido e a API responde com sucesso, o aviso deve sumir.
+      vi.mocked(fetch).mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({
+            job_id: mockJobId,
+            threats: mockReportData.threats.map((t) => ({
+              id: t.id,
+              category: t.category,
+              category_name: t.title,
+              description: t.description,
+              severity: t.severity,
+              component_type: t.component,
+              cwe_id: t.cwe_id,
+              cwe_name: t.cwe_name,
+              countermeasures: t.countermeasures.map((c) => ({ title: c }))
+            }))
+          })
+        } as Response)
+      )
+
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -109,8 +147,11 @@ describe('ThreatReport', () => {
         />
       )
 
+      await waitForReportLoaded()
+
       // Verificar que o banner de aviso NÃO está presente
       expect(screen.queryByText('Relatório de Demonstração')).not.toBeInTheDocument()
+      expect(screen.queryByText('Usando dados de demonstração')).not.toBeInTheDocument()
     })
   })
 
@@ -121,12 +162,15 @@ describe('ThreatReport', () => {
       const mockBlob = new Blob(['test content'], { type: 'application/json' })
       const mockUrl = 'blob:mock-url'
 
-      // Mock fetch retornando sucesso (200) com blob
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 200,
-        ok: true,
-        blob: () => Promise.resolve(mockBlob),
-      } as unknown as Response)
+      // Primeira chamada (useEffect) deve falhar para cair no reportData;
+      // segunda chamada (exportação JSON) deve retornar sucesso.
+      vi.mocked(fetch)
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({
+          status: 200,
+          ok: true,
+          blob: () => Promise.resolve(mockBlob),
+        } as unknown as Response)
 
       // Mock URL.createObjectURL e revokeObjectURL
       const createObjectURLMock = vi.fn().mockReturnValue(mockUrl)
@@ -141,6 +185,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Clicar no botão Exportar
       fireEvent.click(screen.getByText('Exportar'))
@@ -168,11 +214,13 @@ describe('ThreatReport', () => {
     })
 
     it('deve mostrar mensagem amigável quando endpoint retornar 404', async () => {
-      // Mock fetch retornando 404
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 404,
-        ok: false,
-      } as Response)
+      // Primeira chamada (useEffect) falha; segunda (exportação JSON) retorna 404.
+      vi.mocked(fetch)
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({
+          status: 404,
+          ok: false,
+        } as Response)
 
       render(
         <ThreatReport
@@ -181,6 +229,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Clicar no botão Exportar
       fireEvent.click(screen.getByText('Exportar'))
@@ -203,11 +253,13 @@ describe('ThreatReport', () => {
     })
 
     it('deve mostrar mensagem amigável quando endpoint retornar 401 (sem autenticação)', async () => {
-      // Mock fetch retornando 401 Unauthorized
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 401,
-        ok: false,
-      } as Response)
+      // Primeira chamada (useEffect) falha; segunda (exportação CSV) retorna 401.
+      vi.mocked(fetch)
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({
+          status: 401,
+          ok: false,
+        } as Response)
 
       render(
         <ThreatReport
@@ -216,6 +268,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Clicar no botão Exportar
       fireEvent.click(screen.getByText('Exportar'))
@@ -238,11 +292,13 @@ describe('ThreatReport', () => {
     })
 
     it('deve mostrar mensagem amigável quando endpoint PDF retornar 404', async () => {
-      // Mock fetch retornando 404 (PDF ainda não implementado no backend)
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 404,
-        ok: false,
-      } as Response)
+      // Primeira chamada (useEffect) falha; segunda (exportação PDF) retorna 404.
+      vi.mocked(fetch)
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({
+          status: 404,
+          ok: false,
+        } as Response)
 
       render(
         <ThreatReport
@@ -251,6 +307,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Clicar no botão Exportar
       fireEvent.click(screen.getByText('Exportar'))
@@ -273,8 +331,8 @@ describe('ThreatReport', () => {
     })
 
     it('deve mostrar mensagem amigável com erro de conexão', async () => {
-      // Mock fetch lançando erro (ex: CORS, network error)
-      vi.mocked(fetch).mockRejectedValueOnce(new Error('Network error'))
+      // useEffect falha; exportação Markdown também falha com erro de rede.
+      vi.mocked(fetch).mockRejectedValue(new Error('Network error'))
 
       render(
         <ThreatReport
@@ -283,6 +341,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Clicar no botão Exportar
       fireEvent.click(screen.getByText('Exportar'))
@@ -305,11 +365,13 @@ describe('ThreatReport', () => {
     })
 
     it('deve fechar mensagem de erro ao clicar em Fechar', async () => {
-      // Mock fetch retornando 404
-      vi.mocked(fetch).mockResolvedValueOnce({
-        status: 404,
-        ok: false,
-      } as Response)
+      // Primeira chamada (useEffect) falha; segunda (exportação JSON) retorna 404.
+      vi.mocked(fetch)
+        .mockRejectedValueOnce(new Error('network'))
+        .mockResolvedValueOnce({
+          status: 404,
+          ok: false,
+        } as Response)
 
       render(
         <ThreatReport
@@ -318,6 +380,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       // Abrir menu e clicar em JSON
       fireEvent.click(screen.getByText('Exportar'))
@@ -340,7 +404,7 @@ describe('ThreatReport', () => {
   })
 
   describe('Interação com Ameaças', () => {
-    it('deve expandir ameaça ao clicar', () => {
+    it('deve expandir ameaça ao clicar', async () => {
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -348,16 +412,20 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       const threatTitle = screen.getByText('Spoofing de Identidade')
       fireEvent.click(threatTitle)
 
       // Verificar se contramedidas apareceram
-      expect(screen.getByText('Contramedidas OWASP')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(screen.getByText('Contramedidas OWASP')).toBeInTheDocument()
+      })
       expect(screen.getByText('Implementar MFA')).toBeInTheDocument()
     })
 
-    it('deve chamar onNewAnalysis ao clicar em Nova Análise', () => {
+    it('deve chamar onNewAnalysis ao clicar em Nova Análise', async () => {
       render(
         <ThreatReport
           jobId={mockJobId}
@@ -365,6 +433,8 @@ describe('ThreatReport', () => {
           onNewAnalysis={mockOnNewAnalysis}
         />
       )
+
+      await waitForReportLoaded()
 
       const newAnalysisButton = screen.getByTestId('new-analysis')
       fireEvent.click(newAnalysisButton)
