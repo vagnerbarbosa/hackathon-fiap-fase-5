@@ -172,10 +172,13 @@ $RECYCLE.BIN/
 # Ultralytics training runs (checkpoints, plots, logs — not versioned)
 runs/
 
-# Dataset images (large files — use DVC or external storage)
-dataset/train/images/
-dataset/val/images/
-dataset/test/images/
+# Dataset (keep folder structure for documentation, ignore large files)
+dataset/**
+!dataset/
+!dataset/.gitkeep
+!dataset/README.md
+!dataset/data.yaml
+
 *.zip
 *.tar.gz
 
